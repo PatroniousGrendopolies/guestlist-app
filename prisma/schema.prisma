@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model with role-based access control
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  password      String
+  role          UserRole
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  events        Event[]   @relation("EventManager")
+  guestLists    GuestList[] @relation("GuestListOwner")
+  
+  @@map("users")
+}
+
+enum UserRole {
+  MANAGER
+  DOORMAN
+  PROMOTER
+  DJ
+}
+
+// Event model
+model Event {
+  id            String    @id @default(uuid())
+  name          String
+  date          DateTime
+  description   String?
+  managerId     String
+  manager       User      @relation("EventManager", fields: [managerId], references: [id])
+  guestLists    GuestList[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("events")
+}
+
+// Guest model
+model Guest {
+  id            String    @id @default(uuid())
+  name          String
+  email         String
+  phone         String?
+  privacyConsent Boolean  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  guestListEntries GuestListEntry[]
+  
+  @@map("guests")
+}
+
+// GuestList model
+model GuestList {
+  id            String    @id @default(uuid())
+  name          String
+  ownerId       String
+  owner         User      @relation("GuestListOwner", fields: [ownerId], references: [id])
+  eventId       String
+  event         Event     @relation(fields: [eventId], references: [id])
+  cap           Int?      // Optional cap on the number of guests
+  entries       GuestListEntry[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("guest_lists")
+}
+
+// GuestListEntry model for individual guests on a list
+model GuestListEntry {
+  id            String    @id @default(uuid())
+  guestListId   String
+  guestList     GuestList @relation(fields: [guestListId], references: [id])
+  guestId       String
+  guest         Guest     @relation(fields: [guestId], references: [id])
+  plusOnes      Int       @default(0) // Number of additional guests
+  status        EntryStatus @default(PENDING)
+  qrCode        String?   @unique
+  checkedIn     Boolean   @default(false)
+  checkedInAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("guest_list_entries")
+}
+
+enum EntryStatus {
+  PENDING
+  APPROVED
+  DENIED
+}

@@ -1,0 +1,30 @@
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Node modules
+node_modules/
+
+# Coverage reports
+coverage/
+
+# Generated files
+*.generated.*
+*.min.js
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables
+.env*
+!.env.example
+
+# Misc
+.DS_Store
+.idea/
+.vscode/
+*.log
