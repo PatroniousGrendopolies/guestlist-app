@@ -90,6 +90,10 @@ The Prisma schema in `prisma/schema.prisma` defines the following models:
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
+### Edge Runtime Compatibility
+
+This application uses Next.js middleware with Edge-safe code to ensure compatibility with Vercel's Edge Runtime. Authentication logic that requires Node.js features (like password hashing) is isolated to API routes running on Node.js runtime.
+
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 ## Quebec Privacy Compliance
