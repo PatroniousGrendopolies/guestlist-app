@@ -94,6 +94,10 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 This application uses Next.js middleware with Edge-safe code to ensure compatibility with Vercel's Edge Runtime. Authentication logic that requires Node.js features (like password hashing) is isolated to API routes running on Node.js runtime.
 
+### Deployment Options
+
+This application can be deployed to either Vercel or Netlify. Both deployment configurations are included in the repository.
+
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 ## Quebec Privacy Compliance
