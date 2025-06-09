@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "functions": {
+    "src/middleware.ts": {
+      "runtime": "nodejs18.x"
+    },
+    "src/lib/auth/auth.ts": {
+      "runtime": "nodejs18.x"
+    },
+    "src/lib/auth/auth-options.ts": {
+      "runtime": "nodejs18.x"
+    },
+    "src/app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
