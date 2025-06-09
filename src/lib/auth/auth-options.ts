@@ -3,7 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { UserRole } from '@/types/enums';
 // Will be used when we integrate with the database
 // import prisma from "@/lib/db/prisma";
-import { compare } from 'bcrypt';
+// Removed bcrypt import for Vercel Edge Runtime compatibility
 
 // Type for credentials passed to the authorize function
 // Will be used when we integrate with the database
@@ -65,7 +65,8 @@ export const authOptions: NextAuthConfig = {
               id: '1',
               name: 'Admin User',
               email: 'admin@example.com',
-              password: '$2b$10$8OxDFt.KUAqpZpOMDSIIg.4KwAe5xyJGp/5B5rQm5PvGmCGTm3CHa', // "password123"
+              // For development only - in production, we would use proper hashing
+              password: 'password123', // Plain text for Edge Runtime compatibility
               role: UserRole.MANAGER,
               emailVerified: new Date(),
             },
@@ -78,9 +79,10 @@ export const authOptions: NextAuthConfig = {
             return null;
           }
 
-          // Check if password matches
-          const passwordMatch = await compare(credentials.password, user.password);
-
+          // Simple password comparison for Edge Runtime compatibility
+          // In production, we would use proper password hashing not in Edge Runtime
+          const passwordMatch = credentials.password === user.password;
+          
           if (!passwordMatch) {
             return null;
           }
