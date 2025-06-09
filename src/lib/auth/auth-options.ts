@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { UserRole } from '@/types/enums';
@@ -69,7 +70,7 @@ export const authOptions: NextAuthConfig = {
               name: 'Admin User',
               email: 'admin@example.com',
               // For development only - in production, we would use proper hashing
-              password: 'password123', // Plain text for Edge Runtime compatibility
+              password: '$2a$10$9bY3IXen1wW6IdOBmWqZhe9hN5We8r1twxhvE/yMkGhNtbtsKwHdq',
               role: UserRole.MANAGER,
               emailVerified: new Date(),
             },
@@ -84,7 +85,7 @@ export const authOptions: NextAuthConfig = {
 
           // Simple password comparison for Edge Runtime compatibility
           // In production, we would use proper password hashing not in Edge Runtime
-          const passwordMatch = credentials.password === user.password;
+          const passwordMatch = await bcrypt.compare(credentials.password, user.password);
           
           if (!passwordMatch) {
             return null;
