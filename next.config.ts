@@ -5,8 +5,7 @@ const nextConfig: NextConfig = {
   // Disable middleware to avoid Edge Runtime issues
   skipMiddlewareUrlNormalize: true,
   skipTrailingSlashRedirect: true,
-  // Set server components to use Node.js runtime
-  serverComponentsExternalPackages: ['bcrypt'],
+  // We've removed bcrypt from the project, so we don't need serverComponentsExternalPackages anymore
 };
 
 export default nextConfig;

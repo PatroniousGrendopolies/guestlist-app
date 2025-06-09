@@ -18,6 +18,8 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
-    '/api/(?!auth/:path*)',
+    '/api/:path*',
+    // Exclude auth routes from middleware protection
+    '/((?!api/auth).*)',
   ],
 };
