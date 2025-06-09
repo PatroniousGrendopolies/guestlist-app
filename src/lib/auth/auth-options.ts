@@ -5,6 +5,9 @@ import { UserRole } from '@/types/enums';
 // import prisma from "@/lib/db/prisma";
 // Removed bcrypt import for Vercel Edge Runtime compatibility
 
+// Force Node.js runtime instead of Edge Runtime
+export const runtime = 'nodejs';
+
 // Type for credentials passed to the authorize function
 // Will be used when we integrate with the database
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
