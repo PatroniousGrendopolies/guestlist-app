@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 
+// Force Node.js runtime instead of Edge Runtime
+export const runtime = 'nodejs';
+
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const session = await auth();
