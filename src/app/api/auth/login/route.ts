@@ -1,52 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRole } from '../../../../lib/types';
 import { compare } from 'bcrypt-ts';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-// Mock user database with a hashed password
-// The original password is 'password123'
-const mockUsers = [
-  {
-    id: '1',
-    name: 'Admin User',
-    email: 'admin@example.com',
-    password: '$2b$10$AdO.5YQ1R442mGHWMV5NzOUGiAfrwkgyIda/y69XOmNDniu.NC2cW',
-    role: UserRole.MANAGER,
-    emailVerified: new Date(),
-  },
-];
+// Path to the mock database file
+const dbPath = path.join(process.cwd(), 'src', 'lib', 'auth', 'mock-db.json');
+
+async function readUsers() {
+  try {
+    const data = await fs.readFile(dbPath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    return [];
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password } = body;
 
-    // Validate input
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    // Find user
-    const user = mockUsers.find(u => u.email === email);
+    const users = await readUsers();
+    const user = users.find((u: any) => u.email === email);
 
-    // Check if user exists
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    // Securely compare the provided password with the stored hash
     const passwordMatch = await compare(password, user.password);
 
     if (!passwordMatch) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     // Return user data (excluding password)
@@ -54,7 +42,7 @@ export async function POST(request: NextRequest) {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role, // Fixed typo here
+      role: user.role,
     };
 
     return NextResponse.json({
@@ -63,11 +51,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
+
 
 
