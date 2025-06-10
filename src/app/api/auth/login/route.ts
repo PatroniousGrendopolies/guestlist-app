@@ -2,15 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { compare } from 'bcrypt-ts';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { User } from '../../../../lib/types';
+
+// The user type from the DB includes the password
+interface UserWithPassword extends User {
+  password?: string | null;
+}
 
 // Path to the mock database file
 const dbPath = path.join(process.cwd(), 'src', 'lib', 'auth', 'mock-db.json');
 
-async function readUsers() {
+async function readUsers(): Promise<UserWithPassword[]> {
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
+    return JSON.parse(data) as UserWithPassword[];
+  } catch (_error) {
+    // If file doesn't exist or is empty, return empty array
     return [];
   }
 }
@@ -25,9 +32,9 @@ export async function POST(request: NextRequest) {
     }
 
     const users = await readUsers();
-    const user = users.find((u: any) => u.email === email);
+    const user = users.find((u) => u.email === email);
 
-    if (!user) {
+    if (!user || !user.password) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
@@ -38,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Return user data (excluding password)
-    const userWithoutPassword = {
+    const userWithoutPassword: User = {
       id: user.id,
       name: user.name,
       email: user.email,
