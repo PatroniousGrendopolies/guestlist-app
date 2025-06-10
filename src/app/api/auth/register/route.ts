@@ -17,7 +17,8 @@ async function readUsers(): Promise<UserWithPassword[]> {
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
     return JSON.parse(data) as UserWithPassword[];
-  } catch (_error) {
+    } catch {
+
     // If file doesn't exist or is empty, return empty array
     return [];
   }
