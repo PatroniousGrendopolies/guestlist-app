@@ -54,7 +54,7 @@ export const auth = async () => {
 export const signIn = async (provider?: string, options?: AuthOptions) => {
   // For the login page error handling
   if (options?.error) {
-    return { ok: false, error: new Error(options.error) };
+    return { error: options.error };
   }
   
   // Check if this is a credentials login attempt
@@ -71,18 +71,20 @@ export const signIn = async (provider?: string, options?: AuthOptions) => {
     
     // Verify credentials
     if (options.email === mockUser.email && options.password === mockUser.password) {
-      // Successful login
+      // Successful login - format expected by the login page
       console.log('Authentication successful');
-      return { ok: true, error: null };
+      // In a real implementation, we would store the user in the session
+      // For now, we'll just return success and let the login page handle the redirect
+      return { error: null };
     } else {
       // Failed login
       console.log('Authentication failed: Invalid credentials');
-      return { ok: false, error: new Error('Invalid credentials') };
+      return { error: 'Invalid credentials' };
     }
   }
   
   // Default response for other cases
-  return { ok: false, error: new Error('Unsupported authentication method') };
+  return { error: 'Unsupported authentication method' };
 };
 
 // Sign out function

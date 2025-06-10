@@ -16,23 +16,49 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
+    // Add debugging to help troubleshoot
+    console.log('Login attempt with:', { email, password });
+
     try {
+      // Call our mock signIn function
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
+      // Log the result for debugging
+      console.log('Sign in result:', result);
+
       if (result?.error) {
+        // Handle error case
+        console.error('Authentication error:', result.error);
         setError('Invalid email or password');
       } else {
-        // Redirect based on user role (will be implemented later)
+        // Handle success case
+        console.log('Authentication successful, redirecting to dashboard');
+        
+        // Create a mock session for the user
+        const mockUser = {
+          id: '1',
+          name: 'Admin User',
+          email: email,
+          role: 'MANAGER'
+        };
+        
+        // Store in localStorage for persistence (in a real app, this would be handled by NextAuth)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(mockUser));
+        }
+        
+        // Redirect to dashboard
         router.push('/dashboard');
         router.refresh();
       }
     } catch (error) {
-      setError('Something went wrong. Please try again.');
+      // Handle unexpected errors
       console.error('Login error:', error);
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
