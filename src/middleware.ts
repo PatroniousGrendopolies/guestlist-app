@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+
 
 // This middleware is temporarily simplified to prevent a redirect loop
 // caused by the recent auth system refactor. Client-side components
 // are now responsible for handling authentication checks and redirection.
-export function middleware(_req: NextRequest) {
+export function middleware() {
   return NextResponse.next();
 }
 
