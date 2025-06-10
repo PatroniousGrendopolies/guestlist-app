@@ -4,19 +4,23 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getUser } from '@/lib/auth/auth';
+import { supabase } from '@/lib/supabase/client';
 
 export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const user = getUser();
-    if (user) {
-      router.push('/dashboard');
-    } else {
-      setIsLoading(false);
-    }
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/dashboard');
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
   }, [router]);
 
   if (isLoading) {
