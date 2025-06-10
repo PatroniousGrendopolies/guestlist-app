@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-
 import { useRouter } from 'next/navigation';
+import { supabase } from '../../../lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,24 +17,16 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'An unexpected error occurred.');
+      if (error) {
+        setError(error.message);
       } else {
-        // Store user data in localStorage to persist session
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
-        // Redirect to dashboard
+        // On success, Supabase handles the session in a secure cookie.
+        // We just need to redirect and refresh the page.
         router.push('/dashboard');
         router.refresh(); // Refresh to ensure layout re-renders with new auth state
       }
@@ -66,7 +58,7 @@ export default function LoginPage() {
               type="email"
               required
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
               placeholder="your@email.com"
             />
@@ -82,7 +74,7 @@ export default function LoginPage() {
               type="password"
               required
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
             />
           </div>

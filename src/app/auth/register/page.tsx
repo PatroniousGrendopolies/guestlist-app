@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '../../../lib/supabase/client';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -21,23 +23,28 @@ export default function RegisterPage() {
     }
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
         },
-        body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'An unexpected error occurred.');
-      } else {
-        // Redirect to login page after successful registration
-        router.push('/auth/login');
+      if (error) {
+        setError(error.message);
+      } else if (data.user) {
+        setSuccessMessage(
+          'Registration successful! Please check your email for a verification link.'
+        );
+        setTimeout(() => {
+          router.push('/auth/login');
+        }, 3000);
       }
     } catch (error) {
       console.error('Registration request failed:', error);
@@ -54,7 +61,14 @@ export default function RegisterPage() {
           Create an Account
         </h1>
 
-        {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+        {successMessage && (
+          <div className="mb-4 rounded-md bg-green-50 p-4 text-sm text-green-700">
+            {successMessage}
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">{error}</div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -67,7 +81,7 @@ export default function RegisterPage() {
               type="text"
               required
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
               placeholder="John Doe"
             />
@@ -83,7 +97,7 @@ export default function RegisterPage() {
               type="email"
               required
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
               placeholder="your@email.com"
             />
@@ -99,7 +113,7 @@ export default function RegisterPage() {
               type="password"
               required
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
             />
           </div>
@@ -110,7 +124,7 @@ export default function RegisterPage() {
               name="consent"
               type="checkbox"
               checked={consent}
-              onChange={e => setConsent(e.target.checked)}
+              onChange={(e) => setConsent(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
             <label htmlFor="consent" className="ml-2 block text-sm text-gray-900">
