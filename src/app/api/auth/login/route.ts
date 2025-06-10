@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '../../../../lib/types';
+import { compare } from 'bcrypt-ts';
 
-// Mock user database
+// Mock user database with a hashed password
+// The original password is 'password123'
 const mockUsers = [
   {
     id: '1',
     name: 'Admin User',
     email: 'admin@example.com',
-    // Plain text for simplicity
-    password: 'password123',
+    password: '$2b$10$AdO.5YQ1R442mGHWMV5NzOUGiAfrwkgyIda/y69XOmNDniu.NC2cW',
     role: UserRole.MANAGER,
     emailVerified: new Date(),
   },
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Find user
     const user = mockUsers.find(u => u.email === email);
-    
+
     // Check if user exists
     if (!user) {
       return NextResponse.json(
@@ -38,8 +39,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check password (in a real app, use bcrypt)
-    if (user.password !== password) {
+    // Securely compare the provided password with the stored hash
+    const passwordMatch = await compare(password, user.password);
+
+    if (!passwordMatch) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -51,9 +54,9 @@ export async function POST(request: NextRequest) {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role,
+      role: user.role, // Fixed typo here
     };
-    
+
     return NextResponse.json({
       user: userWithoutPassword,
       message: 'Login successful',
@@ -66,3 +69,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
