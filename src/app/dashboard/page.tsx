@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getUser, useSignOut } from '@/lib/auth/auth';
-import { UserRole } from '@/lib/types'; // Corrected import path
+import { User, UserRole } from '@/lib/types'; // Corrected import path
 import Link from 'next/link';
 
 
@@ -11,7 +11,7 @@ import Link from 'next/link';
 export default function DashboardPage() {
   const router = useRouter();
   const signOut = useSignOut();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
