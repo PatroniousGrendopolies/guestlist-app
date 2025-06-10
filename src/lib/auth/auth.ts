@@ -54,9 +54,35 @@ export const auth = async () => {
 export const signIn = async (provider?: string, options?: AuthOptions) => {
   // For the login page error handling
   if (options?.error) {
-    return { url: '/auth/login', error: options.error };
+    return { ok: false, error: new Error(options.error) };
   }
-  return { url: '/auth/login' };
+  
+  // Check if this is a credentials login attempt
+  if (provider === 'credentials' && options?.email && options?.password) {
+    // Mock user check - in a real app this would check against a database
+    const mockUser = {
+      id: '1',
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: 'password123',
+      role: UserRole.MANAGER,
+      emailVerified: new Date()
+    };
+    
+    // Verify credentials
+    if (options.email === mockUser.email && options.password === mockUser.password) {
+      // Successful login
+      console.log('Authentication successful');
+      return { ok: true, error: null };
+    } else {
+      // Failed login
+      console.log('Authentication failed: Invalid credentials');
+      return { ok: false, error: new Error('Invalid credentials') };
+    }
+  }
+  
+  // Default response for other cases
+  return { ok: false, error: new Error('Unsupported authentication method') };
 };
 
 // Sign out function
