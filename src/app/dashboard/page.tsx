@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getUser, useSignOut } from '@/lib/auth/auth';
+import { supabase } from '@/lib/supabase/client';
 import { User, UserRole } from '@/lib/types'; // Corrected import path
 import Link from 'next/link';
 
@@ -10,18 +10,36 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const signOut = useSignOut();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+  };
+
   useEffect(() => {
-    const currentUser = getUser();
-    if (!currentUser) {
-      router.push('/auth/login');
-    } else {
-      setUser(currentUser);
+    const fetchUser = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) {
+        router.push('/auth/login');
+        return;
+      }
+
+      // Adapt the Supabase user object to the application's User type.
+      // NOTE: 'name' and 'role' are not part of Supabase's default user object.
+      // They are typically stored in a separate 'profiles' table.
+      const appUser: User = {
+        id: authUser.id,
+        email: authUser.email!,
+        name: authUser.user_metadata.full_name || authUser.email!,
+        role: (authUser.user_metadata.role as UserRole) || UserRole.GUEST,
+      };
+      setUser(appUser);
       setIsLoading(false);
-    }
+    };
+
+    fetchUser();
   }, [router]);
 
   if (isLoading) {
@@ -146,7 +164,7 @@ export default function DashboardPage() {
               Signed in as <span className="font-medium">{user.email}</span> ({role})
             </span>
             <button
-              onClick={signOut}
+              onClick={handleSignOut}
               className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Sign out
