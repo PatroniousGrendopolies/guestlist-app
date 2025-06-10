@@ -1,15 +1,26 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { auth } from '@/lib/auth/auth';
-import { redirect } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getUser } from '@/lib/auth/auth';
 
-export default async function Home() {
-  // Check if user is authenticated
-  const session = await auth();
+export default function Home() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
-  // If user is authenticated, redirect to dashboard
-  if (session) {
-    redirect('/dashboard');
+  useEffect(() => {
+    const user = getUser();
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-screen"><div>Loading...</div></div>;
   }
 
   return (

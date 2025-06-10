@@ -1,25 +1,16 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 
-export async function middleware(req: NextRequest) {
-  const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
-  // If no session, redirect to login
-  if (!session) {
-    return NextResponse.redirect(new URL('/auth/login', req.url));
-  }
-
-  // Otherwise allow request through
+// This middleware is temporarily simplified to prevent a redirect loop
+// caused by the recent auth system refactor. Client-side components
+// are now responsible for handling authentication checks and redirection.
+export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// Protect only the paths that need auth
+// The matcher is configured to run only on dashboard pages.
+// Although the middleware currently does nothing, this prevents it
+// from running unnecessarily on every request.
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/api/:path*',
-    // Exclude auth routes from middleware protection
-    '/((?!api/auth).*)',
-  ],
+  matcher: ['/dashboard/:path*'],
 };

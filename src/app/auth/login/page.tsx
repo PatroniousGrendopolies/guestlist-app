@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { signIn } from '@/lib/auth/auth';
+
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -16,49 +16,31 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
-    // Add debugging to help troubleshoot
-    console.log('Login attempt with:', { email, password });
-
     try {
-      // Call our mock signIn function
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      // Log the result for debugging
-      console.log('Sign in result:', result);
+      const data = await res.json();
 
-      if (result?.error) {
-        // Handle error case
-        console.error('Authentication error:', result.error);
-        setError('Invalid email or password');
+      if (!res.ok) {
+        setError(data.error || 'An unexpected error occurred.');
       } else {
-        // Handle success case
-        console.log('Authentication successful, redirecting to dashboard');
-        
-        // Create a mock session for the user
-        const mockUser = {
-          id: '1',
-          name: 'Admin User',
-          email: email,
-          role: 'MANAGER'
-        };
-        
-        // Store in localStorage for persistence (in a real app, this would be handled by NextAuth)
+        // Store user data in localStorage to persist session
         if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(mockUser));
+          localStorage.setItem('user', JSON.stringify(data.user));
         }
-        
         // Redirect to dashboard
         router.push('/dashboard');
-        router.refresh();
+        router.refresh(); // Refresh to ensure layout re-renders with new auth state
       }
     } catch (error) {
-      // Handle unexpected errors
-      console.error('Login error:', error);
-      setError('Something went wrong. Please try again.');
+      console.error('Login request failed:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

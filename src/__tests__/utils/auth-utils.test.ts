@@ -1,7 +1,15 @@
 import { hasRole, hasAnyRole } from '@/lib/auth/role-utils';
 import { UserRole } from '@/types/enums';
-import { mockUsers } from './test-utils';
 import '@testing-library/jest-dom';
+
+// Define mock users directly in this file since test-utils.ts doesn't exist
+const mockUsers = {
+  manager: { id: '1', name: 'Manager', email: 'manager@example.com', role: UserRole.MANAGER },
+  doorman: { id: '2', name: 'Doorman', email: 'doorman@example.com', role: UserRole.DOORMAN },
+  promoter: { id: '3', name: 'Promoter', email: 'promoter@example.com', role: UserRole.PROMOTER },
+  dj: { id: '4', name: 'DJ', email: 'dj@example.com', role: UserRole.DJ },
+  guest: { id: '5', name: 'Guest', email: 'guest@example.com', role: UserRole.GUEST }
+};
 
 describe('Auth Utilities', () => {
   describe('hasRole function', () => {
@@ -25,7 +33,7 @@ describe('Auth Utilities', () => {
     });
 
     it('returns false when user has no role property', () => {
-      const userWithoutRole = { id: '4', name: 'No Role' };
+      const userWithoutRole = { id: '4', name: 'No Role', role: undefined };
       expect(hasRole(userWithoutRole, UserRole.MANAGER)).toBe(false);
     });
   });
@@ -43,8 +51,8 @@ describe('Auth Utilities', () => {
     });
 
     it('returns false when user is null or undefined', () => {
-      expect(hasAnyRole(null, [UserRole.MANAGER, UserRole.STAFF])).toBe(false);
-      expect(hasAnyRole(undefined, [UserRole.MANAGER, UserRole.STAFF])).toBe(false);
+      expect(hasAnyRole(null, [UserRole.MANAGER, UserRole.DOORMAN])).toBe(false);
+      expect(hasAnyRole(undefined, [UserRole.MANAGER, UserRole.DOORMAN])).toBe(false);
     });
 
     it('returns false when roles array is empty', () => {

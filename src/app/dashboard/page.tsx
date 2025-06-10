@@ -1,24 +1,45 @@
-import { auth } from '@/lib/auth/auth';
-import { signOut } from '@/lib/auth/auth';
-import { UserRole } from '@/types/enums';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getUser, useSignOut } from '@/lib/auth/auth';
+import { UserRole } from '@/lib/types'; // Corrected import path
 import Link from 'next/link';
 
-export default async function DashboardPage() {
-  const session = await auth();
 
-  if (!session || !session.user) {
-    return null; // This should be handled by middleware, but just in case
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const signOut = useSignOut();
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const currentUser = getUser();
+    if (!currentUser) {
+      router.push('/auth/login');
+    } else {
+      setUser(currentUser);
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-screen"><div>Loading...</div></div>;
   }
 
-  const { user } = session;
+  if (!user) {
+    return null; // Fallback, should be redirected
+  }
+
   const role = user.role || UserRole.GUEST;
 
-  // Role-specific content
+  // Role-specific content (ensure all roles from enum are handled)
   const roleContent: Record<UserRole, React.ReactNode> = {
     [UserRole.MANAGER]: (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Manager Dashboard</h2>
-        <p>Welcome, Manager. Here you can manage staff, events, and view analytics.</p>
+        <p>Welcome, {user.name}. Here you can manage staff, events, and view analytics.</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <DashboardCard
             title="Staff Management"
@@ -46,7 +67,7 @@ export default async function DashboardPage() {
     [UserRole.DOORMAN]: (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Doorman Dashboard</h2>
-        <p>Welcome, Doorman. Here you can check in guests and manage the door.</p>
+        <p>Welcome, {user.name}. Scan QR codes to check in guests.</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <DashboardCard
             title="QR Scanner"
@@ -124,19 +145,12 @@ export default async function DashboardPage() {
             <span className="text-sm text-gray-500">
               Signed in as <span className="font-medium">{user.email}</span> ({role})
             </span>
-            <form
-              action={async () => {
-                'use server';
-                await signOut();
-              }}
+            <button
+              onClick={signOut}
+              className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              <button
-                type="submit"
-                className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Sign out
-              </button>
-            </form>
+              Sign out
+            </button>
           </div>
         </div>
       </header>
