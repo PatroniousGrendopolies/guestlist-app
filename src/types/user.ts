@@ -14,7 +14,5 @@ export interface UserProfile {
   role: UserRole;
   firstName?: string;
   lastName?: string;
-  phoneNumber?: string;
-  instagramHandle?: string;
   // Add other profile-specific fields here as needed
 }
