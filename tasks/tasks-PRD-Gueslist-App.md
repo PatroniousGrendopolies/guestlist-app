@@ -47,9 +47,9 @@
   - [x] 2.2 Implement secure login functionality for staff and promoters
   - [x] 2.3 Develop role-based authorization middleware
   - [ ] 2.4 Create user invitation system for managers to invite DJs and promoters
-    - [ ] 2.4.1 Design `invitations` table schema (columns: id, email, role_to_assign, token, expires_at, status, invited_by_user_id, created_at, updated_at)
-    - [ ] 2.4.2 Implement `invitations` table and `invitation_status` enum in Supabase via SQL
-    - [ ] 2.4.3 Define RLS policies for `invitations` table (manager create/read, invitee read, service role)
+    - [x] 2.4.1 Design `invitations` table schema (columns: id, email, role_to_assign, token, expires_at, status, invited_by_user_id, created_at, updated_at)
+    - [x] 2.4.2 Implement `invitations` table and `invitation_status` enum in Supabase via SQL
+    - [x] 2.4.3 Define RLS policies for `invitations` table (manager create/read, invitee read, service role)
     - [ ] 2.4.4 Create API endpoint for sending invitations (`POST /api/invitations`)
     - [ ] 2.4.5 Create API endpoint/page for accepting invitations (`/auth/accept-invitation`)
     - [ ] 2.4.6 Develop UI for managers to send invitations
