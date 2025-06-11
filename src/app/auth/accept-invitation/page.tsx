@@ -130,7 +130,7 @@ export default async function AcceptInvitationPage({ // This is a Server Compone
       return { status: 'error', message: 'Invitation token is required.' };
     }
 
-    const cookieStore = cookies(); // From 'next/headers'
+    const cookieStore = await cookies(); // From 'next/headers', await added
     const supabase = createServerClient( // From '@supabase/ssr'
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
