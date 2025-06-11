@@ -12,8 +12,9 @@ const publicPaths = ['/', '/auth/login', '/auth/register'];
 const protectedRoutesConfig: Record<string, UserRole[]> = {
   // Example: Only managers can access /admin and its sub-paths
   '/admin': [UserRole.Manager],
+  // Restrict /dashboard and its sub-paths to Managers
+  '/dashboard': [UserRole.Manager],
   // Add other role-specific routes here, e.g.:
-  // '/manager-dashboard': [UserRole.Manager],
   // '/dj-tools': [UserRole.DJ, UserRole.Manager], // DJs and Managers can access
 };
 
