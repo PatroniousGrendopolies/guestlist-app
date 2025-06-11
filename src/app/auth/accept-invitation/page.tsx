@@ -13,7 +13,7 @@ type AcceptInvitationPageProps = {
 };
 
 // Server Component part
-export default async function AcceptInvitationPage({ params, searchParams }: AcceptInvitationPageProps) {
+export default async function AcceptInvitationPage({ params: _params, searchParams }: AcceptInvitationPageProps) {
   // Token from URL query params, passed to the client component as initialToken
   const tokenParam = searchParams?.token;
   const initialToken = typeof tokenParam === 'string' ? tokenParam : null;
