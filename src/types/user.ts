@@ -1,13 +1,11 @@
 // src/types/user.ts
 
 export enum UserRole {
-  Doorman = 'doorman',
+  DoorStaff = 'door_staff',
   Manager = 'manager',
+  Staff = 'staff',
   Promoter = 'promoter',
   DJ = 'dj',
-  // We might also want a 'Guest' role if guests can have accounts,
-  // or an 'Admin' role for superuser privileges.
-  // For now, sticking to the PRD roles.
 }
 
 export interface UserProfile {
@@ -16,5 +14,7 @@ export interface UserProfile {
   role: UserRole;
   firstName?: string;
   lastName?: string;
+  phoneNumber?: string;
+  instagramHandle?: string;
   // Add other profile-specific fields here as needed
 }
