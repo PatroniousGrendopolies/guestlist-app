@@ -29,7 +29,7 @@
 
 ## Tasks
 
-- [ ] 1.0 Setup Project Infrastructure
+- [x] 1.0 Setup Project Infrastructure
   - [x] 1.1 Initialize Next.js project with TypeScript
   - [x] 1.2 Configure Prisma ORM with PostgreSQL database
   - [x] 1.3 Set up authentication with Supabase
