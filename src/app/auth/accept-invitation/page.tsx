@@ -9,13 +9,14 @@ export const dynamic = 'force-dynamic';
 // Define a clear type for the page props for better readability and type safety
 type AcceptInvitationPageProps = {
   params: { [key: string]: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 // Server Component part
-export default async function AcceptInvitationPage({ searchParams }: AcceptInvitationPageProps) {
+export default async function AcceptInvitationPage({ params, searchParams }: AcceptInvitationPageProps) {
   // Token from URL query params, passed to the client component as initialToken
-  const initialToken = typeof searchParams.token === 'string' ? searchParams.token : null;
+  const tokenParam = searchParams?.token;
+  const initialToken = typeof tokenParam === 'string' ? tokenParam : null;
 
   async function acceptInvitationAction(formData: FormData): Promise<{
     status: 'success' | 'error' | 'info' | 'warning';
