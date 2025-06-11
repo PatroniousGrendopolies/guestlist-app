@@ -2,7 +2,8 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../lib/supabase/client';
+import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function LoginPage() {
 
     try {
       // Rename 'error' from Supabase to 'authError' to avoid naming conflict with the state variable
+      const supabase = createClient();
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -102,6 +104,20 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+              Sign up
+            </Link>
+          </p>
+          <p className="mt-2 text-sm text-gray-600">
+            <Link href="/auth/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
+              Forgot your password?
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
