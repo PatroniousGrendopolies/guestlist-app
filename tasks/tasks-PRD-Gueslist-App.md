@@ -41,6 +41,9 @@
 
 - [ ] 2.0 Implement Authentication and User Management
   - [ ] 2.1 Create user model with role-based access control (doorman, manager, promoter, DJ)
+    - [x] Define UserRole enum and UserProfile interface in TypeScript
+    - [x] Create `profiles` table in Supabase with `user_role` ENUM and necessary columns
+    - [x] Implement Supabase trigger to create basic profile on new user signup
   - [ ] 2.2 Implement secure login functionality for staff and promoters
   - [ ] 2.3 Develop role-based authorization middleware
   - [ ] 2.4 Create user invitation system for managers to invite DJs and promoters
