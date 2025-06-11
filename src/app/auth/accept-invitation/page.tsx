@@ -1,11 +1,10 @@
 // src/app/auth/accept-invitation/page.tsx
 import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import AcceptInvitationForm from './AcceptInvitationForm'; // Import the new client component
-
+import AcceptInvitationForm from './AcceptInvitationForm';
 
 // Server Component part
-export default async function AcceptInvitationPage({ // This is a Server Component
+export default async function AcceptInvitationPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -26,8 +25,8 @@ export default async function AcceptInvitationPage({ // This is a Server Compone
       return { status: 'error', message: 'Invitation token is required.' };
     }
 
-    const cookieStore = await cookies(); // From 'next/headers', await added
-    const supabase = createServerClient( // From '@supabase/ssr'
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -59,7 +58,6 @@ export default async function AcceptInvitationPage({ // This is a Server Compone
 
     if (data && typeof data === 'object' && 'status' in data && 'message' in data) {
         const result = data as { status: 'success' | 'error' | 'info' | 'warning'; message: string; assigned_role?: string };
-        // No specific action like revalidatePath needed here for now, but could be added.
         return result;
     }
 
