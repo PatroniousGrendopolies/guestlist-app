@@ -17,22 +17,35 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Rename 'error' from Supabase to 'authError' to avoid naming conflict with the state variable
+      const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        setError(error.message);
+      if (authError) {
+        // Map common Supabase error messages to more user-friendly ones
+        if (authError.message === 'Invalid login credentials') {
+          setError('Incorrect email or password. Please try again.');
+        } else if (authError.message.toLowerCase().includes('email not confirmed')) {
+          // Catch variations like "Email not confirmed" or "User not confirmed"
+          setError(
+            'Your email address has not been confirmed. Please check your inbox for a confirmation link.'
+          );
+        } else {
+          // For other Supabase errors or less common ones
+          console.error('Supabase login error:', authError.message);
+          setError('Login failed. Please try again in a few moments.');
+        }
       } else {
         // On success, Supabase handles the session in a secure cookie.
-        // We just need to redirect and refresh the page.
+        // We just need to redirect. router.refresh() helps ensure layout re-renders with new auth state.
         router.push('/dashboard');
-        router.refresh(); // Refresh to ensure layout re-renders with new auth state
+        router.refresh();
       }
-    } catch (error) {
-      console.error('Login request failed:', error);
-      setError('An unexpected error occurred. Please try again.');
+    } catch (err) { // Catching generic errors (e.g., network issues)
+      console.error('Login request failed:', err);
+      setError('An unexpected error occurred. Please check your internet connection and try again.');
     } finally {
       setIsLoading(false);
     }
