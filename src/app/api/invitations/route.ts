@@ -1,23 +1,25 @@
 // src/app/api/invitations/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers'; // Import cookies from next/headers
 import { UserRole } from '@/types/user'; // Assuming UserRole is in src/types/user.ts
 
 export async function POST(request: NextRequest) {
-  // const response = NextResponse.next(); // Not needed for initial Supabase client creation in API routes
+  const cookieStore = await cookies(); // Await cookies() as per linter feedback
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name: string) => request.cookies.get(name)?.value,
+        get: (name: string) => {
+          return cookieStore.get(name)?.value;
+        },
         set: (name: string, value: string, options: CookieOptions) => {
-          // When setting cookies from an API route, you need to set them on the response object
-          // that will be returned. This is handled when constructing the final NextResponse.
-          request.cookies.set({ name, value, ...options }); // For Supabase client to read its own writes during request
+          cookieStore.set(name, value, options); // Align with Supabase examples
         },
         remove: (name: string, options: CookieOptions) => {
-          request.cookies.set({ name, value: '', ...options }); // For Supabase client
+          cookieStore.set(name, '', options); // Align with Supabase examples
         },
       },
     }
@@ -87,23 +89,6 @@ export async function POST(request: NextRequest) {
   }
 
   // 5. Return Success Response
-  // For API routes, cookies (if any were set by Supabase like session refresh)
-  // need to be explicitly passed to the outgoing response.
-  const finalResponse = NextResponse.json({ message: 'Invitation created successfully.', invitation }, { status: 201 });
-  
-  // Transfer cookies from the request's internal store (updated by Supabase client) to the actual response
-  request.cookies.getAll().forEach((cookie) => {
-    if(cookie.name.startsWith('sb-')){ // Only transfer Supabase-related cookies if necessary
-        finalResponse.cookies.set(cookie.name, cookie.value, {
-            domain: cookie.domain,
-            path: cookie.path,
-            sameSite: cookie.sameSite,
-            secure: cookie.secure,
-            httpOnly: cookie.httpOnly,
-            expires: cookie.expires,
-        });
-    }
-  });
-
-  return finalResponse;
+  // Cookies are now handled by the cookieStore, so direct NextResponse is fine.
+  return NextResponse.json({ message: 'Invitation created successfully.', invitation }, { status: 201 });
 }
