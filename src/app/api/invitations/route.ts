@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   let requestBody;
   try {
     requestBody = await request.json();
-  } catch (e) {
+  } catch { // Removed unused variable 'e'
     return NextResponse.json({ error: 'Invalid request body: Must be JSON.' }, { status: 400 });
   }
 
