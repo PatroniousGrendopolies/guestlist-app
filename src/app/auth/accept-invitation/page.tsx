@@ -6,12 +6,12 @@ import AcceptInvitationForm from './AcceptInvitationForm';
 // Force this page to be dynamically rendered on the server at request time
 export const dynamic = 'force-dynamic';
 
-// Server Component part
-export default async function AcceptInvitationPage({
-  searchParams,
-}: {
-  searchParams?: Record<string, string | string[]>;
-}) {
+// Server Component part with relaxed typing to bypass Next.js PageProps constraint bug
+export default async function AcceptInvitationPage(props: any) {
+  const searchParams = props?.searchParams as
+    | Record<string, string | string[]>
+    | undefined;
+
   // Token from URL query params, passed to the client component as initialToken
   const tokenParam = searchParams?.token;
   const initialToken = typeof tokenParam === 'string' ? tokenParam : null;
