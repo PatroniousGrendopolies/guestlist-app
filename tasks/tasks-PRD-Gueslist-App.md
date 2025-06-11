@@ -45,7 +45,7 @@
     - [x] Create `profiles` table in Supabase with `user_role` ENUM and necessary columns
     - [x] Implement Supabase trigger to create basic profile on new user signup
   - [x] 2.2 Implement secure login functionality for staff and promoters
-  - [ ] 2.3 Develop role-based authorization middleware
+  - [x] 2.3 Develop role-based authorization middleware
   - [ ] 2.4 Create user invitation system for managers to invite DJs and promoters
   - [ ] 2.5 Implement password reset functionality
   - [ ] 2.6 Add session management and token-based authentication
