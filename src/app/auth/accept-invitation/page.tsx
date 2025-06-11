@@ -1,4 +1,5 @@
 // src/app/auth/accept-invitation/page.tsx
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import AcceptInvitationForm from './AcceptInvitationForm';
@@ -7,6 +8,7 @@ import AcceptInvitationForm from './AcceptInvitationForm';
 export const dynamic = 'force-dynamic';
 
 // Server Component part with relaxed typing to bypass Next.js PageProps constraint bug
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function AcceptInvitationPage(props: any) {
   const searchParams = props?.searchParams as
     | Record<string, string | string[]>
