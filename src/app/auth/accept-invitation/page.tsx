@@ -3,12 +3,17 @@ import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import AcceptInvitationForm from './AcceptInvitationForm';
 
-// Server Component part
-export default async function AcceptInvitationPage({
-  searchParams,
-}: {
+// Force this page to be dynamically rendered on the server at request time
+export const dynamic = 'force-dynamic';
+
+// Define a clear type for the page props for better readability and type safety
+type AcceptInvitationPageProps = {
+  params: { [key: string]: string };
   searchParams: { [key: string]: string | string[] | undefined };
-}) {
+};
+
+// Server Component part
+export default async function AcceptInvitationPage({ searchParams }: AcceptInvitationPageProps) {
   // Token from URL query params, passed to the client component as initialToken
   const initialToken = typeof searchParams.token === 'string' ? searchParams.token : null;
 
