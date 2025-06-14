@@ -3,7 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { User, UserRole } from '@/lib/types'; // Corrected import path
+import { UserRole } from '@/types/enums';
+
+// Define User interface here since it's not defined elsewhere
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+}
 import Link from 'next/link';
 
 

@@ -1,15 +1,33 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import Home from '@/app/page';
 import '@testing-library/jest-dom';
 
-// Mock the auth function
-jest.mock('@/lib/auth/auth', () => ({
-  auth: jest.fn(),
+// Mock Supabase client
+const mockSupabase = {
+  auth: {
+    getSession: jest.fn(),
+  },
+};
+
+jest.mock('@/lib/supabase/client', () => ({
+  supabase: mockSupabase,
 }));
 
-// Mock the redirect function from next/navigation
+// Mock next/navigation
+const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
-  redirect: jest.fn(),
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
+// Mock Next.js Image component
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img {...props} />;
+  },
 }));
 
 describe('Home Page', () => {
@@ -18,18 +36,34 @@ describe('Home Page', () => {
   });
 
   it('renders sign-in link when user is not authenticated', async () => {
-    // Mock the auth function to return null (unauthenticated)
-    jest.requireMock('@/lib/auth/auth').auth.mockResolvedValue(null);
+    // Mock the Supabase auth to return no session
+    mockSupabase.auth.getSession.mockResolvedValue({
+      data: { session: null }
+    });
 
-    // Render the component
-    const HomeComponent = await Home();
-    if (HomeComponent) {
-      render(HomeComponent);
+    render(<Home />);
 
-      // Check if sign-in link is rendered
-      expect(screen.getByText(/Sign In/i)).toBeInTheDocument();
-    } else {
-      throw new Error('Home component is null');
-    }
+    // Wait for the component to load and render sign-in link
+    await waitFor(() => {
+      expect(screen.getByText(/Sign in/i)).toBeInTheDocument();
+    });
+  });
+
+  it('redirects to dashboard when user is authenticated', async () => {
+    // Mock the Supabase auth to return a session
+    mockSupabase.auth.getSession.mockResolvedValue({
+      data: { 
+        session: {
+          user: { id: '1', email: 'test@example.com' }
+        }
+      }
+    });
+
+    render(<Home />);
+
+    // Wait for redirect to be called
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/dashboard');
+    });
   });
 });
