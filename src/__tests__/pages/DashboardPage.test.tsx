@@ -4,15 +4,13 @@ import { mockUsers } from '../utils/test-utils';
 import '@testing-library/jest-dom';
 
 // Mock Supabase client
-const mockSupabase = {
-  auth: {
-    getUser: jest.fn(),
-    signOut: jest.fn(),
-  },
-};
-
 jest.mock('@/lib/supabase/client', () => ({
-  supabase: mockSupabase,
+  supabase: {
+    auth: {
+      getUser: jest.fn(),
+      signOut: jest.fn(),
+    },
+  },
 }));
 
 // Mock next/navigation
@@ -30,7 +28,8 @@ describe('Dashboard Page', () => {
 
   it('renders manager content when user is a manager', async () => {
     // Mock the Supabase auth to return manager user
-    mockSupabase.auth.getUser.mockResolvedValue({
+    const { supabase } = jest.requireMock('@/lib/supabase/client');
+    supabase.auth.getUser.mockResolvedValue({
       data: { 
         user: {
           id: mockUsers.manager.id,
@@ -53,7 +52,8 @@ describe('Dashboard Page', () => {
 
   it('renders doorman content when user is a doorman', async () => {
     // Mock the Supabase auth to return doorman user
-    mockSupabase.auth.getUser.mockResolvedValue({
+    const { supabase } = jest.requireMock('@/lib/supabase/client');
+    supabase.auth.getUser.mockResolvedValue({
       data: { 
         user: {
           id: mockUsers.doorman.id,
@@ -76,7 +76,8 @@ describe('Dashboard Page', () => {
 
   it('renders guest content when user is a guest', async () => {
     // Mock the Supabase auth to return guest user
-    mockSupabase.auth.getUser.mockResolvedValue({
+    const { supabase } = jest.requireMock('@/lib/supabase/client');
+    supabase.auth.getUser.mockResolvedValue({
       data: { 
         user: {
           id: mockUsers.guest.id,

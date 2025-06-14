@@ -3,14 +3,12 @@ import Home from '@/app/page';
 import '@testing-library/jest-dom';
 
 // Mock Supabase client
-const mockSupabase = {
-  auth: {
-    getSession: jest.fn(),
-  },
-};
-
 jest.mock('@/lib/supabase/client', () => ({
-  supabase: mockSupabase,
+  supabase: {
+    auth: {
+      getSession: jest.fn(),
+    },
+  },
 }));
 
 // Mock next/navigation
@@ -37,7 +35,8 @@ describe('Home Page', () => {
 
   it('renders sign-in link when user is not authenticated', async () => {
     // Mock the Supabase auth to return no session
-    mockSupabase.auth.getSession.mockResolvedValue({
+    const { supabase } = jest.requireMock('@/lib/supabase/client');
+    supabase.auth.getSession.mockResolvedValue({
       data: { session: null }
     });
 
@@ -51,7 +50,8 @@ describe('Home Page', () => {
 
   it('redirects to dashboard when user is authenticated', async () => {
     // Mock the Supabase auth to return a session
-    mockSupabase.auth.getSession.mockResolvedValue({
+    const { supabase } = jest.requireMock('@/lib/supabase/client');
+    supabase.auth.getSession.mockResolvedValue({
       data: { 
         session: {
           user: { id: '1', email: 'test@example.com' }
