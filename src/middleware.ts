@@ -7,8 +7,8 @@ import { UserRole } from './types/enums';
 // Define public paths that should always be accessible
 const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error'];
 
-// Temporarily disable middleware for debugging
-const DISABLE_MIDDLEWARE = true;
+// Re-enable middleware with fixes
+const DISABLE_MIDDLEWARE = false;
 
 // Define protected routes and the roles required to access them
 // Expand this configuration based on your application's needs.

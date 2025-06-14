@@ -2,11 +2,11 @@
 // Account confirmation landing page
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function ConfirmPage() {
   const router = useRouter();
-  const supabase = createClient();
+  // Use the single Supabase client instance
   const [status, setStatus] = useState<'verifying' | 'redirecting'>('verifying');
 
   useEffect(() => {

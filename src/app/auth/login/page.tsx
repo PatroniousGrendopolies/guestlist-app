@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,8 +18,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Rename 'error' from Supabase to 'authError' to avoid naming conflict with the state variable
-      const supabase = createClient();
+      // Use the single Supabase client instance
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
