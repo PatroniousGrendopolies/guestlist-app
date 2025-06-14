@@ -24,16 +24,11 @@ export default function LoginPage() {
     }, 8000);
 
     try {
-      console.log('Starting login attempt for:', email);
-      setError('Attempting to sign in...');
-      
-      // Simple direct call without timeout for now - let's see where it gets stuck
+      // Clean login call without debug noise
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
-      console.log('Login response received:', { hasError: !!authError, errorMessage: authError?.message });
 
       if (authError) {
         // Map common Supabase error messages to more user-friendly ones
@@ -55,13 +50,7 @@ export default function LoginPage() {
           setError(`Login failed: ${authError.message}. Please try again or contact support.`);
         }
       } else {
-        // Debug: Let's see what we get back
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('Login successful, session:', session);
-        console.log('Redirecting to dashboard...');
-        
-        // On success, Supabase handles the session in a secure cookie.
-        // We just need to redirect. router.refresh() helps ensure layout re-renders with new auth state.
+        // Login successful - redirect to dashboard
         router.push('/dashboard');
         router.refresh();
       }

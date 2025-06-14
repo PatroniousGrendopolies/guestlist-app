@@ -7,8 +7,8 @@ import { UserRole } from './types/enums';
 // Define public paths that should always be accessible
 const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error', '/auth/update-password'];
 
-// Temporarily disable middleware completely to test login issues
-const DISABLE_MIDDLEWARE = true;
+// Re-enable middleware with improved logic
+const DISABLE_MIDDLEWARE = false;
 
 // Define protected routes and the roles required to access them
 // Expand this configuration based on your application's needs.
@@ -81,20 +81,29 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // User is authenticated, now check role for protected routes
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
+  // Only check profiles for routes that actually need role-based protection
+  let userRole = UserRole.GUEST;
+  
+  // Check if this path actually needs role-based protection
+  const needsRoleCheck = Object.keys(protectedRoutesConfig).some(routePrefix => 
+    pathname.startsWith(routePrefix)
+  );
+  
+  if (needsRoleCheck) {
+    // Only do the database lookup if we actually need to check roles
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-  if (profileError || !profile) {
-    // User doesn't have a profile - allow access with default GUEST role
-    // This prevents login loops for users without database profiles
-    console.warn('User without profile accessing app:', user.id);
+    if (profile && !profileError) {
+      userRole = profile.role as UserRole;
+    } else {
+      // User doesn't have a profile - default to GUEST
+      console.warn('User without profile accessing protected route:', user.id);
+    }
   }
-
-  const userRole = profile?.role as UserRole || UserRole.GUEST;
 
   // Check if the current path matches any configured protected route prefix
   for (const routePrefix in protectedRoutesConfig) {
