@@ -5,7 +5,10 @@ import type { NextRequest } from 'next/server';
 import { UserRole } from './types/enums';
 
 // Define public paths that should always be accessible
-const publicPaths = ['/', '/auth/login', '/auth/register'];
+const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error'];
+
+// Temporarily disable middleware for debugging
+const DISABLE_MIDDLEWARE = true;
 
 // Define protected routes and the roles required to access them
 // Expand this configuration based on your application's needs.
@@ -19,6 +22,12 @@ const protectedRoutesConfig: Record<string, UserRole[]> = {
 };
 
 export async function middleware(request: NextRequest) {
+  // Temporarily disable middleware to test login issue
+  if (DISABLE_MIDDLEWARE) {
+    console.log('Middleware disabled, allowing all access to:', request.nextUrl.pathname);
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -50,10 +59,19 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
+  // Debug logging - remove this later
+  console.log('Middleware debug:', {
+    pathname,
+    hasUser: !!user,
+    userId: user?.id,
+    userEmail: user?.email
+  });
+
   // Allow access to public paths without further checks if they are explicitly listed
   if (publicPaths.includes(pathname)) {
     // If user is logged in and trying to access root, redirect to dashboard
     if (pathname === '/' && user) {
+      console.log('Redirecting logged-in user from / to /dashboard');
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return response; // Allow access to public paths
@@ -61,6 +79,7 @@ export async function middleware(request: NextRequest) {
 
   // If no user and trying to access a non-public path, redirect to login
   if (!user) {
+    console.log('No user found, redirecting to login from:', pathname);
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/auth/login';
     redirectUrl.searchParams.set(`redirectedFrom`, pathname);
