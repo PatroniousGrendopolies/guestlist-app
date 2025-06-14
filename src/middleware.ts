@@ -12,8 +12,8 @@ const publicPaths = ['/', '/auth/login', '/auth/register'];
 const protectedRoutesConfig: Record<string, UserRole[]> = {
   // Example: Only managers can access /admin and its sub-paths
   '/admin': [UserRole.MANAGER],
-  // Restrict /dashboard and its sub-paths to Managers
-  '/dashboard': [UserRole.MANAGER],
+  // Dashboard is accessible to all authenticated users
+  // '/dashboard': [UserRole.MANAGER], // Commented out to allow all roles
   // Add other role-specific routes here, e.g.:
   // '/dj-tools': [UserRole.DJ, UserRole.MANAGER], // DJs and Managers can access
 };
@@ -81,16 +81,14 @@ export async function middleware(request: NextRequest) {
 
   if (profileError || !profile) {
     console.error('Middleware: Error fetching profile or profile not found for user:', user.id, profileError);
-    // Sign out the user to clear potentially problematic session and redirect to login
-    await supabase.auth.signOut();
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/auth/login';
-    redirectUrl.searchParams.set('error', 'profile_issue');
-    redirectUrl.searchParams.set('message', 'There was an issue accessing your profile. Please log in again.');
-    return NextResponse.redirect(redirectUrl);
+    // For now, allow access with a default guest role instead of signing out
+    // This prevents the login loop issue
+    console.log('Middleware: Allowing access with default GUEST role for user without profile');
+    // In a production app, you might want to create the missing profile here
+    // For now, we'll just continue with a default role
   }
 
-  const userRole = profile.role as UserRole;
+  const userRole = profile?.role as UserRole || UserRole.GUEST;
 
   // Check if the current path matches any configured protected route prefix
   for (const routePrefix in protectedRoutesConfig) {
