@@ -17,19 +17,23 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
+    // Set a manual timeout to force-stop loading after 8 seconds
+    const timeoutId = setTimeout(() => {
+      setIsLoading(false);
+      setError('Login is taking too long. Please check your internet connection and try again.');
+    }, 8000);
+
     try {
-      // Add timeout to prevent freezing
-      const loginPromise = supabase.auth.signInWithPassword({
+      console.log('Starting login attempt for:', email);
+      setError('Attempting to sign in...');
+      
+      // Simple direct call without timeout for now - let's see where it gets stuck
+      const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Login timed out after 10 seconds')), 10000)
-      );
-      
-      const result = await Promise.race([loginPromise, timeoutPromise]);
-      const { error: authError } = result;
+      console.log('Login response received:', { hasError: !!authError, errorMessage: authError?.message });
 
       if (authError) {
         // Map common Supabase error messages to more user-friendly ones
@@ -69,6 +73,7 @@ export default function LoginPage() {
         setError('An unexpected error occurred. Please check your internet connection and try again.');
       }
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
