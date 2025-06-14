@@ -18,26 +18,36 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Use the single Supabase client instance
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      // Add timeout to prevent freezing
+      const loginPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Login timed out after 10 seconds')), 10000)
+      );
+      
+      const { error: authError } = await Promise.race([loginPromise, timeoutPromise]) as any;
 
       if (authError) {
         // Map common Supabase error messages to more user-friendly ones
         console.error('Supabase login error:', authError);
         if (authError.message === 'Invalid login credentials') {
           setError('Incorrect email or password. Please try again.');
-        } else if (authError.message.toLowerCase().includes('email not confirmed')) {
+        } else if (authError.message.toLowerCase().includes('email not confirmed') || 
+                   authError.message.toLowerCase().includes('email not verified') ||
+                   authError.message.toLowerCase().includes('user not confirmed')) {
           // Catch variations like "Email not confirmed" or "User not confirmed"
           setError(
-            'Your email address has not been confirmed. Please check your inbox for a confirmation link.'
+            'Your email address has not been confirmed. Please check your inbox for a confirmation link. If you cannot find it, you may need to register again.'
           );
+        } else if (authError.message.toLowerCase().includes('too many')) {
+          setError('Too many login attempts. Please wait a few minutes before trying again.');
         } else {
           // For other Supabase errors or less common ones
           console.error('Supabase login error:', authError.message);
-          setError(`Login failed: ${authError.message}`);
+          setError(`Login failed: ${authError.message}. Please try again or contact support.`);
         }
       } else {
         // Debug: Let's see what we get back
@@ -50,9 +60,13 @@ export default function LoginPage() {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (err) { // Catching generic errors (e.g., network issues)
+    } catch (err: any) { // Catching generic errors (e.g., network issues)
       console.error('Login request failed:', err);
-      setError('An unexpected error occurred. Please check your internet connection and try again.');
+      if (err.message?.includes('timed out')) {
+        setError('Login timed out. Please check your internet connection and try again.');
+      } else {
+        setError('An unexpected error occurred. Please check your internet connection and try again.');
+      }
     } finally {
       setIsLoading(false);
     }

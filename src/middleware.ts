@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 import { UserRole } from './types/enums';
 
 // Define public paths that should always be accessible
-const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error'];
+const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error', '/auth/update-password'];
 
 // Re-enable middleware with fixes
 const DISABLE_MIDDLEWARE = false;
@@ -59,19 +59,10 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  // Debug logging - remove this later
-  console.log('Middleware debug:', {
-    pathname,
-    hasUser: !!user,
-    userId: user?.id,
-    userEmail: user?.email
-  });
-
   // Allow access to public paths without further checks if they are explicitly listed
   if (publicPaths.includes(pathname)) {
     // If user is logged in and trying to access root, redirect to dashboard
     if (pathname === '/' && user) {
-      console.log('Redirecting logged-in user from / to /dashboard');
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return response; // Allow access to public paths
@@ -79,7 +70,6 @@ export async function middleware(request: NextRequest) {
 
   // If no user and trying to access a non-public path, redirect to login
   if (!user) {
-    console.log('No user found, redirecting to login from:', pathname);
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/auth/login';
     redirectUrl.searchParams.set(`redirectedFrom`, pathname);
@@ -99,12 +89,9 @@ export async function middleware(request: NextRequest) {
     .single();
 
   if (profileError || !profile) {
-    console.error('Middleware: Error fetching profile or profile not found for user:', user.id, profileError);
-    // For now, allow access with a default guest role instead of signing out
-    // This prevents the login loop issue
-    console.log('Middleware: Allowing access with default GUEST role for user without profile');
-    // In a production app, you might want to create the missing profile here
-    // For now, we'll just continue with a default role
+    // User doesn't have a profile - allow access with default GUEST role
+    // This prevents login loops for users without database profiles
+    console.warn('User without profile accessing app:', user.id);
   }
 
   const userRole = profile?.role as UserRole || UserRole.GUEST;
