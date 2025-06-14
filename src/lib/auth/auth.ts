@@ -21,7 +21,7 @@ export interface AuthSession {
  */
 export async function auth(): Promise<AuthSession | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -109,7 +109,4 @@ export async function getSession(): Promise<AuthSession | null> {
   return auth();
 }
 
-/**
- * Type exports for consistency
- */
-export type { AuthUser, AuthSession };
+// Types are already exported above

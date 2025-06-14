@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { UserRole } from '@/types/user'; // Assuming UserRole is in src/types/user.ts
+import { UserRole } from '@/types/enums';
 
 // Helper to get user-friendly role names if needed, or just use the enum values
 const getFriendlyRoleName = (role: UserRole): string => {
   switch (role) {
     case UserRole.DJ: return 'DJ';
-    case UserRole.Promoter: return 'Promoter';
-    case UserRole.DoorStaff: return 'Door Staff';
+    case UserRole.PROMOTER: return 'Promoter';
+    case UserRole.DOORMAN: return 'Door Staff';
     // Add other roles as needed, but managers typically invite DJs or Promoters
     default: return role.charAt(0).toUpperCase() + role.slice(1);
   }
@@ -18,9 +18,8 @@ const getFriendlyRoleName = (role: UserRole): string => {
 // Define which roles a manager can assign through this form
 const assignableRoles: UserRole[] = [
   UserRole.DJ,
-  UserRole.Promoter,
-  UserRole.DoorStaff, // Example: managers might also invite door staff
-  // Add UserRole.Staff if general staff can be invited this way
+  UserRole.PROMOTER,
+  UserRole.DOORMAN, // Example: managers might also invite door staff
 ];
 
 

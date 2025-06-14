@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers'; // Import cookies from next/headers
-import { UserRole } from '@/types/user'; // Assuming UserRole is in src/types/user.ts
+import { UserRole } from '@/types/enums';
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies(); // Await cookies() as per linter feedback
@@ -44,10 +44,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to verify user role.' }, { status: 500 });
   }
 
-  // Ensure UserRole.Manager is the correct enum value as stored in your DB/defined in your enum
-  // If your enum values are lowercase in the DB (e.g., 'manager'), ensure UserRole.Manager maps to that.
-  // For this example, assuming UserRole.Manager is 'Manager' or 'manager' as per your enum definition.
-  if (profile.role !== UserRole.Manager) { 
+  // Check if user has manager role
+  if (profile.role !== UserRole.MANAGER) { 
     return NextResponse.json({ error: 'Forbidden: Only managers can send invitations.' }, { status: 403 });
   }
 
