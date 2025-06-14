@@ -27,6 +27,7 @@ export default function LoginPage() {
 
       if (authError) {
         // Map common Supabase error messages to more user-friendly ones
+        console.error('Supabase login error:', authError);
         if (authError.message === 'Invalid login credentials') {
           setError('Incorrect email or password. Please try again.');
         } else if (authError.message.toLowerCase().includes('email not confirmed')) {
@@ -37,9 +38,14 @@ export default function LoginPage() {
         } else {
           // For other Supabase errors or less common ones
           console.error('Supabase login error:', authError.message);
-          setError('Login failed. Please try again in a few moments.');
+          setError(`Login failed: ${authError.message}`);
         }
       } else {
+        // Debug: Let's see what we get back
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Login successful, session:', session);
+        console.log('Redirecting to dashboard...');
+        
         // On success, Supabase handles the session in a secure cookie.
         // We just need to redirect. router.refresh() helps ensure layout re-renders with new auth state.
         router.push('/dashboard');
