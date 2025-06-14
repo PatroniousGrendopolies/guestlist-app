@@ -1,12 +1,5 @@
 // src/types/user.ts
-
-export enum UserRole {
-  DoorStaff = 'door_staff',
-  Manager = 'manager',
-  Staff = 'staff',
-  Promoter = 'promoter',
-  DJ = 'dj',
-}
+import { UserRole } from './enums';
 
 export interface UserProfile {
   id: string; // Corresponds to Supabase auth.users.id
@@ -16,3 +9,6 @@ export interface UserProfile {
   lastName?: string;
   // Add other profile-specific fields here as needed
 }
+
+// Re-export UserRole for backward compatibility
+export { UserRole };

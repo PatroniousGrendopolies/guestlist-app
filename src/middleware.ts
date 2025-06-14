@@ -2,7 +2,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { UserRole } from './types/user'; // Assuming UserRole is exported from here
+import { UserRole } from './types/enums';
 
 // Define public paths that should always be accessible
 const publicPaths = ['/', '/auth/login', '/auth/register'];
@@ -11,11 +11,11 @@ const publicPaths = ['/', '/auth/login', '/auth/register'];
 // Expand this configuration based on your application's needs.
 const protectedRoutesConfig: Record<string, UserRole[]> = {
   // Example: Only managers can access /admin and its sub-paths
-  '/admin': [UserRole.Manager],
+  '/admin': [UserRole.MANAGER],
   // Restrict /dashboard and its sub-paths to Managers
-  '/dashboard': [UserRole.Manager],
+  '/dashboard': [UserRole.MANAGER],
   // Add other role-specific routes here, e.g.:
-  // '/dj-tools': [UserRole.DJ, UserRole.Manager], // DJs and Managers can access
+  // '/dj-tools': [UserRole.DJ, UserRole.MANAGER], // DJs and Managers can access
 };
 
 export async function middleware(request: NextRequest) {

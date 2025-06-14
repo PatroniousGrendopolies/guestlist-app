@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '../../../lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,6 +26,7 @@ export default function RegisterPage() {
     setSuccessMessage(null);
 
     try {
+      const supabase = createClient();
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -82,7 +83,7 @@ export default function RegisterPage() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
               placeholder="John Doe"
             />
           </div>
@@ -98,7 +99,7 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
               placeholder="your@email.com"
             />
           </div>
@@ -114,7 +115,7 @@ export default function RegisterPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
             />
           </div>
 

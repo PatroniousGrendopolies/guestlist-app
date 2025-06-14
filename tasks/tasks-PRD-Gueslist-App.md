@@ -50,11 +50,11 @@
     - [x] 2.4.1 Design `invitations` table schema (columns: id, email, role_to_assign, token, expires_at, status, invited_by_user_id, created_at, updated_at)
     - [x] 2.4.2 Implement `invitations` table and `invitation_status` enum in Supabase via SQL
     - [x] 2.4.3 Define RLS policies for `invitations` table (manager create/read, invitee read, service role)
-    - [ ] 2.4.4 Create API endpoint for sending invitations (`POST /api/invitations`)
-    - [ ] 2.4.5 Create API endpoint/page for accepting invitations (`/auth/accept-invitation`)
-    - [ ] 2.4.6 Develop UI for managers to send invitations
-    - [ ] 2.4.7 Develop UI for accepting invitations
-  - [ ] 2.5 Implement password reset functionality
+    - [x] 2.4.4 Create API endpoint for sending invitations (`POST /api/invitations`)
+    - [x] 2.4.5 Create API endpoint/page for accepting invitations (`/auth/accept-invitation`)
+    - [x] 2.4.6 Develop UI for managers to send invitations
+    - [x] 2.4.7 Develop UI for accepting invitations
+  - [x] 2.5 Implement password reset functionality
   - [ ] 2.6 Add session management and token-based authentication
   - [ ] 2.7 Create API endpoints for user management
   - [ ] 2.8 Implement user profile management
