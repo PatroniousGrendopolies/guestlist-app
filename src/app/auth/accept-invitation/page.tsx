@@ -1,5 +1,4 @@
 // src/app/auth/accept-invitation/page.tsx
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import AcceptInvitationForm from './AcceptInvitationForm';
