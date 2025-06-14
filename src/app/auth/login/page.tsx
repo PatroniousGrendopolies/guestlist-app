@@ -24,11 +24,12 @@ export default function LoginPage() {
         password,
       });
       
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Login timed out after 10 seconds')), 10000)
       );
       
-      const { error: authError } = await Promise.race([loginPromise, timeoutPromise]) as any;
+      const result = await Promise.race([loginPromise, timeoutPromise]);
+      const { error: authError } = result;
 
       if (authError) {
         // Map common Supabase error messages to more user-friendly ones
@@ -60,9 +61,9 @@ export default function LoginPage() {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (err: any) { // Catching generic errors (e.g., network issues)
+    } catch (err) { // Catching generic errors (e.g., network issues)
       console.error('Login request failed:', err);
-      if (err.message?.includes('timed out')) {
+      if (err instanceof Error && err.message?.includes('timed out')) {
         setError('Login timed out. Please check your internet connection and try again.');
       } else {
         setError('An unexpected error occurred. Please check your internet connection and try again.');

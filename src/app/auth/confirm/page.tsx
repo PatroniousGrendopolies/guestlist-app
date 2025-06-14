@@ -17,7 +17,7 @@ export default function ConfirmPage() {
       router.replace(session ? '/dashboard' : '/auth/login');
     }
     run();
-  }, [router, supabase]);
+  }, [router]);
 
   return (
     <div className="flex h-screen items-center justify-center">
