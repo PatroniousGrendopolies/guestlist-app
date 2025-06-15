@@ -21,6 +21,15 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Debug: Log UserRole enum values
+  console.log('🔧 UserRole enum values:', {
+    MANAGER: UserRole.MANAGER,
+    GUEST: UserRole.GUEST,
+    DOORMAN: UserRole.DOORMAN,
+    DJ: UserRole.DJ,
+    PROMOTER: UserRole.PROMOTER
+  });
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push('/auth/login');
@@ -28,32 +37,69 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) {
-        router.push('/auth/login');
-        return;
+      try {
+        console.log('🔍 Starting user fetch...');
+        
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        console.log('🔐 Auth user result:', { 
+          hasUser: !!authUser, 
+          userId: authUser?.id, 
+          email: authUser?.email,
+          authError: authError?.message 
+        });
+        
+        if (!authUser) {
+          console.log('❌ No auth user, redirecting to login');
+          router.push('/auth/login');
+          return;
+        }
+
+        console.log('📊 Fetching profile for user:', authUser.id);
+        
+        // Test if we can access the profiles table at all
+        const { data: testProfiles, error: testError } = await supabase
+          .from('profiles')
+          .select('email, role')
+          .limit(1);
+        
+        console.log('🧪 Test profiles table access:', { 
+          canAccess: !testError, 
+          error: testError?.message,
+          sampleData: testProfiles 
+        });
+
+        // Fetch user profile from the profiles table to get the role
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, first_name, last_name, email')
+          .eq('id', authUser.id)
+          .single();
+
+        console.log('👤 Profile fetch result:', { 
+          profile, 
+          error: profileError?.message,
+          errorCode: profileError?.code,
+          errorDetails: profileError 
+        });
+
+        // Build the user object with profile data
+        const appUser: User = {
+          id: authUser.id,
+          email: authUser.email!,
+          name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || authUser.email! : authUser.email!,
+          role: profile?.role as UserRole || UserRole.GUEST,
+        };
+
+        console.log('✅ Final user object:', appUser);
+        console.log('🎭 User role set to:', appUser.role);
+        console.log('🎯 Is MANAGER?', appUser.role === UserRole.MANAGER);
+        
+        setUser(appUser);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('💥 Unexpected error in fetchUser:', error);
+        setIsLoading(false);
       }
-
-      // Fetch user profile from the profiles table to get the role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, first_name, last_name')
-        .eq('id', authUser.id)
-        .single();
-
-      console.log('Dashboard profile fetch:', { profile, error: profileError });
-
-      // Build the user object with profile data
-      const appUser: User = {
-        id: authUser.id,
-        email: authUser.email!,
-        name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || authUser.email! : authUser.email!,
-        role: profile?.role as UserRole || UserRole.GUEST,
-      };
-
-      console.log('Dashboard user role:', appUser.role);
-      setUser(appUser);
-      setIsLoading(false);
     };
 
     fetchUser();
