@@ -34,15 +34,24 @@ export default function DashboardPage() {
         return;
       }
 
-      // Adapt the Supabase user object to the application's User type.
-      // NOTE: 'name' and 'role' are not part of Supabase's default user object.
-      // They are typically stored in a separate 'profiles' table.
+      // Fetch user profile from the profiles table to get the role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, first_name, last_name')
+        .eq('id', authUser.id)
+        .single();
+
+      console.log('Dashboard profile fetch:', { profile, error: profileError });
+
+      // Build the user object with profile data
       const appUser: User = {
         id: authUser.id,
         email: authUser.email!,
-        name: authUser.user_metadata.full_name || authUser.email!,
-        role: (authUser.user_metadata.role as UserRole) || UserRole.GUEST,
+        name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || authUser.email! : authUser.email!,
+        role: profile?.role as UserRole || UserRole.GUEST,
       };
+
+      console.log('Dashboard user role:', appUser.role);
       setUser(appUser);
       setIsLoading(false);
     };
