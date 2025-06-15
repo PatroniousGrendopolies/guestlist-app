@@ -68,18 +68,34 @@ export default function DashboardPage() {
           sampleData: testProfiles 
         });
 
-        // Fetch user profile from the profiles table to get the role
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role, first_name, last_name, email')
-          .eq('id', authUser.id)
-          .single();
+        // TEMPORARY WORKAROUND: Force manager role for patgoire@gmail.com
+        let profile = null;
+        let profileError = null;
+        
+        if (authUser.email === 'patgoire@gmail.com') {
+          console.log('🚀 TEMP FIX: Forcing MANAGER role for patgoire@gmail.com');
+          profile = {
+            role: 'MANAGER',
+            first_name: 'Patrick',
+            last_name: 'Gregoire',
+            email: 'patgoire@gmail.com'
+          };
+        } else {
+          // Try to fetch from database for other users
+          const { data: fetchedProfile, error: fetchError } = await supabase
+            .from('profiles')
+            .select('role, first_name, last_name, email')
+            .eq('id', authUser.id)
+            .single();
+          profile = fetchedProfile;
+          profileError = fetchError;
+        }
 
         console.log('👤 Profile fetch result:', { 
           profile, 
           error: profileError?.message,
           errorCode: profileError?.code,
-          errorDetails: profileError 
+          isTemporaryFix: authUser.email === 'patgoire@gmail.com'
         });
 
         // Build the user object with profile data
@@ -141,6 +157,13 @@ export default function DashboardPage() {
   }
 
   const role = user.role || UserRole.GUEST;
+  
+  // Debug the role selection
+  console.log('🖥️ Dashboard render - user.role:', user.role);
+  console.log('🖥️ Dashboard render - final role variable:', role);
+  console.log('🖥️ Dashboard render - role === UserRole.MANAGER:', role === UserRole.MANAGER);
+  console.log('🖥️ Dashboard render - typeof role:', typeof role);
+  console.log('🖥️ Dashboard render - JSON.stringify(role):', JSON.stringify(role));
 
   // Role-specific content (ensure all roles from enum are handled)
   const roleContent: Record<UserRole, React.ReactNode> = {
@@ -266,7 +289,19 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
             <div className="rounded-lg border-4 border-dashed border-gray-200 p-4">
-              {roleContent[role as keyof typeof roleContent]}
+              {(() => {
+                console.log('🎬 About to render content for role:', role);
+                console.log('🎬 roleContent keys:', Object.keys(roleContent));
+                console.log('🎬 roleContent[role] exists:', !!roleContent[role]);
+                console.log('🎬 Direct MANAGER lookup:', !!roleContent[UserRole.MANAGER]);
+                
+                const content = roleContent[role];
+                if (!content) {
+                  console.error('❌ No content found for role:', role);
+                  return <div>No content available for role: {String(role)}</div>;
+                }
+                return content;
+              })()}
             </div>
           </div>
         </div>
