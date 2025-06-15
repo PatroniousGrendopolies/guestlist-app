@@ -83,11 +83,38 @@ export default function DashboardPage() {
         });
 
         // Build the user object with profile data
+        let userRole = UserRole.GUEST;
+        if (profile?.role) {
+          console.log('🔄 Converting role from DB:', profile.role, 'type:', typeof profile.role);
+          // Explicit role mapping to ensure proper conversion
+          switch (profile.role) {
+            case 'MANAGER':
+              userRole = UserRole.MANAGER;
+              break;
+            case 'DOORMAN':
+              userRole = UserRole.DOORMAN;
+              break;
+            case 'PROMOTER':
+              userRole = UserRole.PROMOTER;
+              break;
+            case 'DJ':
+              userRole = UserRole.DJ;
+              break;
+            case 'GUEST':
+              userRole = UserRole.GUEST;
+              break;
+            default:
+              console.warn('⚠️ Unknown role from DB:', profile.role);
+              userRole = UserRole.GUEST;
+          }
+          console.log('🎯 Role mapped to:', userRole);
+        }
+
         const appUser: User = {
           id: authUser.id,
           email: authUser.email!,
           name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || authUser.email! : authUser.email!,
-          role: profile?.role as UserRole || UserRole.GUEST,
+          role: userRole,
         };
 
         console.log('✅ Final user object:', appUser);
