@@ -7,8 +7,8 @@ import { UserRole } from './types/enums';
 // Define public paths that should always be accessible
 const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error', '/auth/update-password'];
 
-// Re-enable middleware with improved logic
-const DISABLE_MIDDLEWARE = false;
+// Temporarily disable middleware to debug database connection issues
+const DISABLE_MIDDLEWARE = true;
 
 // Define protected routes and the roles required to access them
 // Expand this configuration based on your application's needs.
@@ -91,17 +91,30 @@ export async function middleware(request: NextRequest) {
   
   if (needsRoleCheck) {
     // Only do the database lookup if we actually need to check roles
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
 
-    if (profile && !profileError) {
-      userRole = profile.role as UserRole;
-    } else {
-      // User doesn't have a profile - default to GUEST
-      console.warn('User without profile accessing protected route:', user.id);
+      console.log('Profile lookup result:', { 
+        userId: user.id, 
+        profile, 
+        error: profileError?.message,
+        hasProfile: !!profile 
+      });
+
+      if (profile && !profileError) {
+        userRole = profile.role as UserRole;
+        console.log('User role set to:', userRole);
+      } else {
+        console.warn('Profile lookup failed:', profileError?.message);
+        userRole = UserRole.GUEST;
+      }
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      userRole = UserRole.GUEST;
     }
   }
 
