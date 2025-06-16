@@ -36,7 +36,7 @@ export default function EventsPage() {
     const fetchUserAndEvents = async () => {
       try {
         // Check authentication and role
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
         
         if (!authUser) {
           router.push('/auth/login');

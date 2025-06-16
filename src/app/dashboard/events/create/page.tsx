@@ -12,10 +12,6 @@ interface User {
   role: UserRole;
 }
 
-interface Venue {
-  id: string;
-  name: string;
-}
 
 interface EventFormData {
   name: string;
@@ -23,12 +19,14 @@ interface EventFormData {
   venue_id: string;
   max_total_capacity: number;
   status: string;
+  description: string;
+  guest_list_deadline: string;
+  dj_approval_deadline: string;
 }
 
 export default function CreateEventPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [venues, setVenues] = useState<Venue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -38,14 +36,17 @@ export default function CreateEventPage() {
     date: '',
     venue_id: '',
     max_total_capacity: 300,
-    status: 'active'
+    status: 'active',
+    description: '',
+    guest_list_deadline: '',
+    dj_approval_deadline: ''
   });
 
   useEffect(() => {
     const fetchUserAndVenues = async () => {
       try {
         // Check authentication and role
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
         
         if (!authUser) {
           router.push('/auth/login');
@@ -81,21 +82,19 @@ export default function CreateEventPage() {
           setUser(appUser);
         }
 
-        // Fetch venues
+        // Fetch venues (specifically Datcha)
         const { data: venuesData, error: venuesError } = await supabase
           .from('venues')
           .select('id, name')
-          .order('name');
+          .eq('name', 'Datcha Nightclub')
+          .single();
 
         if (venuesError) {
-          console.error('Error fetching venues:', venuesError);
+          console.error('Error fetching Datcha venue:', venuesError);
         } else {
-          console.log('✅ Venues fetched:', venuesData);
-          setVenues(venuesData || []);
-          // Set default venue if available
-          if (venuesData && venuesData.length > 0) {
-            setFormData(prev => ({ ...prev, venue_id: venuesData[0].id }));
-          }
+          console.log('✅ Datcha venue fetched:', venuesData);
+          // Automatically set Datcha as the venue
+          setFormData(prev => ({ ...prev, venue_id: venuesData.id }));
         }
 
         setIsLoading(false);
@@ -108,7 +107,7 @@ export default function CreateEventPage() {
     fetchUserAndVenues();
   }, [router]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
@@ -142,12 +141,39 @@ export default function CreateEventPage() {
       }
     }
 
-    if (!formData.venue_id) {
-      newErrors.venue_id = 'Venue is required';
-    }
+    // Venue is automatically set to Datcha, no validation needed
 
     if (formData.max_total_capacity < 1) {
       newErrors.max_total_capacity = 'Capacity must be at least 1';
+    }
+
+    // Deadline validations
+    if (!formData.guest_list_deadline) {
+      newErrors.guest_list_deadline = 'Guest list deadline is required';
+    } else {
+      const deadline = new Date(formData.guest_list_deadline);
+      const eventDate = new Date(formData.date);
+      const now = new Date();
+      
+      if (deadline <= now) {
+        newErrors.guest_list_deadline = 'Deadline must be in the future';
+      } else if (deadline >= eventDate) {
+        newErrors.guest_list_deadline = 'Deadline must be before the event date';
+      }
+    }
+
+    if (!formData.dj_approval_deadline) {
+      newErrors.dj_approval_deadline = 'DJ approval deadline is required';
+    } else {
+      const djDeadline = new Date(formData.dj_approval_deadline);
+      const guestDeadline = new Date(formData.guest_list_deadline);
+      const now = new Date();
+      
+      if (djDeadline <= now) {
+        newErrors.dj_approval_deadline = 'DJ deadline must be in the future';
+      } else if (formData.guest_list_deadline && djDeadline >= guestDeadline) {
+        newErrors.dj_approval_deadline = 'DJ deadline must be before guest list deadline';
+      }
     }
 
     setErrors(newErrors);
@@ -240,7 +266,7 @@ export default function CreateEventPage() {
             <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-sm rounded-lg p-6">
               {/* Event Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="name" className="block text-sm font-medium text-black">
                   Event Name *
                 </label>
                 <input
@@ -259,7 +285,7 @@ export default function CreateEventPage() {
 
               {/* Event Date */}
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="date" className="block text-sm font-medium text-black">
                   Event Date *
                 </label>
                 <input
@@ -275,34 +301,27 @@ export default function CreateEventPage() {
                 {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date}</p>}
               </div>
 
-              {/* Venue Selection */}
+              {/* Venue (Fixed to Datcha) */}
               <div>
-                <label htmlFor="venue_id" className="block text-sm font-medium text-gray-700">
-                  Venue *
+                <label htmlFor="venue_display" className="block text-sm font-medium text-black">
+                  Venue
                 </label>
-                <select
-                  id="venue_id"
-                  name="venue_id"
-                  value={formData.venue_id}
-                  onChange={handleInputChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
-                    errors.venue_id ? 'border-red-300' : ''
-                  }`}
-                >
-                  <option value="">Select a venue</option>
-                  {venues.map((venue) => (
-                    <option key={venue.id} value={venue.id}>
-                      {venue.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.venue_id && <p className="mt-1 text-sm text-red-600">{errors.venue_id}</p>}
+                <input
+                  type="text"
+                  id="venue_display"
+                  value="Datcha Nightclub"
+                  disabled
+                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm text-gray-900"
+                />
+                <p className="mt-1 text-sm text-black">
+                  Events are created for your venue
+                </p>
               </div>
 
-              {/* Maximum Capacity */}
+              {/* Maximum Guest List Size */}
               <div>
-                <label htmlFor="max_total_capacity" className="block text-sm font-medium text-gray-700">
-                  Maximum Capacity *
+                <label htmlFor="max_total_capacity" className="block text-sm font-medium text-black">
+                  Maximum Guest List Size *
                 </label>
                 <input
                   type="number"
@@ -316,14 +335,75 @@ export default function CreateEventPage() {
                   }`}
                 />
                 {errors.max_total_capacity && <p className="mt-1 text-sm text-red-600">{errors.max_total_capacity}</p>}
-                <p className="mt-1 text-sm text-gray-500">
-                  Total number of guests that can attend this event
+                <p className="mt-1 text-sm text-black">
+                  Total allowed guestlist size (default: 300)
+                </p>
+              </div>
+
+              {/* Event Description */}
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-black">
+                  Event Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="Optional description of the event..."
+                />
+                <p className="mt-1 text-sm text-black">
+                  Optional description for the event
+                </p>
+              </div>
+
+              {/* Guest List Deadline */}
+              <div>
+                <label htmlFor="guest_list_deadline" className="block text-sm font-medium text-black">
+                  Guest List Deadline *
+                </label>
+                <input
+                  type="datetime-local"
+                  id="guest_list_deadline"
+                  name="guest_list_deadline"
+                  value={formData.guest_list_deadline}
+                  onChange={handleInputChange}
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                    errors.guest_list_deadline ? 'border-red-300' : ''
+                  }`}
+                />
+                {errors.guest_list_deadline && <p className="mt-1 text-sm text-red-600">{errors.guest_list_deadline}</p>}
+                <p className="mt-1 text-sm text-black">
+                  Deadline for guest list submissions
+                </p>
+              </div>
+
+              {/* DJ Approval Deadline */}
+              <div>
+                <label htmlFor="dj_approval_deadline" className="block text-sm font-medium text-black">
+                  DJ Approval Deadline *
+                </label>
+                <input
+                  type="datetime-local"
+                  id="dj_approval_deadline"
+                  name="dj_approval_deadline"
+                  value={formData.dj_approval_deadline}
+                  onChange={handleInputChange}
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                    errors.dj_approval_deadline ? 'border-red-300' : ''
+                  }`}
+                />
+                {errors.dj_approval_deadline && <p className="mt-1 text-sm text-red-600">{errors.dj_approval_deadline}</p>}
+                <p className="mt-1 text-sm text-black">
+                  Deadline for DJs to approve/deny guests (must be before guest list deadline)
                 </p>
               </div>
 
               {/* Event Status */}
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="status" className="block text-sm font-medium text-black">
                   Event Status
                 </label>
                 <select
@@ -334,11 +414,12 @@ export default function CreateEventPage() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
                   <option value="active">Active</option>
-                  <option value="under_promoted">Under Promoted</option>
                   <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
+                  <option value="under_promoted">Under Promoted</option>
                 </select>
-                <p className="mt-1 text-sm text-gray-500">
-                  Set the initial status for this event
+                <p className="mt-1 text-sm text-black">
+                  Current status of the event
                 </p>
               </div>
 
