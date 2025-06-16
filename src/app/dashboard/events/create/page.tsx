@@ -217,14 +217,27 @@ export default function CreateEventPage() {
       // Prepare event data without DJ invitations
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { dj_invitations, dj_count, ...eventBasicData } = formData;
+      // TEMPORARY: Use hardcoded user ID for patgoire@gmail.com
+      const userId = user?.email === 'patgoire@gmail.com' 
+        ? 'c55fd137-6822-45fa-8cf8-023b912afe6a' 
+        : user!.id;
+        
       const eventData = {
         ...eventBasicData,
         day_of_week: getDayOfWeek(formData.date),
-        created_by_user_id: user!.id,
+        created_by_user_id: userId,
         status: 'active' // Default status
       };
 
       console.log('🚀 Creating event with data:', eventData);
+      console.log('🆔 User object:', user);
+
+      // Validate user ID before attempting to create event
+      if (!user || !user.id) {
+        console.error('❌ No valid user ID found');
+        setErrors({ submit: 'Authentication error. Please refresh and try again.' });
+        return;
+      }
 
       const { data, error } = await supabase
         .from('events')
@@ -234,7 +247,13 @@ export default function CreateEventPage() {
 
       if (error) {
         console.error('❌ Error creating event:', error);
-        setErrors({ submit: 'Failed to create event. Please try again.' });
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        setErrors({ submit: `Failed to create event: ${error.message}` });
       } else {
         console.log('✅ Event created successfully:', data);
         
@@ -358,7 +377,7 @@ export default function CreateEventPage() {
                 />
                 {errors.max_total_capacity && <p className="mt-1 text-sm text-red-600">{errors.max_total_capacity}</p>}
                 <p className="mt-1 text-sm text-black">
-                  Total allowed guestlist size (default: 75)
+                  Total allowed guestlist size
                 </p>
               </div>
 
@@ -380,8 +399,15 @@ export default function CreateEventPage() {
                       errors.dj_count ? 'border-red-300' : ''
                     }`}
                   >
-                    {[1, 2, 3, 4, 5, 6].map(num => (
-                      <option key={num} value={num}>{num} DJ{num > 1 ? 's' : ''}</option>
+                    {[
+                      { value: 1, label: 'One' },
+                      { value: 2, label: 'Two' },
+                      { value: 3, label: 'Three' },
+                      { value: 4, label: 'Four' },
+                      { value: 5, label: 'Five' },
+                      { value: 6, label: 'Six' }
+                    ].map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
                   {errors.dj_count && <p className="mt-1 text-sm text-red-600">{errors.dj_count}</p>}
