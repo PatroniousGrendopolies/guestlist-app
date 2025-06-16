@@ -13,15 +13,20 @@ interface User {
 }
 
 
+interface DJInvitation {
+  dj_name: string;
+  given_name: string;
+  email: string;
+  phone: string;
+}
+
 interface EventFormData {
   name: string;
   date: string;
   venue_id: string;
   max_total_capacity: number;
-  status: string;
-  description: string;
-  guest_list_deadline: string;
-  dj_approval_deadline: string;
+  dj_count: number;
+  dj_invitations: DJInvitation[];
 }
 
 export default function CreateEventPage() {
@@ -35,11 +40,9 @@ export default function CreateEventPage() {
     name: '',
     date: '',
     venue_id: '',
-    max_total_capacity: 300,
-    status: 'active',
-    description: '',
-    guest_list_deadline: '',
-    dj_approval_deadline: ''
+    max_total_capacity: 75,
+    dj_count: 1,
+    dj_invitations: [{ dj_name: '', given_name: '', email: '', phone: '' }]
   });
 
   useEffect(() => {
@@ -109,10 +112,39 @@ export default function CreateEventPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'dj_count') {
+      const count = parseInt(value);
+      const newInvitations = Array.from({ length: count }, (_, i) => 
+        formData.dj_invitations[i] || { dj_name: '', given_name: '', email: '', phone: '' }
+      );
+      setFormData(prev => ({ 
+        ...prev, 
+        dj_count: count,
+        dj_invitations: newInvitations 
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleDJInputChange = (index: number, field: keyof DJInvitation, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      dj_invitations: prev.dj_invitations.map((dj, i) => 
+        i === index ? { ...dj, [field]: value } : dj
+      )
+    }));
+    
+    // Clear DJ-specific errors
+    const errorKey = `dj_${index}_${field}`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({ ...prev, [errorKey]: '' }));
     }
   };
 
@@ -141,40 +173,32 @@ export default function CreateEventPage() {
       }
     }
 
-    // Venue is automatically set to Datcha, no validation needed
-
     if (formData.max_total_capacity < 1) {
       newErrors.max_total_capacity = 'Capacity must be at least 1';
     }
 
-    // Deadline validations
-    if (!formData.guest_list_deadline) {
-      newErrors.guest_list_deadline = 'Guest list deadline is required';
-    } else {
-      const deadline = new Date(formData.guest_list_deadline);
-      const eventDate = new Date(formData.date);
-      const now = new Date();
-      
-      if (deadline <= now) {
-        newErrors.guest_list_deadline = 'Deadline must be in the future';
-      } else if (deadline >= eventDate) {
-        newErrors.guest_list_deadline = 'Deadline must be before the event date';
-      }
+    // DJ validations
+    if (formData.dj_count < 1 || formData.dj_count > 6) {
+      newErrors.dj_count = 'Must have between 1 and 6 DJs';
     }
 
-    if (!formData.dj_approval_deadline) {
-      newErrors.dj_approval_deadline = 'DJ approval deadline is required';
-    } else {
-      const djDeadline = new Date(formData.dj_approval_deadline);
-      const guestDeadline = new Date(formData.guest_list_deadline);
-      const now = new Date();
-      
-      if (djDeadline <= now) {
-        newErrors.dj_approval_deadline = 'DJ deadline must be in the future';
-      } else if (formData.guest_list_deadline && djDeadline >= guestDeadline) {
-        newErrors.dj_approval_deadline = 'DJ deadline must be before guest list deadline';
+    // Validate each DJ invitation
+    formData.dj_invitations.forEach((dj, index) => {
+      if (!dj.dj_name.trim()) {
+        newErrors[`dj_${index}_dj_name`] = 'DJ name is required';
       }
-    }
+      if (!dj.given_name.trim()) {
+        newErrors[`dj_${index}_given_name`] = 'Given name is required';
+      }
+      if (!dj.email.trim()) {
+        newErrors[`dj_${index}_email`] = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(dj.email)) {
+        newErrors[`dj_${index}_email`] = 'Valid email is required';
+      }
+      if (!dj.phone.trim()) {
+        newErrors[`dj_${index}_phone`] = 'Phone number is required';
+      }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -190,10 +214,14 @@ export default function CreateEventPage() {
     setIsSubmitting(true);
 
     try {
+      // Prepare event data without DJ invitations
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { dj_invitations, dj_count, ...eventBasicData } = formData;
       const eventData = {
-        ...formData,
+        ...eventBasicData,
         day_of_week: getDayOfWeek(formData.date),
         created_by_user_id: user!.id,
+        status: 'active' // Default status
       };
 
       console.log('🚀 Creating event with data:', eventData);
@@ -209,6 +237,16 @@ export default function CreateEventPage() {
         setErrors({ submit: 'Failed to create event. Please try again.' });
       } else {
         console.log('✅ Event created successfully:', data);
+        
+        // TODO: Handle DJ invitations here
+        // For now, we'll store DJ invitation data for future implementation
+        // In a real implementation, you would:
+        // 1. Create DJ invitation records in the database
+        // 2. Send invitation emails to each DJ
+        // 3. Set up the invitation acceptance workflow
+        
+        console.log('📨 DJ invitations to be sent:', formData.dj_invitations);
+        
         router.push('/dashboard/events');
       }
     } catch (error) {
@@ -301,22 +339,6 @@ export default function CreateEventPage() {
                 {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date}</p>}
               </div>
 
-              {/* Venue (Fixed to Datcha) */}
-              <div>
-                <label htmlFor="venue_display" className="block text-sm font-medium text-black">
-                  Venue
-                </label>
-                <input
-                  type="text"
-                  id="venue_display"
-                  value="Datcha Nightclub"
-                  disabled
-                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm text-gray-900"
-                />
-                <p className="mt-1 text-sm text-black">
-                  Events are created for your venue
-                </p>
-              </div>
 
               {/* Maximum Guest List Size */}
               <div>
@@ -336,91 +358,118 @@ export default function CreateEventPage() {
                 />
                 {errors.max_total_capacity && <p className="mt-1 text-sm text-red-600">{errors.max_total_capacity}</p>}
                 <p className="mt-1 text-sm text-black">
-                  Total allowed guestlist size (default: 300)
+                  Total allowed guestlist size (default: 75)
                 </p>
               </div>
 
-              {/* Event Description */}
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-black">
-                  Event Description
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Optional description of the event..."
-                />
-                <p className="mt-1 text-sm text-black">
-                  Optional description for the event
-                </p>
-              </div>
+              {/* DJ Invitation Section */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">DJ Invitations</h3>
+                
+                {/* Number of DJs */}
+                <div className="mb-6">
+                  <label htmlFor="dj_count" className="block text-sm font-medium text-black">
+                    Number of DJs *
+                  </label>
+                  <select
+                    id="dj_count"
+                    name="dj_count"
+                    value={formData.dj_count}
+                    onChange={handleInputChange}
+                    className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                      errors.dj_count ? 'border-red-300' : ''
+                    }`}
+                  >
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                      <option key={num} value={num}>{num} DJ{num > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                  {errors.dj_count && <p className="mt-1 text-sm text-red-600">{errors.dj_count}</p>}
+                  <p className="mt-1 text-sm text-black">
+                    Select the number of DJs to invite for this event (maximum 6)
+                  </p>
+                </div>
 
-              {/* Guest List Deadline */}
-              <div>
-                <label htmlFor="guest_list_deadline" className="block text-sm font-medium text-black">
-                  Guest List Deadline *
-                </label>
-                <input
-                  type="datetime-local"
-                  id="guest_list_deadline"
-                  name="guest_list_deadline"
-                  value={formData.guest_list_deadline}
-                  onChange={handleInputChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
-                    errors.guest_list_deadline ? 'border-red-300' : ''
-                  }`}
-                />
-                {errors.guest_list_deadline && <p className="mt-1 text-sm text-red-600">{errors.guest_list_deadline}</p>}
-                <p className="mt-1 text-sm text-black">
-                  Deadline for guest list submissions
-                </p>
-              </div>
+                {/* DJ Details */}
+                {formData.dj_invitations.map((dj, index) => (
+                  <div key={index} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                    <h4 className="text-md font-medium text-gray-900 mb-3">DJ {index + 1}</h4>
+                    
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {/* DJ Name */}
+                      <div>
+                        <label htmlFor={`dj_name_${index}`} className="block text-sm font-medium text-black">
+                          DJ Name *
+                        </label>
+                        <input
+                          type="text"
+                          id={`dj_name_${index}`}
+                          value={dj.dj_name}
+                          onChange={(e) => handleDJInputChange(index, 'dj_name', e.target.value)}
+                          className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                            errors[`dj_${index}_dj_name`] ? 'border-red-300' : ''
+                          }`}
+                          placeholder="e.g., DJ Awesome"
+                        />
+                        {errors[`dj_${index}_dj_name`] && <p className="mt-1 text-sm text-red-600">{errors[`dj_${index}_dj_name`]}</p>}
+                      </div>
 
-              {/* DJ Approval Deadline */}
-              <div>
-                <label htmlFor="dj_approval_deadline" className="block text-sm font-medium text-black">
-                  DJ Approval Deadline *
-                </label>
-                <input
-                  type="datetime-local"
-                  id="dj_approval_deadline"
-                  name="dj_approval_deadline"
-                  value={formData.dj_approval_deadline}
-                  onChange={handleInputChange}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
-                    errors.dj_approval_deadline ? 'border-red-300' : ''
-                  }`}
-                />
-                {errors.dj_approval_deadline && <p className="mt-1 text-sm text-red-600">{errors.dj_approval_deadline}</p>}
-                <p className="mt-1 text-sm text-black">
-                  Deadline for DJs to approve/deny guests (must be before guest list deadline)
-                </p>
-              </div>
+                      {/* Given Name */}
+                      <div>
+                        <label htmlFor={`given_name_${index}`} className="block text-sm font-medium text-black">
+                          Given Name *
+                        </label>
+                        <input
+                          type="text"
+                          id={`given_name_${index}`}
+                          value={dj.given_name}
+                          onChange={(e) => handleDJInputChange(index, 'given_name', e.target.value)}
+                          className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                            errors[`dj_${index}_given_name`] ? 'border-red-300' : ''
+                          }`}
+                          placeholder="e.g., John"
+                        />
+                        {errors[`dj_${index}_given_name`] && <p className="mt-1 text-sm text-red-600">{errors[`dj_${index}_given_name`]}</p>}
+                      </div>
 
-              {/* Event Status */}
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-black">
-                  Event Status
-                </label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="active">Active</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="completed">Completed</option>
-                  <option value="under_promoted">Under Promoted</option>
-                </select>
-                <p className="mt-1 text-sm text-black">
-                  Current status of the event
-                </p>
+                      {/* Email */}
+                      <div>
+                        <label htmlFor={`email_${index}`} className="block text-sm font-medium text-black">
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          id={`email_${index}`}
+                          value={dj.email}
+                          onChange={(e) => handleDJInputChange(index, 'email', e.target.value)}
+                          className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                            errors[`dj_${index}_email`] ? 'border-red-300' : ''
+                          }`}
+                          placeholder="dj@example.com"
+                        />
+                        {errors[`dj_${index}_email`] && <p className="mt-1 text-sm text-red-600">{errors[`dj_${index}_email`]}</p>}
+                      </div>
+
+                      {/* Phone */}
+                      <div>
+                        <label htmlFor={`phone_${index}`} className="block text-sm font-medium text-black">
+                          Phone Number *
+                        </label>
+                        <input
+                          type="tel"
+                          id={`phone_${index}`}
+                          value={dj.phone}
+                          onChange={(e) => handleDJInputChange(index, 'phone', e.target.value)}
+                          className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+                            errors[`dj_${index}_phone`] ? 'border-red-300' : ''
+                          }`}
+                          placeholder="(555) 123-4567"
+                        />
+                        {errors[`dj_${index}_phone`] && <p className="mt-1 text-sm text-red-600">{errors[`dj_${index}_phone`]}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Submit Error */}
