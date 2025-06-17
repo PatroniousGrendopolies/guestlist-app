@@ -113,7 +113,7 @@ const ManagerDashboard: React.FC = () => {
             {activeTab === 'events' && (
               <div>
                 <div className="flex justify-end mb-4">
-                  <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded flex items-center">
+                  <button className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 rounded-md flex items-center">
                     <PlusCircleIcon size={18} className="mr-2" />
                     Add New Event
                   </button>
