@@ -4,11 +4,11 @@ import GuestList from '../components/GuestList';
 import AnalyticsChart from '../components/AnalyticsChart';
 import { fetchData, guests, users } from '../utils/mockData';
 import { Guest } from '../utils/types';
-import { ListIcon, BarChartIcon } from 'lucide-react';
+import { ListIcon, BarChartIcon, CalendarIcon, PlusCircleIcon } from 'lucide-react';
 const ManagerDashboard: React.FC = () => {
   const [guestList, setGuestList] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'list' | 'analytics'>('list');
+  const [activeTab, setActiveTab] = useState<'list' | 'analytics' | 'events'>('list');
   useEffect(() => {
     const loadGuests = async () => {
       try {
@@ -66,6 +66,13 @@ const ManagerDashboard: React.FC = () => {
           <BarChartIcon size={18} className="mr-2" />
           Analytics
         </button>
+        <button
+          className={`flex-1 py-3 px-4 flex items-center justify-center ${activeTab === 'events' ? 'border-b-2 border-purple-500' : ''}`}
+          onClick={() => setActiveTab('events')}
+        >
+          <CalendarIcon size={18} className="mr-2" />
+          Events
+        </button>
       </div>
       <div className="flex-1 p-4">
         {loading ? <div className="flex items-center justify-center h-full">
@@ -103,6 +110,18 @@ const ManagerDashboard: React.FC = () => {
                 <AnalyticsChart title="Guest Status" data={statusData} />
                 <AnalyticsChart title="Check-ins by Promoter/DJ" data={promoterData} />
               </div>}
+            {activeTab === 'events' && (
+              <div>
+                <div className="flex justify-end mb-4">
+                  <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded flex items-center">
+                    <PlusCircleIcon size={18} className="mr-2" />
+                    Add New Event
+                  </button>
+                </div>
+                {/* Event listing or management components will go here */}
+                <p className="text-center text-gray-500">Events management coming soon.</p>
+              </div>
+            )}
           </>}
       </div>
     </div>;
