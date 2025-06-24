@@ -6,7 +6,7 @@ This document contains the complete frontend design specifications for the Datch
 ## User Types Overview
 
 1. **Guest** - Public users signing up for events (Mobile-first)
-2. **Doorman** - Door staff checking in guests (PWA/iOS app)
+2. **Doorperson** - Door staff checking in guests (PWA/iOS app)
 3. **Staff** - Bartenders/employees with limited lists (Mobile-first)
 4. **DJ** - Performers with event-specific lists (Mobile-first)
 5. **Promoter** - Marketing staff with larger capacity (Mobile-first)
@@ -118,7 +118,7 @@ This document contains the complete frontend design specifications for the Datch
 
 ---
 
-## 2. DOORMAN FLOW
+## 2. DOORPERSON FLOW
 
 ### Entry Points
 - Direct URL or bookmark on club device (tablet/phone)
@@ -462,7 +462,7 @@ This document contains the complete frontend design specifications for the Datch
 - Permanent QR code (never expires)
 - Bypasses DJ/promoter approval
 - Not counted against DJ capacity
-- Doorman must enter +N count on scan
+- Doorperson must enter +N count on scan
 
 ### QR Code Retrieval Methods (Phase 1)
 1. **SMS Link** - Save from welcome text
@@ -831,7 +831,7 @@ navigator.share({
 
 ### Progressive Web App Features
 - Camera access for QR scanning
-- Offline capability for doorman app
+- Offline capability for doorperson app
 - Home screen installation
 - Push notifications (Phase 2)
 
@@ -841,7 +841,7 @@ navigator.share({
 - Synchronized multi-device access
 
 ### Security Considerations
-- PIN-based auth for doorman
+- PIN-based auth for doorperson
 - Time-limited invite links
 - QR code validation
 - Rate limiting on signups
@@ -857,7 +857,7 @@ navigator.share({
 - Basic analytics
 
 ### Phase 2 (Post-Launch)
-- Native iOS app for doorman
+- Native iOS app for doorperson
 - Apple/Google Wallet for VIPs
 - Push notifications
 - Advanced analytics

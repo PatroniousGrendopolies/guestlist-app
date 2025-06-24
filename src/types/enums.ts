@@ -1,11 +1,15 @@
-// Enum definitions that match the Prisma schema
+// Enum definitions that match the database schema
 // These are defined here to avoid relying on the Prisma client before it's installed
 
 export enum UserRole {
+  OWNER = 'OWNER',
   MANAGER = 'MANAGER',
-  DOORMAN = 'DOORMAN',
+  ASSISTANT_MANAGER = 'ASSISTANT_MANAGER',
+  DOORPERSON = 'DOORPERSON',
+  STAFF = 'STAFF',
   PROMOTER = 'PROMOTER',
   DJ = 'DJ',
+  VIP = 'VIP',
   GUEST = 'GUEST',
 }
 

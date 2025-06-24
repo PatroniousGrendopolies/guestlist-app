@@ -65,18 +65,31 @@ export async function auth(): Promise<AuthSession | null> {
     const roleString = profile.role?.toString().toUpperCase();
     
     switch (roleString) {
+      case 'OWNER':
+        userRole = UserRole.OWNER;
+        break;
       case 'MANAGER':
         userRole = UserRole.MANAGER;
         break;
-      case 'DOORMAN':
+      case 'ASSISTANT_MANAGER':
+        userRole = UserRole.ASSISTANT_MANAGER;
+        break;
+      case 'DOORPERSON':
+      case 'DOORMAN': // For backward compatibility
       case 'DOOR_STAFF':
-        userRole = UserRole.DOORMAN;
+        userRole = UserRole.DOORPERSON;
+        break;
+      case 'STAFF':
+        userRole = UserRole.STAFF;
         break;
       case 'PROMOTER':
         userRole = UserRole.PROMOTER;
         break;
       case 'DJ':
         userRole = UserRole.DJ;
+        break;
+      case 'VIP':
+        userRole = UserRole.VIP;
         break;
       case 'GUEST':
         userRole = UserRole.GUEST;

@@ -26,10 +26,15 @@ model User {
 }
 
 enum UserRole {
+  OWNER
   MANAGER
-  DOORMAN
+  ASSISTANT_MANAGER
+  DOORPERSON
+  STAFF
   PROMOTER
   DJ
+  VIP
+  GUEST
 }
 
 // Event model
