@@ -9,7 +9,7 @@ const getFriendlyRoleName = (role: UserRole): string => {
   switch (role) {
     case UserRole.DJ: return 'DJ';
     case UserRole.PROMOTER: return 'Promoter';
-    case UserRole.DOORMAN: return 'Door Staff';
+    case UserRole.DOORPERSON: return 'Door Staff';
     // Add other roles as needed, but managers typically invite DJs or Promoters
     default: return role.charAt(0).toUpperCase() + role.slice(1);
   }
@@ -19,7 +19,7 @@ const getFriendlyRoleName = (role: UserRole): string => {
 const assignableRoles: UserRole[] = [
   UserRole.DJ,
   UserRole.PROMOTER,
-  UserRole.DOORMAN, // Example: managers might also invite door staff
+  UserRole.DOORPERSON, // Example: managers might also invite door staff
 ];
 
 

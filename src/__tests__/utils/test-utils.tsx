@@ -33,7 +33,7 @@ export const mockUsers = {
     id: '2',
     name: 'Test Doorman',
     email: 'doorman@example.com',
-    role: UserRole.DOORMAN,
+    role: UserRole.DOORPERSON,
   },
   promoter: {
     id: '3',
@@ -75,7 +75,7 @@ export function renderWithAuth(ui: React.ReactElement, options?: RenderOptions) 
 describe('Test Utils', () => {
   it('should provide mock users with correct roles', () => {
     expect(mockUsers.manager.role).toBe(UserRole.MANAGER);
-    expect(mockUsers.doorman.role).toBe(UserRole.DOORMAN);
+    expect(mockUsers.doorman.role).toBe(UserRole.DOORPERSON);
     expect(mockUsers.promoter.role).toBe(UserRole.PROMOTER);
     expect(mockUsers.dj.role).toBe(UserRole.DJ);
     expect(mockUsers.guest.role).toBe(UserRole.GUEST);

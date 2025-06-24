@@ -1,5 +1,5 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import bcrypt from 'bcryptjs';
+import { createBrowserClient } from '@supabase/ssr';
+import * as bcrypt from 'bcryptjs';
 
 export interface GuestAuthData {
   email: string;
@@ -19,7 +19,10 @@ export class GuestAuthService {
   private supabase;
 
   constructor() {
-    this.supabase = createClientComponentClient();
+    this.supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
   }
 
   /**
@@ -44,7 +47,7 @@ export class GuestAuthService {
         .single();
 
       if (existingAuth) {
-        return { guest: null as any, error: 'Email already registered' };
+        return { guest: null!, error: 'Email already registered' };
       }
 
       // Create guest record
@@ -61,14 +64,14 @@ export class GuestAuthService {
         .single();
 
       if (guestError) {
-        return { guest: null as any, error: 'Failed to create guest profile' };
+        return { guest: null!, error: 'Failed to create guest profile' };
       }
 
       // Hash password
       const passwordHash = await bcrypt.hash(password, 10);
 
       // Create auth record
-      const { data: auth, error: authError } = await this.supabase
+      const { error: authError } = await this.supabase
         .from('guest_auth')
         .insert({
           guest_id: guest.id,
@@ -81,7 +84,7 @@ export class GuestAuthService {
       if (authError) {
         // Rollback guest creation
         await this.supabase.from('guests').delete().eq('id', guest.id);
-        return { guest: null as any, error: 'Failed to create authentication' };
+        return { guest: null!, error: 'Failed to create authentication' };
       }
 
       // Send verification email
@@ -97,7 +100,7 @@ export class GuestAuthService {
       };
     } catch (error) {
       console.error('Guest registration error:', error);
-      return { guest: null as any, error: 'Registration failed' };
+      return { guest: null!, error: 'Registration failed' };
     }
   }
 
@@ -117,13 +120,13 @@ export class GuestAuthService {
         .single();
 
       if (authError || !auth) {
-        return { guest: null as any, error: 'Invalid credentials' };
+        return { guest: null!, error: 'Invalid credentials' };
       }
 
       // Verify password
       const validPassword = await bcrypt.compare(password, auth.password_hash);
       if (!validPassword) {
-        return { guest: null as any, error: 'Invalid credentials' };
+        return { guest: null!, error: 'Invalid credentials' };
       }
 
       // Update last login
@@ -147,7 +150,7 @@ export class GuestAuthService {
       };
     } catch (error) {
       console.error('Guest login error:', error);
-      return { guest: null as any, error: 'Login failed' };
+      return { guest: null!, error: 'Login failed' };
     }
   }
 
@@ -202,11 +205,11 @@ export class GuestAuthService {
         .single();
 
       if (guestError) {
-        return { guest: null as any, error: 'Failed to create guest profile' };
+        return { guest: null!, error: 'Failed to create guest profile' };
       }
 
       // Create auth record
-      const { data: auth, error: authError } = await this.supabase
+      const { error: authError } = await this.supabase
         .from('guest_auth')
         .insert({
           guest_id: guest.id,
@@ -221,7 +224,7 @@ export class GuestAuthService {
       if (authError) {
         // Rollback guest creation
         await this.supabase.from('guests').delete().eq('id', guest.id);
-        return { guest: null as any, error: 'Failed to create authentication' };
+        return { guest: null!, error: 'Failed to create authentication' };
       }
 
       return {
@@ -234,7 +237,7 @@ export class GuestAuthService {
       };
     } catch (error) {
       console.error('Google auth error:', error);
-      return { guest: null as any, error: 'Google authentication failed' };
+      return { guest: null!, error: 'Google authentication failed' };
     }
   }
 
@@ -319,8 +322,9 @@ export class GuestAuthService {
   /**
    * Verify email with token
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async verifyEmail(guestId: string, token: string): Promise<{ success: boolean }> {
-    // TODO: Implement email verification
+    // TODO: Implement email verification with token validation
     try {
       await this.supabase
         .from('guest_auth')

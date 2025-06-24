@@ -1,8 +1,12 @@
 export enum UserRole {
+  OWNER = 'OWNER',
   MANAGER = 'MANAGER',
-  DOORMAN = 'DOORMAN',
+  ASSISTANT_MANAGER = 'ASSISTANT_MANAGER',
+  DOORPERSON = 'DOORPERSON',
+  STAFF = 'STAFF',
   PROMOTER = 'PROMOTER',
-  DJ = 'DJ', // Added missing role
+  DJ = 'DJ',
+  VIP = 'VIP',
   GUEST = 'GUEST',
 }
 

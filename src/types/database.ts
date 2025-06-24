@@ -1,4 +1,4 @@
-import { UserRole, EntryStatus } from './enums';
+import { UserRole } from './enums';
 
 export interface Profile {
   id: string;
@@ -10,7 +10,7 @@ export interface Profile {
   stage_name?: string;
   instagram_handle?: string;
   phone?: string;
-  manager_permissions?: Record<string, any>;
+  manager_permissions?: Record<string, unknown>;
   vip_qr_code?: string;
   vip_max_plus_ones?: number;
   account_status: 'active' | 'suspended' | 'inactive';

@@ -25,7 +25,7 @@ export default function DashboardPage() {
   console.log('🔧 UserRole enum values:', {
     MANAGER: UserRole.MANAGER,
     GUEST: UserRole.GUEST,
-    DOORMAN: UserRole.DOORMAN,
+    DOORPERSON: UserRole.DOORPERSON,
     DJ: UserRole.DJ,
     PROMOTER: UserRole.PROMOTER
   });
@@ -104,17 +104,29 @@ export default function DashboardPage() {
           console.log('🔄 Converting role from DB:', profile.role, 'type:', typeof profile.role);
           // Explicit role mapping to ensure proper conversion
           switch (profile.role) {
+            case 'OWNER':
+              userRole = UserRole.OWNER;
+              break;
             case 'MANAGER':
               userRole = UserRole.MANAGER;
               break;
-            case 'DOORMAN':
-              userRole = UserRole.DOORMAN;
+            case 'ASSISTANT_MANAGER':
+              userRole = UserRole.ASSISTANT_MANAGER;
+              break;
+            case 'DOORPERSON':
+              userRole = UserRole.DOORPERSON;
+              break;
+            case 'STAFF':
+              userRole = UserRole.STAFF;
               break;
             case 'PROMOTER':
               userRole = UserRole.PROMOTER;
               break;
             case 'DJ':
               userRole = UserRole.DJ;
+              break;
+            case 'VIP':
+              userRole = UserRole.VIP;
               break;
             case 'GUEST':
               userRole = UserRole.GUEST;
@@ -167,6 +179,34 @@ export default function DashboardPage() {
 
   // Role-specific content (ensure all roles from enum are handled)
   const roleContent: Record<UserRole, React.ReactNode> = {
+    [UserRole.OWNER]: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Owner Dashboard</h2>
+        <p>Welcome, {user.name}. You have full access to all system features.</p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <DashboardCard
+            title="Venue Settings"
+            description="Configure venue details and defaults"
+            link="/dashboard/venue-settings"
+          />
+          <DashboardCard
+            title="Staff Management"
+            description="Manage all staff and permissions"
+            link="/dashboard/staff"
+          />
+          <DashboardCard
+            title="Events"
+            description="Create and manage events"
+            link="/dashboard/events"
+          />
+          <DashboardCard
+            title="Analytics"
+            description="View comprehensive analytics"
+            link="/dashboard/analytics"
+          />
+        </div>
+      </div>
+    ),
     [UserRole.MANAGER]: (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Manager Dashboard</h2>
@@ -195,7 +235,7 @@ export default function DashboardPage() {
         </div>
       </div>
     ),
-    [UserRole.DOORMAN]: (
+    [UserRole.DOORPERSON]: (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Doorman Dashboard</h2>
         <p>Welcome, {user.name}. Scan QR codes to check in guests.</p>
@@ -263,6 +303,65 @@ export default function DashboardPage() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Guest Dashboard</h2>
         <p>Welcome, Guest. You should not be seeing this page.</p>
+      </div>
+    ),
+    [UserRole.ASSISTANT_MANAGER]: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Assistant Manager Dashboard</h2>
+        <p>Welcome, {user.name}. Here you can assist with daily operations.</p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <DashboardCard
+            title="Guest Lists"
+            description="Review and approve guest lists"
+            link="/dashboard/guest-lists"
+          />
+          <DashboardCard
+            title="Capacity Requests"
+            description="Handle capacity increase requests"
+            link="/dashboard/capacity-requests"
+          />
+          <DashboardCard
+            title="Analytics"
+            description="View basic analytics"
+            link="/dashboard/analytics"
+          />
+        </div>
+      </div>
+    ),
+    [UserRole.STAFF]: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Staff Dashboard</h2>
+        <p>Welcome, {user.name}. Invite your friends to tonight&apos;s event.</p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <DashboardCard
+            title="Tonight&apos;s Event"
+            description="Share guest list link with friends"
+            link="/dashboard/tonight"
+          />
+          <DashboardCard
+            title="My Guest List"
+            description="View who's coming tonight"
+            link="/dashboard/my-guests"
+          />
+        </div>
+      </div>
+    ),
+    [UserRole.VIP]: (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">VIP Portal</h2>
+        <p>Welcome, {user.name}. Access your VIP benefits.</p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <DashboardCard
+            title="My QR Code"
+            description="Get your permanent entry QR code"
+            link="/dashboard/vip-qr"
+          />
+          <DashboardCard
+            title="VIP History"
+            description="View your visit history"
+            link="/dashboard/vip-history"
+          />
+        </div>
       </div>
     ),
   };
