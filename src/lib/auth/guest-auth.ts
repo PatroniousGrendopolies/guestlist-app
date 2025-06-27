@@ -1,4 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase as supabaseClient } from '@/lib/supabase/client';
 import * as bcrypt from 'bcryptjs';
 
 export interface GuestAuthData {
@@ -16,14 +16,7 @@ export interface GuestSession {
 }
 
 export class GuestAuthService {
-  private supabase;
-
-  constructor() {
-    this.supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-  }
+  private supabase = supabaseClient;
 
   /**
    * Register a new guest with email and password
@@ -87,8 +80,8 @@ export class GuestAuthService {
         return { guest: null!, error: 'Failed to create authentication' };
       }
 
-      // Send verification email
-      await this.sendVerificationEmail(email, guest.id);
+      // Skip email verification for now (TODO: implement proper email service)
+      // await this.sendVerificationEmail(email, guest.id);
 
       return {
         guest: {

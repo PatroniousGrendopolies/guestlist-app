@@ -1,135 +1,121 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 
-export default function LoginPage() {
+export default function StaffLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-
-    // Set a manual timeout to force-stop loading after 8 seconds
-    const timeoutId = setTimeout(() => {
-      setIsLoading(false);
-      setError('Login is taking too long. Please check your internet connection and try again.');
-    }, 8000);
+    setError('');
 
     try {
-      // Clean login call without debug noise
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (authError) {
-        // Map common Supabase error messages to more user-friendly ones
-        console.error('Supabase login error:', authError);
-        if (authError.message === 'Invalid login credentials') {
-          setError('Incorrect email or password. Please try again.');
-        } else if (authError.message.toLowerCase().includes('email not confirmed') || 
-                   authError.message.toLowerCase().includes('email not verified') ||
-                   authError.message.toLowerCase().includes('user not confirmed')) {
-          // Catch variations like "Email not confirmed" or "User not confirmed"
-          setError(
-            'Your email address has not been confirmed. Please check your inbox for a confirmation link. If you cannot find it, you may need to register again.'
-          );
-        } else if (authError.message.toLowerCase().includes('too many')) {
-          setError('Too many login attempts. Please wait a few minutes before trying again.');
-        } else {
-          // For other Supabase errors or less common ones
-          console.error('Supabase login error:', authError.message);
-          setError(`Login failed: ${authError.message}. Please try again or contact support.`);
-        }
-      } else {
-        // Login successful - redirect to dashboard
+      if (error) {
+        setError('Invalid email or password');
+        return;
+      }
+
+      if (data.user) {
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (err) { // Catching generic errors (e.g., network issues)
-      console.error('Login request failed:', err);
-      if (err instanceof Error && err.message?.includes('timed out')) {
-        setError('Login timed out. Please check your internet connection and try again.');
-      } else {
-        setError('An unexpected error occurred. Please check your internet connection and try again.');
-      }
+    } catch (err) {
+      setError('An unexpected error occurred');
     } finally {
-      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
-          Login to Guestlist App
-        </h1>
-
-        {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-              placeholder="your@email.com"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign up
-            </Link>
+    <div className="min-h-screen flex items-center justify-center py-6xl px-xl">
+      <div className="w-full max-w-sm">
+        {/* Header */}
+        <div className="text-center mb-4xl">
+          <h1 className="text-3xl font-light mb-lg">Staff Portal</h1>
+          <p className="text-lg text-gray-600">
+            Sign in to access the management dashboard
           </p>
-          <p className="mt-2 text-sm text-gray-600">
-            <Link href="/auth/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Forgot your password?
-            </Link>
+        </div>
+
+        {/* Login Card */}
+        <div className="card">
+          <div className="card-body">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-xl">
+              {/* Error Message */}
+              {error && (
+                <div className="p-lg border border-gray-300 rounded-lg bg-gray-50">
+                  <p className="text-sm text-gray-700">{error}</p>
+                </div>
+              )}
+
+              {/* Email Field */}
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  className="input"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              {/* Password Field */}
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  className="input"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="btn btn-primary btn-lg"
+              >
+                {isLoading ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Bottom Links */}
+        <div className="text-center mt-3xl space-y-md">
+          <p className="text-sm text-gray-500">
+            Are you a guest? 
+            <a href="/guest/auth" className="ml-1 text-black hover:underline">
+              Join the guest list
+            </a>
+          </p>
+          <p className="text-sm text-gray-400">
+            Contact your manager if you need access
           </p>
         </div>
       </div>

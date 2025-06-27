@@ -4,31 +4,20 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { UserRole } from '@/types/enums';
+import Link from 'next/link';
 
-// Define User interface here since it's not defined elsewhere
+// Define User interface
 interface User {
   id: string;
   email: string;
   name: string;
   role: UserRole;
 }
-import Link from 'next/link';
-
-
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Debug: Log UserRole enum values
-  console.log('🔧 UserRole enum values:', {
-    MANAGER: UserRole.MANAGER,
-    GUEST: UserRole.GUEST,
-    DOORPERSON: UserRole.DOORPERSON,
-    DJ: UserRole.DJ,
-    PROMOTER: UserRole.PROMOTER
-  });
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -38,42 +27,17 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log('🔍 Starting user fetch...');
-        
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-        console.log('🔐 Auth user result:', { 
-          hasUser: !!authUser, 
-          userId: authUser?.id, 
-          email: authUser?.email,
-          authError: authError?.message 
-        });
         
         if (!authUser) {
-          console.log('❌ No auth user, redirecting to login');
           router.push('/auth/login');
           return;
         }
 
-        console.log('📊 Fetching profile for user:', authUser.id);
-        
-        // Test if we can access the profiles table at all
-        const { data: testProfiles, error: testError } = await supabase
-          .from('profiles')
-          .select('email, role')
-          .limit(1);
-        
-        console.log('🧪 Test profiles table access:', { 
-          canAccess: !testError, 
-          error: testError?.message,
-          sampleData: testProfiles 
-        });
-
         // TEMPORARY WORKAROUND: Force manager role for patgoire@gmail.com
         let profile = null;
-        let profileError = null;
         
         if (authUser.email === 'patgoire@gmail.com') {
-          console.log('🚀 TEMP FIX: Forcing MANAGER role for patgoire@gmail.com');
           profile = {
             role: 'MANAGER',
             first_name: 'Patrick',
@@ -82,60 +46,19 @@ export default function DashboardPage() {
           };
         } else {
           // Try to fetch from database for other users
-          const { data: fetchedProfile, error: fetchError } = await supabase
+          const { data: fetchedProfile } = await supabase
             .from('profiles')
             .select('role, first_name, last_name, email')
             .eq('id', authUser.id)
             .single();
           profile = fetchedProfile;
-          profileError = fetchError;
         }
-
-        console.log('👤 Profile fetch result:', { 
-          profile, 
-          error: profileError?.message,
-          errorCode: profileError?.code,
-          isTemporaryFix: authUser.email === 'patgoire@gmail.com'
-        });
 
         // Build the user object with profile data
         let userRole = UserRole.GUEST;
         if (profile?.role) {
-          console.log('🔄 Converting role from DB:', profile.role, 'type:', typeof profile.role);
-          // Explicit role mapping to ensure proper conversion
-          switch (profile.role) {
-            case 'OWNER':
-              userRole = UserRole.OWNER;
-              break;
-            case 'MANAGER':
-              userRole = UserRole.MANAGER;
-              break;
-            case 'ASSISTANT_MANAGER':
-              userRole = UserRole.ASSISTANT_MANAGER;
-              break;
-            case 'DOORPERSON':
-              userRole = UserRole.DOORPERSON;
-              break;
-            case 'STAFF':
-              userRole = UserRole.STAFF;
-              break;
-            case 'PROMOTER':
-              userRole = UserRole.PROMOTER;
-              break;
-            case 'DJ':
-              userRole = UserRole.DJ;
-              break;
-            case 'VIP':
-              userRole = UserRole.VIP;
-              break;
-            case 'GUEST':
-              userRole = UserRole.GUEST;
-              break;
-            default:
-              console.warn('⚠️ Unknown role from DB:', profile.role);
-              userRole = UserRole.GUEST;
-          }
-          console.log('🎯 Role mapped to:', userRole);
+          // Map string role to enum
+          userRole = profile.role as UserRole;
         }
 
         const appUser: User = {
@@ -144,15 +67,11 @@ export default function DashboardPage() {
           name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || authUser.email! : authUser.email!,
           role: userRole,
         };
-
-        console.log('✅ Final user object:', appUser);
-        console.log('🎭 User role set to:', appUser.role);
-        console.log('🎯 Is MANAGER?', appUser.role === UserRole.MANAGER);
         
         setUser(appUser);
         setIsLoading(false);
       } catch (error) {
-        console.error('💥 Unexpected error in fetchUser:', error);
+        console.error('Error fetching user:', error);
         setIsLoading(false);
       }
     };
@@ -161,249 +80,314 @@ export default function DashboardPage() {
   }, [router]);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen"><div>Loading...</div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
   if (!user) {
-    return null; // Fallback, should be redirected
+    return null;
   }
 
   const role = user.role || UserRole.GUEST;
   
-  // Debug the role selection
-  console.log('🖥️ Dashboard render - user.role:', user.role);
-  console.log('🖥️ Dashboard render - final role variable:', role);
-  console.log('🖥️ Dashboard render - role === UserRole.MANAGER:', role === UserRole.MANAGER);
-  console.log('🖥️ Dashboard render - typeof role:', typeof role);
-  console.log('🖥️ Dashboard render - JSON.stringify(role):', JSON.stringify(role));
-
-  // Role-specific content (ensure all roles from enum are handled)
+  // Role-specific content
   const roleContent: Record<UserRole, React.ReactNode> = {
     [UserRole.OWNER]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Owner Dashboard</h2>
-        <p>Welcome, {user.name}. You have full access to all system features.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="Venue Settings"
-            description="Configure venue details and defaults"
-            link="/dashboard/venue-settings"
-          />
-          <DashboardCard
-            title="Staff Management"
-            description="Manage all staff and permissions"
-            link="/dashboard/staff"
-          />
-          <DashboardCard
-            title="Events"
-            description="Create and manage events"
-            link="/dashboard/events"
-          />
-          <DashboardCard
-            title="Analytics"
-            description="View comprehensive analytics"
-            link="/dashboard/analytics"
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+        <DashboardCard
+          icon="⚙️"
+          title="Venue Settings"
+          description="Configure venue details and defaults"
+          link="/dashboard/venue-settings"
+        />
+        <DashboardCard
+          icon="👥"
+          title="Staff Management"
+          description="Manage all staff and permissions"
+          link="/dashboard/staff"
+        />
+        <DashboardCard
+          icon="🎉"
+          title="Events"
+          description="Create and manage events"
+          link="/dashboard/events"
+        />
+        <DashboardCard
+          icon="📊"
+          title="Analytics"
+          description="View comprehensive analytics"
+          link="/dashboard/analytics"
+        />
+        <DashboardCard
+          icon="🔔"
+          title="Notifications"
+          description="Manage system notifications"
+          link="/dashboard/notifications"
+        />
+        <DashboardCard
+          icon="💰"
+          title="Financial Reports"
+          description="Revenue and expense tracking"
+          link="/dashboard/finance"
+        />
       </div>
     ),
     [UserRole.MANAGER]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Manager Dashboard</h2>
-        <p>Welcome, {user.name}. Here you can manage staff, events, and view analytics.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="Staff Management"
-            description="Manage doormen, promoters, and DJs"
-            link="/dashboard/staff"
-          />
-          <DashboardCard
-            title="Events"
-            description="Create and manage events"
-            link="/dashboard/events"
-          />
-          <DashboardCard
-            title="Analytics"
-            description="View attendance and performance metrics"
-            link="/dashboard/analytics"
-          />
-          <DashboardCard
-            title="Settings"
-            description="Configure application settings"
-            link="/dashboard/settings"
-          />
-        </div>
-      </div>
-    ),
-    [UserRole.DOORPERSON]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Doorman Dashboard</h2>
-        <p>Welcome, {user.name}. Scan QR codes to check in guests.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="QR Scanner"
-            description="Scan QR codes to check in guests"
-            link="/dashboard/scanner"
-          />
-          <DashboardCard
-            title="Guest Lists"
-            description="View tonight's guest lists"
-            link="/dashboard/guest-lists"
-          />
-          <DashboardCard
-            title="Manual Check-in"
-            description="Check in guests without QR codes"
-            link="/dashboard/manual-checkin"
-          />
-        </div>
-      </div>
-    ),
-    [UserRole.PROMOTER]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Promoter Dashboard</h2>
-        <p>Welcome, Promoter. Here you can manage your guest lists and track performance.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="My Guest Lists"
-            description="Create and manage your guest lists"
-            link="/dashboard/my-lists"
-          />
-          <DashboardCard
-            title="Performance"
-            description="View your guest attendance metrics"
-            link="/dashboard/performance"
-          />
-          <DashboardCard
-            title="Guest Signup Link"
-            description="Get shareable links for guests to sign up"
-            link="/dashboard/signup-links"
-          />
-        </div>
-      </div>
-    ),
-    [UserRole.DJ]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">DJ Dashboard</h2>
-        <p>Welcome, DJ. Here you can manage your guest lists and view your events.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="My Guest Lists"
-            description="Create and manage your guest lists"
-            link="/dashboard/my-lists"
-          />
-          <DashboardCard
-            title="My Events"
-            description="View your upcoming events"
-            link="/dashboard/my-events"
-          />
-        </div>
-      </div>
-    ),
-    [UserRole.GUEST]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Guest Dashboard</h2>
-        <p>Welcome, Guest. You should not be seeing this page.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+        <DashboardCard
+          icon="👥"
+          title="Staff Management"
+          description="Manage doorpersons, promoters, and DJs"
+          link="/dashboard/staff"
+        />
+        <DashboardCard
+          icon="🎉"
+          title="Events"
+          description="Create and manage events"
+          link="/dashboard/events"
+        />
+        <DashboardCard
+          icon="📊"
+          title="Analytics"
+          description="View attendance and performance"
+          link="/dashboard/analytics"
+        />
+        <DashboardCard
+          icon="📋"
+          title="Guest Lists"
+          description="Review all guest lists"
+          link="/dashboard/guest-lists"
+        />
+        <DashboardCard
+          icon="🚫"
+          title="Bans & Security"
+          description="Manage banned guests"
+          link="/dashboard/bans"
+        />
+        <DashboardCard
+          icon="⚙️"
+          title="Settings"
+          description="Configure app settings"
+          link="/dashboard/settings"
+        />
       </div>
     ),
     [UserRole.ASSISTANT_MANAGER]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Assistant Manager Dashboard</h2>
-        <p>Welcome, {user.name}. Here you can assist with daily operations.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="Guest Lists"
-            description="Review and approve guest lists"
-            link="/dashboard/guest-lists"
-          />
-          <DashboardCard
-            title="Capacity Requests"
-            description="Handle capacity increase requests"
-            link="/dashboard/capacity-requests"
-          />
-          <DashboardCard
-            title="Analytics"
-            description="View basic analytics"
-            link="/dashboard/analytics"
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+        <DashboardCard
+          icon="📋"
+          title="Guest Lists"
+          description="Review and approve lists"
+          link="/dashboard/guest-lists"
+        />
+        <DashboardCard
+          icon="⚡"
+          title="Capacity Requests"
+          description="Handle capacity increases"
+          link="/dashboard/capacity-requests"
+        />
+        <DashboardCard
+          icon="📊"
+          title="Analytics"
+          description="View basic analytics"
+          link="/dashboard/analytics"
+        />
+        <DashboardCard
+          icon="🎉"
+          title="Tonight's Event"
+          description="View current event details"
+          link="/dashboard/tonight"
+        />
+      </div>
+    ),
+    [UserRole.DOORPERSON]: (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+        <DashboardCard
+          icon="📱"
+          title="QR Scanner"
+          description="Scan QR codes to check in guests"
+          link="/dashboard/scanner"
+          primary
+        />
+        <DashboardCard
+          icon="📋"
+          title="Guest Lists"
+          description="View tonight's guest lists"
+          link="/dashboard/guest-lists"
+        />
+        <DashboardCard
+          icon="✋"
+          title="Manual Check-in"
+          description="Check in guests without QR"
+          link="/dashboard/manual-checkin"
+        />
+        <DashboardCard
+          icon="🚫"
+          title="Security Alerts"
+          description="View banned guests"
+          link="/dashboard/security"
+        />
+      </div>
+    ),
+    [UserRole.PROMOTER]: (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+        <DashboardCard
+          icon="📋"
+          title="My Guest Lists"
+          description="Create and manage your lists"
+          link="/dashboard/my-lists"
+        />
+        <DashboardCard
+          icon="📊"
+          title="Performance"
+          description="View your attendance metrics"
+          link="/dashboard/performance"
+        />
+        <DashboardCard
+          icon="🔗"
+          title="Guest Signup Link"
+          description="Get shareable signup links"
+          link="/dashboard/signup-links"
+        />
+        <DashboardCard
+          icon="📈"
+          title="Analytics"
+          description="Track your guest conversions"
+          link="/dashboard/my-analytics"
+        />
+      </div>
+    ),
+    [UserRole.DJ]: (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+        <DashboardCard
+          icon="📋"
+          title="My Guest Lists"
+          description="Create and manage your lists"
+          link="/dashboard/my-lists"
+        />
+        <DashboardCard
+          icon="🎉"
+          title="My Events"
+          description="View your upcoming events"
+          link="/dashboard/my-events"
+        />
+        <DashboardCard
+          icon="🔗"
+          title="Guest Signup Link"
+          description="Share with your fans"
+          link="/dashboard/signup-links"
+        />
+        <DashboardCard
+          icon="📊"
+          title="Fan Analytics"
+          description="See who's coming to see you"
+          link="/dashboard/fan-analytics"
+        />
       </div>
     ),
     [UserRole.STAFF]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Staff Dashboard</h2>
-        <p>Welcome, {user.name}. Invite your friends to tonight&apos;s event.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="Tonight&apos;s Event"
-            description="Share guest list link with friends"
-            link="/dashboard/tonight"
-          />
-          <DashboardCard
-            title="My Guest List"
-            description="View who's coming tonight"
-            link="/dashboard/my-guests"
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+        <DashboardCard
+          icon="🎉"
+          title="Tonight's Event"
+          description="Share guest list link with friends"
+          link="/dashboard/tonight"
+        />
+        <DashboardCard
+          icon="👥"
+          title="My Guest List"
+          description="View who's coming tonight"
+          link="/dashboard/my-guests"
+        />
       </div>
     ),
     [UserRole.VIP]: (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">VIP Portal</h2>
-        <p>Welcome, {user.name}. Access your VIP benefits.</p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <DashboardCard
-            title="My QR Code"
-            description="Get your permanent entry QR code"
-            link="/dashboard/vip-qr"
-          />
-          <DashboardCard
-            title="VIP History"
-            description="View your visit history"
-            link="/dashboard/vip-history"
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+        <DashboardCard
+          icon="🎫"
+          title="My QR Code"
+          description="Get your permanent entry QR"
+          link="/dashboard/vip-qr"
+        />
+        <DashboardCard
+          icon="📅"
+          title="VIP History"
+          description="View your visit history"
+          link="/dashboard/vip-history"
+        />
+      </div>
+    ),
+    [UserRole.GUEST]: (
+      <div className="text-center py-6xl">
+        <h2 className="text-2xl font-light mb-lg">Welcome, Guest</h2>
+        <p className="text-gray-600 mb-2xl">You should not be seeing this page.</p>
+        <a href="/guest/auth" className="btn btn-primary">
+          Go to Guest Portal
+        </a>
       </div>
     ),
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Guestlist App</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500">
-              Signed in as <span className="font-medium">{user.email}</span> ({role})
-            </span>
-            <button
-              onClick={handleSignOut}
-              className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
-      <main>
-        <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="rounded-lg border-4 border-dashed border-gray-200 p-4">
-              {(() => {
-                console.log('🎬 About to render content for role:', role);
-                console.log('🎬 roleContent keys:', Object.keys(roleContent));
-                console.log('🎬 roleContent[role] exists:', !!roleContent[role]);
-                console.log('🎬 Direct MANAGER lookup:', !!roleContent[UserRole.MANAGER]);
-                
-                const content = roleContent[role];
-                if (!content) {
-                  console.error('❌ No content found for role:', role);
-                  return <div>No content available for role: {String(role)}</div>;
-                }
-                return content;
-              })()}
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-gray-200">
+        <div className="container mx-auto px-xl py-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3xl">
+              <h1 className="text-2xl font-light">Guestlist</h1>
+              <nav className="hidden md:flex items-center gap-xl">
+                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-black transition-colors">
+                  Dashboard
+                </Link>
+                {(role === UserRole.MANAGER || role === UserRole.OWNER) && (
+                  <>
+                    <Link href="/dashboard/events" className="text-sm text-gray-600 hover:text-black transition-colors">
+                      Events
+                    </Link>
+                    <Link href="/dashboard/staff" className="text-sm text-gray-600 hover:text-black transition-colors">
+                      Staff
+                    </Link>
+                    <Link href="/dashboard/analytics" className="text-sm text-gray-600 hover:text-black transition-colors">
+                      Analytics
+                    </Link>
+                  </>
+                )}
+              </nav>
+            </div>
+            <div className="flex items-center gap-xl">
+              <div className="text-right">
+                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-xs text-gray-500">{role}</p>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="btn btn-ghost btn-sm"
+              >
+                Sign Out
+              </button>
             </div>
           </div>
         </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-xl py-4xl">
+        {/* Welcome Section */}
+        <div className="mb-4xl">
+          <h2 className="text-3xl font-light mb-lg">
+            {getGreeting()}, {user.name.split(' ')[0] || user.email.split('@')[0]}
+          </h2>
+          <p className="text-lg text-gray-600">
+            {getRoleDescription(role)}
+          </p>
+        </div>
+
+        {/* Role-specific content */}
+        {roleContent[role]}
       </main>
     </div>
   );
@@ -411,21 +395,57 @@ export default function DashboardPage() {
 
 // Helper component for dashboard cards
 function DashboardCard({
+  icon,
   title,
   description,
   link,
+  primary = false,
 }: {
+  icon: string;
   title: string;
   description: string;
   link: string;
+  primary?: boolean;
 }) {
   return (
-    <Link
-      href={link}
-      className="block rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
-    >
-      <h3 className="mb-2 text-lg font-medium">{title}</h3>
-      <p className="text-sm text-gray-600">{description}</p>
+    <Link href={link} className={`card hover:shadow-lg transition-all group ${primary ? 'border-2 border-black' : ''}`}>
+      <div className="card-body">
+        <div className="flex items-start gap-lg">
+          <span className="text-3xl">{icon}</span>
+          <div className="flex-1">
+            <h3 className="text-lg font-medium mb-sm group-hover:text-gray-700 transition-colors">
+              {title}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {description}
+            </p>
+          </div>
+          <span className="text-gray-400 group-hover:text-black transition-colors">→</span>
+        </div>
+      </div>
     </Link>
   );
+}
+
+// Helper functions
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function getRoleDescription(role: UserRole): string {
+  const descriptions: Record<UserRole, string> = {
+    [UserRole.OWNER]: 'You have full access to all system features and settings.',
+    [UserRole.MANAGER]: 'Manage your venue\'s staff, events, and analytics.',
+    [UserRole.ASSISTANT_MANAGER]: 'Assist with daily operations and guest list management.',
+    [UserRole.DOORPERSON]: 'Check in guests and manage door operations.',
+    [UserRole.PROMOTER]: 'Build and manage your guest lists for tonight\'s event.',
+    [UserRole.DJ]: 'Manage your guest lists and view your upcoming performances.',
+    [UserRole.STAFF]: 'Invite your friends to tonight\'s event.',
+    [UserRole.VIP]: 'Welcome to your VIP portal.',
+    [UserRole.GUEST]: 'Welcome to the guest portal.',
+  };
+  return descriptions[role] || 'Welcome to the dashboard.';
 }
