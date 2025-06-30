@@ -96,7 +96,7 @@ export default function DashboardPage() {
   // Role-specific content
   const roleContent: Record<UserRole, React.ReactNode> = {
     [UserRole.OWNER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="⚙️"
           title="Venue Settings"
@@ -136,7 +136,7 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.MANAGER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="👥"
           title="Staff Management"
@@ -176,7 +176,7 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.ASSISTANT_MANAGER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="📋"
           title="Guest Lists"
@@ -204,7 +204,7 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.DOORPERSON]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="📱"
           title="QR Scanner"
@@ -233,7 +233,7 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.PROMOTER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="📋"
           title="My Guest Lists"
@@ -261,7 +261,7 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.DJ]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="📋"
           title="My Guest Lists"
@@ -289,7 +289,7 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.STAFF]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="🎉"
           title="Tonight's Event"
@@ -305,7 +305,7 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.VIP]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
           icon="🎫"
           title="My QR Code"
@@ -321,9 +321,19 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.GUEST]: (
-      <div className="text-center py-6xl">
-        <h2 className="text-2xl font-light mb-lg">Welcome, Guest</h2>
-        <p className="text-gray-600 mb-2xl">You should not be seeing this page.</p>
+      <div className="text-center" style={{ padding: 'var(--space-6xl) 0' }}>
+        <h2 className="text-2xl font-light" style={{ 
+          color: 'var(--color-black)', 
+          marginBottom: 'var(--space-lg)' 
+        }}>
+          Welcome, Guest
+        </h2>
+        <p className="text-lg" style={{ 
+          color: 'var(--color-gray-600)', 
+          marginBottom: 'var(--space-2xl)' 
+        }}>
+          You should not be seeing this page.
+        </p>
         <a href="/guest/auth" className="btn btn-primary">
           Go to Guest Portal
         </a>
@@ -339,30 +349,58 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3xl">
             <h1 className="text-2xl font-light" style={{ color: 'var(--color-black)' }}>Nightlist</h1>
             <nav className="hidden md:flex items-center gap-xl">
-              <Link href="/dashboard" className="text-sm" style={{ 
-                color: 'var(--color-gray-600)', 
-                transition: 'color var(--transition-normal)'
-              }}>
+              <Link 
+                href="/dashboard" 
+                className="text-sm nav-link" 
+                style={{ 
+                  color: 'var(--color-gray-600)', 
+                  transition: 'color var(--transition-normal)',
+                  textDecoration: 'none'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
+                onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+              >
                 Dashboard
               </Link>
               {(role === UserRole.MANAGER || role === UserRole.OWNER) && (
                 <>
-                  <Link href="/dashboard/events" className="text-sm" style={{ 
-                    color: 'var(--color-gray-600)', 
-                    transition: 'color var(--transition-normal)'
-                  }}>
+                  <Link 
+                    href="/dashboard/events" 
+                    className="text-sm nav-link" 
+                    style={{ 
+                      color: 'var(--color-gray-600)', 
+                      transition: 'color var(--transition-normal)',
+                      textDecoration: 'none'
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+                  >
                     Events
                   </Link>
-                  <Link href="/dashboard/staff" className="text-sm" style={{ 
-                    color: 'var(--color-gray-600)', 
-                    transition: 'color var(--transition-normal)'
-                  }}>
+                  <Link 
+                    href="/dashboard/staff" 
+                    className="text-sm nav-link" 
+                    style={{ 
+                      color: 'var(--color-gray-600)', 
+                      transition: 'color var(--transition-normal)',
+                      textDecoration: 'none'
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+                  >
                     Staff
                   </Link>
-                  <Link href="/dashboard/analytics" className="text-sm" style={{ 
-                    color: 'var(--color-gray-600)', 
-                    transition: 'color var(--transition-normal)'
-                  }}>
+                  <Link 
+                    href="/dashboard/analytics" 
+                    className="text-sm nav-link" 
+                    style={{ 
+                      color: 'var(--color-gray-600)', 
+                      transition: 'color var(--transition-normal)',
+                      textDecoration: 'none'
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+                  >
                     Analytics
                   </Link>
                 </>
@@ -421,19 +459,47 @@ function DashboardCard({
   primary?: boolean;
 }) {
   return (
-    <Link href={link} className={`card hover:shadow-lg transition-all group ${primary ? 'border-2 border-black' : ''}`}>
+    <Link 
+      href={link} 
+      className={`card group ${primary ? 'border-2' : ''}`} 
+      style={{
+        ...(primary && { borderColor: 'var(--color-black)' }),
+        textDecoration: 'none'
+      }}
+      onMouseEnter={(e) => {
+        const arrow = e.currentTarget.querySelector('.arrow') as HTMLElement;
+        if (arrow) arrow.style.color = 'var(--color-black)';
+      }}
+      onMouseLeave={(e) => {
+        const arrow = e.currentTarget.querySelector('.arrow') as HTMLElement;
+        if (arrow) arrow.style.color = 'var(--color-gray-400)';
+      }}
+    >
       <div className="card-body">
         <div className="flex items-start gap-lg">
-          <span className="text-3xl">{icon}</span>
+          <span className="text-3xl" style={{ fontSize: '2rem', lineHeight: '1' }}>{icon}</span>
           <div className="flex-1">
-            <h3 className="text-lg font-medium mb-sm group-hover:text-gray-700 transition-colors">
+            <h3 className="text-lg font-medium" style={{ 
+              color: 'var(--color-black)', 
+              marginBottom: 'var(--space-sm)',
+              transition: 'color var(--transition-normal)'
+            }}>
               {title}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm" style={{ color: 'var(--color-gray-600)' }}>
               {description}
             </p>
           </div>
-          <span className="text-gray-400 group-hover:text-black transition-colors">→</span>
+          <span 
+            className="text-lg arrow" 
+            style={{ 
+              color: 'var(--color-gray-400)', 
+              transition: 'color var(--transition-normal)',
+              fontSize: '1.25rem'
+            }}
+          >
+            →
+          </span>
         </div>
       </div>
     </Link>
