@@ -88,7 +88,7 @@ export default function GuestDashboard() {
     try {
       // TODO: Create a guest_list_entries table and update the plus_one count there
       // For now, we'll just update local state
-      console.log(`Plus-one count updated to ${newCount} for guest ${guest.guestId}`);
+      console.log(`Plus-one count updated to ${newCount} for guest ${guest?.guestId}`);
     } catch (error) {
       console.error('Failed to update plus-one count:', error);
       // Revert on error

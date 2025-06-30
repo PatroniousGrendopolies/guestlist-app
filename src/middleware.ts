@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 import { UserRole } from './types/enums';
 
 // Define public paths that should always be accessible
-const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error', '/auth/update-password'];
+const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error', '/auth/update-password', '/doorperson/login', '/doorperson/scanner', '/doorperson/search', '/doorperson/checkin'];
 
 // Temporarily disable middleware to debug database connection issues
 const DISABLE_MIDDLEWARE = true;

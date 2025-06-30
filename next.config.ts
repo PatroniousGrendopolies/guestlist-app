@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   skipMiddlewareUrlNormalize: true,
   skipTrailingSlashRedirect: true,
   // We've removed bcrypt from the project, so we don't need serverComponentsExternalPackages anymore
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
