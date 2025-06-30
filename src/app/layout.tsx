@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Guestlist App',
+  title: 'Nightlist',
   description: 'Nightclub guest list management system',
 };
 

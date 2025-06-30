@@ -98,37 +98,31 @@ export default function DashboardPage() {
     [UserRole.OWNER]: (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="⚙️"
           title="Venue Settings"
           description="Configure venue details and defaults"
           link="/dashboard/venue-settings"
         />
         <DashboardCard
-          icon="👥"
           title="Staff Management"
           description="Manage all staff and permissions"
           link="/dashboard/staff"
         />
         <DashboardCard
-          icon="🎉"
           title="Events"
           description="Create and manage events"
           link="/dashboard/events"
         />
         <DashboardCard
-          icon="📊"
           title="Analytics"
           description="View comprehensive analytics"
           link="/dashboard/analytics"
         />
         <DashboardCard
-          icon="🔔"
           title="Notifications"
           description="Manage system notifications"
           link="/dashboard/notifications"
         />
         <DashboardCard
-          icon="💰"
           title="Financial Reports"
           description="Revenue and expense tracking"
           link="/dashboard/finance"
@@ -138,37 +132,31 @@ export default function DashboardPage() {
     [UserRole.MANAGER]: (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="👥"
           title="Staff Management"
           description="Manage doorpersons, promoters, and DJs"
           link="/dashboard/staff"
         />
         <DashboardCard
-          icon="🎉"
           title="Events"
           description="Create and manage events"
           link="/dashboard/events"
         />
         <DashboardCard
-          icon="📊"
           title="Analytics"
           description="View attendance and performance"
           link="/dashboard/analytics"
         />
         <DashboardCard
-          icon="📋"
           title="Guest Lists"
           description="Review all guest lists"
           link="/dashboard/guest-lists"
         />
         <DashboardCard
-          icon="🚫"
           title="Bans & Security"
           description="Manage banned guests"
           link="/dashboard/bans"
         />
         <DashboardCard
-          icon="⚙️"
           title="Settings"
           description="Configure app settings"
           link="/dashboard/settings"
@@ -178,25 +166,21 @@ export default function DashboardPage() {
     [UserRole.ASSISTANT_MANAGER]: (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="📋"
           title="Guest Lists"
           description="Review and approve lists"
           link="/dashboard/guest-lists"
         />
         <DashboardCard
-          icon="⚡"
           title="Capacity Requests"
           description="Handle capacity increases"
           link="/dashboard/capacity-requests"
         />
         <DashboardCard
-          icon="📊"
           title="Analytics"
           description="View basic analytics"
           link="/dashboard/analytics"
         />
         <DashboardCard
-          icon="🎉"
           title="Tonight's Event"
           description="View current event details"
           link="/dashboard/tonight"
@@ -206,26 +190,22 @@ export default function DashboardPage() {
     [UserRole.DOORPERSON]: (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="📱"
           title="QR Scanner"
           description="Scan QR codes to check in guests"
           link="/dashboard/scanner"
           primary
         />
         <DashboardCard
-          icon="📋"
           title="Guest Lists"
           description="View tonight's guest lists"
           link="/dashboard/guest-lists"
         />
         <DashboardCard
-          icon="✋"
           title="Manual Check-in"
           description="Check in guests without QR"
           link="/dashboard/manual-checkin"
         />
         <DashboardCard
-          icon="🚫"
           title="Security Alerts"
           description="View banned guests"
           link="/dashboard/security"
@@ -235,25 +215,21 @@ export default function DashboardPage() {
     [UserRole.PROMOTER]: (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="📋"
           title="My Guest Lists"
           description="Create and manage your lists"
           link="/dashboard/my-lists"
         />
         <DashboardCard
-          icon="📊"
           title="Performance"
           description="View your attendance metrics"
           link="/dashboard/performance"
         />
         <DashboardCard
-          icon="🔗"
           title="Guest Signup Link"
           description="Get shareable signup links"
           link="/dashboard/signup-links"
         />
         <DashboardCard
-          icon="📈"
           title="Analytics"
           description="Track your guest conversions"
           link="/dashboard/my-analytics"
@@ -263,25 +239,21 @@ export default function DashboardPage() {
     [UserRole.DJ]: (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="📋"
           title="My Guest Lists"
           description="Create and manage your lists"
           link="/dashboard/my-lists"
         />
         <DashboardCard
-          icon="🎉"
           title="My Events"
           description="View your upcoming events"
           link="/dashboard/my-events"
         />
         <DashboardCard
-          icon="🔗"
           title="Guest Signup Link"
           description="Share with your fans"
           link="/dashboard/signup-links"
         />
         <DashboardCard
-          icon="📊"
           title="Fan Analytics"
           description="See who's coming to see you"
           link="/dashboard/fan-analytics"
@@ -291,13 +263,11 @@ export default function DashboardPage() {
     [UserRole.STAFF]: (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="🎉"
           title="Tonight's Event"
           description="Share guest list link with friends"
           link="/dashboard/tonight"
         />
         <DashboardCard
-          icon="👥"
           title="My Guest List"
           description="View who's coming tonight"
           link="/dashboard/my-guests"
@@ -307,13 +277,11 @@ export default function DashboardPage() {
     [UserRole.VIP]: (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ gap: 'var(--space-xl)' }}>
         <DashboardCard
-          icon="🎫"
           title="My QR Code"
           description="Get your permanent entry QR"
           link="/dashboard/vip-qr"
         />
         <DashboardCard
-          icon="📅"
           title="VIP History"
           description="View your visit history"
           link="/dashboard/vip-history"
@@ -446,13 +414,11 @@ export default function DashboardPage() {
 
 // Helper component for dashboard cards
 function DashboardCard({
-  icon,
   title,
   description,
   link,
   primary = false,
 }: {
-  icon: string;
   title: string;
   description: string;
   link: string;
@@ -476,8 +442,7 @@ function DashboardCard({
       }}
     >
       <div className="card-body">
-        <div className="flex items-start gap-lg">
-          <span className="text-3xl" style={{ fontSize: '2rem', lineHeight: '1' }}>{icon}</span>
+        <div className="flex items-start justify-between">
           <div className="flex-1">
             <h3 className="text-lg font-medium" style={{ 
               color: 'var(--color-black)', 
@@ -495,7 +460,8 @@ function DashboardCard({
             style={{ 
               color: 'var(--color-gray-400)', 
               transition: 'color var(--transition-normal)',
-              fontSize: '1.25rem'
+              fontSize: '1.25rem',
+              marginLeft: 'var(--space-lg)'
             }}
           >
             →

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface FormData {
@@ -19,7 +19,7 @@ interface EventInfo {
   date: string;
 }
 
-export default function DJSignupPage() {
+function DJSignupPageContent() {
   const [formData, setFormData] = useState<FormData>({
     djName: '',
     givenName: '',
@@ -354,5 +354,20 @@ export default function DJSignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DJSignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <DJSignupPageContent />
+    </Suspense>
   );
 }
