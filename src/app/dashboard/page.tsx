@@ -332,56 +332,69 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-white)' }}>
       {/* Header */}
-      <header className="border-b border-gray-200">
-        <div className="container mx-auto px-xl py-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3xl">
-              <h1 className="text-2xl font-light">Guestlist</h1>
-              <nav className="hidden md:flex items-center gap-xl">
-                <Link href="/dashboard" className="text-sm text-gray-600 hover:text-black transition-colors">
-                  Dashboard
-                </Link>
-                {(role === UserRole.MANAGER || role === UserRole.OWNER) && (
-                  <>
-                    <Link href="/dashboard/events" className="text-sm text-gray-600 hover:text-black transition-colors">
-                      Events
-                    </Link>
-                    <Link href="/dashboard/staff" className="text-sm text-gray-600 hover:text-black transition-colors">
-                      Staff
-                    </Link>
-                    <Link href="/dashboard/analytics" className="text-sm text-gray-600 hover:text-black transition-colors">
-                      Analytics
-                    </Link>
-                  </>
-                )}
-              </nav>
+      <header style={{ borderBottom: '1px solid var(--color-gray-200)' }}>
+        <div className="container flex items-center justify-between" style={{ padding: 'var(--space-xl)' }}>
+          <div className="flex items-center gap-3xl">
+            <h1 className="text-2xl font-light" style={{ color: 'var(--color-black)' }}>Nightlist</h1>
+            <nav className="hidden md:flex items-center gap-xl">
+              <Link href="/dashboard" className="text-sm" style={{ 
+                color: 'var(--color-gray-600)', 
+                transition: 'color var(--transition-normal)'
+              }}>
+                Dashboard
+              </Link>
+              {(role === UserRole.MANAGER || role === UserRole.OWNER) && (
+                <>
+                  <Link href="/dashboard/events" className="text-sm" style={{ 
+                    color: 'var(--color-gray-600)', 
+                    transition: 'color var(--transition-normal)'
+                  }}>
+                    Events
+                  </Link>
+                  <Link href="/dashboard/staff" className="text-sm" style={{ 
+                    color: 'var(--color-gray-600)', 
+                    transition: 'color var(--transition-normal)'
+                  }}>
+                    Staff
+                  </Link>
+                  <Link href="/dashboard/analytics" className="text-sm" style={{ 
+                    color: 'var(--color-gray-600)', 
+                    transition: 'color var(--transition-normal)'
+                  }}>
+                    Analytics
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
+          <div className="flex items-center gap-xl">
+            <div className="text-right">
+              <p className="text-sm font-medium" style={{ color: 'var(--color-black)' }}>{user.name}</p>
+              <p className="text-xs" style={{ color: 'var(--color-gray-500)' }}>{role}</p>
             </div>
-            <div className="flex items-center gap-xl">
-              <div className="text-right">
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-gray-500">{role}</p>
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="btn btn-ghost btn-sm"
-              >
-                Sign Out
-              </button>
-            </div>
+            <button
+              onClick={handleSignOut}
+              className="btn btn-ghost btn-sm"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-xl py-4xl">
+      <main className="container" style={{ padding: 'var(--space-4xl) var(--space-xl)' }}>
         {/* Welcome Section */}
-        <div className="mb-4xl">
-          <h2 className="text-3xl font-light mb-lg">
+        <div style={{ marginBottom: 'var(--space-4xl)' }}>
+          <h2 className="text-3xl font-light" style={{ 
+            color: 'var(--color-black)', 
+            marginBottom: 'var(--space-lg)' 
+          }}>
             {getGreeting()}, {user.name.split(' ')[0] || user.email.split('@')[0]}
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg" style={{ color: 'var(--color-gray-600)' }}>
             {getRoleDescription(role)}
           </p>
         </div>
