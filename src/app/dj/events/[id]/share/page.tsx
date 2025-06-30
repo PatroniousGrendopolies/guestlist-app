@@ -169,22 +169,15 @@ export default function DJEventSharePage() {
       <div className="max-w-2xl mx-auto p-6">
         {/* Event Details */}
         <div className="bg-gray-50 rounded-xl p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">{eventInfo.name}</h2>
           <div className="space-y-2 text-sm text-gray-600 mb-4">
-            <p><strong>Date:</strong> {eventInfo.date}</p>
-            <p><strong>Venue:</strong> {eventInfo.venue}</p>
-            <p><strong>Spots Available:</strong> {eventInfo.totalSpots - eventInfo.spotsUsed} remaining</p>
+            <p>{eventInfo.date}</p>
+            <p>{eventInfo.venue}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-black h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
-              ></div>
-            </div>
-            <span className="text-sm font-medium">
-              {eventInfo.spotsUsed}/{eventInfo.totalSpots}
-            </span>
+          
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-4">
+              Active signups: <strong>{eventInfo.spotsUsed}</strong>
+            </p>
           </div>
         </div>
 
@@ -207,89 +200,39 @@ export default function DJEventSharePage() {
               </button>
             </div>
             {copyMessage && (
-              <p className={`text-sm ${copyMessage.includes('Failed') ? 'text-red-600' : 'text-green-600'}`}>
+              <p className={`text-sm ${copyMessage.includes('Failed') ? 'text-red-600' : 'text-black'}`}>
                 {copyMessage}
               </p>
             )}
           </div>
           
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">
-              Active signups: <strong>{eventInfo.spotsUsed}</strong>
-            </p>
-          </div>
-        </div>
-
-        {/* Share Options */}
-        <div className="mb-6">
-          <h3 className="text-lg font-medium mb-4">Share Options</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleShare('sms')}
-              className="flex items-center justify-center gap-2 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-2xl">💬</span>
-              <span className="font-medium">SMS</span>
-            </button>
-            
-            <button
-              onClick={() => handleShare('whatsapp')}
-              className="flex items-center justify-center gap-2 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-2xl">📱</span>
-              <span className="font-medium">WhatsApp</span>
-            </button>
-            
-            <button
-              onClick={() => handleShare('instagram')}
-              className="flex items-center justify-center gap-2 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-2xl">📸</span>
-              <span className="font-medium">IG Story</span>
-            </button>
-            
             <button
               onClick={() => handleShare('native')}
-              className="flex items-center justify-center gap-2 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              className="w-full bg-black text-white py-4 rounded-xl font-medium text-lg hover:bg-gray-900 transition-colors"
             >
-              <span className="text-2xl">📤</span>
-              <span className="font-medium">More</span>
+              Share Event
             </button>
           </div>
         </div>
 
-        {/* QR Code */}
-        <div className="text-center">
-          <h3 className="text-lg font-medium mb-4">QR Code for Posting</h3>
-          <div className="inline-block bg-white p-4 rounded-xl border border-gray-200 mb-4">
-            <canvas
-              ref={qrCanvasRef}
-              className="block"
-              style={{ maxWidth: '200px', height: 'auto' }}
-            />
+        {/* Capacity Chart */}
+        <div className="bg-gray-50 rounded-xl p-6">
+          <h3 className="text-lg font-medium mb-4">Event Capacity</h3>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 bg-gray-200 rounded-full h-3">
+              <div 
+                className="bg-black h-3 rounded-full transition-all duration-300"
+                style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
+              ></div>
+            </div>
+            <span className="text-lg font-semibold">
+              {eventInfo.spotsUsed}/{eventInfo.totalSpots}
+            </span>
           </div>
-          <div>
-            <button
-              onClick={downloadQRCode}
-              className="px-6 py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-900 transition-colors"
-            >
-              Download QR Code
-            </button>
-          </div>
-          <p className="text-sm text-gray-500 mt-2">
-            Perfect for flyers, social media posts, and print materials
+          <p className="text-sm text-gray-500 mt-2 text-center">
+            {Math.round((eventInfo.spotsUsed / eventInfo.totalSpots) * 100)}% full
           </p>
-        </div>
-
-        {/* Tips */}
-        <div className="mt-8 bg-blue-50 rounded-xl p-6">
-          <h4 className="font-medium mb-3">💡 Sharing Tips</h4>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li>• Share early to give people time to plan</li>
-            <li>• Post on Instagram Stories with the QR code</li>
-            <li>• Send direct messages to your top supporters</li>
-            <li>• Include the event in your DJ bio links</li>
-          </ul>
         </div>
       </div>
     </div>

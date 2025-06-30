@@ -30,6 +30,7 @@ export default function DJDashboardPage() {
     totalGuestsLifetime: 487,
     thisMonthAttendees: 67
   });
+  const [activeTab, setActiveTab] = useState<'events' | 'analytics'>('events');
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -136,142 +137,162 @@ export default function DJDashboardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-gray-50 rounded-xl p-4">
-            <h3 className="text-sm text-gray-600 font-medium">Last Event Conversion</h3>
-            <p className="text-2xl font-semibold">{quickStats.lastEventConversion}%</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4">
-            <h3 className="text-sm text-gray-600 font-medium">This Month Attendees</h3>
-            <p className="text-2xl font-semibold">{quickStats.thisMonthAttendees}</p>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4">
-            <h3 className="text-sm text-gray-600 font-medium">Total Guests Lifetime</h3>
-            <p className="text-2xl font-semibold">{quickStats.totalGuestsLifetime}</p>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-1 mb-8 bg-gray-100 rounded-xl p-1">
+          <button
+            onClick={() => setActiveTab('events')}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors flex-1 ${
+              activeTab === 'events' 
+                ? 'bg-white text-black shadow-sm' 
+                : 'text-gray-600 hover:text-black'
+            }`}
+          >
+            Events
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors flex-1 ${
+              activeTab === 'analytics' 
+                ? 'bg-white text-black shadow-sm' 
+                : 'text-gray-600 hover:text-black'
+            }`}
+          >
+            Analytics
+          </button>
         </div>
 
-        {/* Upcoming Events */}
-        <div className="mb-8">
-          <h2 className="text-xl font-medium mb-4">Upcoming Events</h2>
-          {upcomingEvents.length === 0 ? (
-            <div className="bg-gray-50 rounded-xl p-8 text-center">
-              <div className="text-4xl mb-4">🎵</div>
-              <h3 className="text-lg font-medium mb-2">No upcoming events</h3>
-              <p className="text-gray-600">You'll see your future performances here once they're scheduled.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="bg-white border border-gray-200 rounded-xl p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-1">{event.name}</h3>
-                      <p className="text-gray-600 mb-2">{event.date}</p>
-                      {event.otherDJs.length > 0 && (
-                        <p className="text-sm text-gray-500">
-                          Also playing: {event.otherDJs.join(', ')}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="text-center">
-                        <div className="text-lg font-semibold">
-                          {event.spotsUsed}/{event.totalSpots}
-                        </div>
-                        <div className="text-xs text-gray-500">spots filled</div>
-                        <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
-                          <div 
-                            className="bg-black h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <button
-                          onClick={() => handleEventAction(event.id, 'share')}
-                          className="px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900 transition-colors text-sm"
-                        >
-                          Share Link
-                        </button>
-                        <button
-                          onClick={() => handleEventAction(event.id, 'manage')}
-                          className="px-4 py-2 bg-white text-black border border-black rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
-                        >
-                          Manage Guests
-                        </button>
-                        <button
-                          onClick={() => handleEventAction(event.id, 'invite')}
-                          className="px-4 py-2 bg-gray-100 text-black rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
-                        >
-                          Invite Past Guests
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+        {/* Events Tab */}
+        {activeTab === 'events' && (
+          <>
+            {/* Upcoming Events */}
+            <div className="mb-8">
+              <h2 className="text-xl font-medium mb-4">Upcoming Events</h2>
+              {upcomingEvents.length === 0 ? (
+                <div className="bg-gray-50 rounded-xl p-8 text-center">
+                  <h3 className="text-lg font-medium mb-2">No upcoming events</h3>
+                  <p className="text-gray-600">You'll see your future performances here once they're scheduled.</p>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-4">
+                  {upcomingEvents.map((event) => (
+                    <button
+                      key={event.id}
+                      onClick={() => handleEventAction(event.id, 'manage')}
+                      className="w-full bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors text-left"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold mb-1">{event.name}</h3>
+                          <p className="text-gray-600 mb-2">{event.date}</p>
+                          {event.otherDJs.length > 0 && (
+                            <p className="text-sm text-gray-500">
+                              Also playing: {event.otherDJs.join(', ')}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="text-lg font-semibold">
+                            {event.spotsUsed}/{event.totalSpots}
+                          </div>
+                          <div className="text-xs text-gray-500">spots filled</div>
+                          <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                            <div 
+                              className="bg-black h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Past Events */}
-        <div>
-          <h2 className="text-xl font-medium mb-4">Past Events</h2>
-          {pastEvents.length === 0 ? (
-            <div className="bg-gray-50 rounded-xl p-8 text-center">
-              <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-lg font-medium mb-2">No past events</h3>
-              <p className="text-gray-600">Your performance history will appear here after your first event.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {pastEvents.map((event) => (
-                <div key={event.id} className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-1">{event.name}</h3>
-                      <p className="text-gray-600 mb-2">{event.date}</p>
-                      {event.otherDJs.length > 0 && (
-                        <p className="text-sm text-gray-500">
-                          Also played: {event.otherDJs.join(', ')}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                      <div className="grid grid-cols-2 gap-4 text-center">
-                        <div>
-                          <div className="text-lg font-semibold">{event.spotsUsed}</div>
-                          <div className="text-xs text-gray-500">invited</div>
-                        </div>
-                        <div>
-                          <div className="text-lg font-semibold">{event.totalAttendees}</div>
-                          <div className="text-xs text-gray-500">attended</div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">{event.conversionRate}%</div>
-                        <div className="text-xs text-gray-500">conversion rate</div>
-                      </div>
-                      
-                      <button
-                        onClick={() => router.push(`/dj/events/${event.id}`)}
-                        className="px-4 py-2 bg-white text-black border border-black rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  </div>
+            {/* Past Events */}
+            <div>
+              <h2 className="text-xl font-medium mb-4">Past Events</h2>
+              {pastEvents.length === 0 ? (
+                <div className="bg-gray-50 rounded-xl p-8 text-center">
+                  <h3 className="text-lg font-medium mb-2">No past events</h3>
+                  <p className="text-gray-600">Your performance history will appear here after your first event.</p>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-4">
+                  {pastEvents.map((event) => (
+                    <button
+                      key={event.id}
+                      onClick={() => router.push(`/dj/events/${event.id}`)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors text-left"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold mb-1">{event.name}</h3>
+                          <p className="text-gray-600 mb-2">{event.date}</p>
+                          {event.otherDJs.length > 0 && (
+                            <p className="text-sm text-gray-500">
+                              Also played: {event.otherDJs.join(', ')}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                          <div className="grid grid-cols-2 gap-4 text-center">
+                            <div>
+                              <div className="text-lg font-semibold">{event.spotsUsed}</div>
+                              <div className="text-xs text-gray-500">invited</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-semibold">{event.totalAttendees}</div>
+                              <div className="text-xs text-gray-500">attended</div>
+                            </div>
+                          </div>
+                          
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-black">{event.conversionRate}%</div>
+                            <div className="text-xs text-gray-500">conversion rate</div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h3 className="text-sm text-gray-600 font-medium">Last Event Conversion</h3>
+                <p className="text-2xl font-semibold">{quickStats.lastEventConversion}%</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h3 className="text-sm text-gray-600 font-medium">This Month Attendees</h3>
+                <p className="text-2xl font-semibold">{quickStats.thisMonthAttendees}</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h3 className="text-sm text-gray-600 font-medium">Total Guests Lifetime</h3>
+                <p className="text-2xl font-semibold">{quickStats.totalGuestsLifetime}</p>
+              </div>
+            </div>
+
+            {/* Full Analytics Button */}
+            <div className="text-center">
+              <button
+                onClick={() => router.push('/dj/analytics')}
+                className="px-8 py-4 bg-black text-white rounded-xl font-medium hover:bg-gray-900 transition-colors"
+              >
+                View Full Analytics
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Navigation hint */}
         <div className="mt-12 text-center text-gray-500 text-sm">

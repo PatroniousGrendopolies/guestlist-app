@@ -432,40 +432,19 @@ function DashboardCard({
         ...(primary && { borderColor: 'var(--color-black)' }),
         textDecoration: 'none'
       }}
-      onMouseEnter={(e) => {
-        const arrow = e.currentTarget.querySelector('.arrow') as HTMLElement;
-        if (arrow) arrow.style.color = 'var(--color-black)';
-      }}
-      onMouseLeave={(e) => {
-        const arrow = e.currentTarget.querySelector('.arrow') as HTMLElement;
-        if (arrow) arrow.style.color = 'var(--color-gray-400)';
-      }}
     >
       <div className="card-body">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-medium" style={{ 
-              color: 'var(--color-black)', 
-              marginBottom: 'var(--space-sm)',
-              transition: 'color var(--transition-normal)'
-            }}>
-              {title}
-            </h3>
-            <p className="text-sm" style={{ color: 'var(--color-gray-600)' }}>
-              {description}
-            </p>
-          </div>
-          <span 
-            className="text-lg arrow" 
-            style={{ 
-              color: 'var(--color-gray-400)', 
-              transition: 'color var(--transition-normal)',
-              fontSize: '1.25rem',
-              marginLeft: 'var(--space-lg)'
-            }}
-          >
-            →
-          </span>
+        <div>
+          <h3 className="text-lg font-medium" style={{ 
+            color: 'var(--color-black)', 
+            marginBottom: 'var(--space-sm)',
+            transition: 'color var(--transition-normal)'
+          }}>
+            {title}
+          </h3>
+          <p className="text-sm" style={{ color: 'var(--color-gray-600)' }}>
+            {description}
+          </p>
         </div>
       </div>
     </Link>

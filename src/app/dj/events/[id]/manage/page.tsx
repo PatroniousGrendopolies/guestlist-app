@@ -152,18 +152,15 @@ export default function DJEventManagePage() {
   };
 
   const filteredGuests = guests.filter(guest => {
-    const matchesSearch = guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         guest.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
     switch (activeTab) {
       case 'pending':
-        return guest.status === 'pending' && matchesSearch;
+        return guest.status === 'pending';
       case 'approved':
-        return guest.status === 'approved' && matchesSearch;
+        return guest.status === 'approved';
       case 'attended':
-        return guest.checkedIn && matchesSearch;
+        return guest.checkedIn;
       default:
-        return matchesSearch;
+        return true;
     }
   });
 
@@ -209,77 +206,70 @@ export default function DJEventManagePage() {
       <div className="max-w-4xl mx-auto p-6">
         {/* Event Summary */}
         <div className="bg-gray-50 rounded-xl p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold mb-1">Guest List Overview</h2>
-              <p className="text-gray-600">
-                {eventInfo.spotsUsed}/{eventInfo.totalCapacity} spots filled
-              </p>
+          <h2 className="text-lg font-semibold mb-4">Guest List Overview</h2>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 bg-gray-200 rounded-full h-3">
+              <div 
+                className="bg-black h-3 rounded-full transition-all duration-300"
+                style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalCapacity) * 100}%` }}
+              ></div>
             </div>
-            <div className="w-32">
-              <div className="bg-gray-200 rounded-full h-3 mb-1">
-                <div 
-                  className="bg-black h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalCapacity) * 100}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-gray-500 text-center">
-                {Math.round((eventInfo.spotsUsed / eventInfo.totalCapacity) * 100)}% full
-              </p>
-            </div>
+            <span className="text-lg font-semibold">
+              {eventInfo.spotsUsed}/{eventInfo.totalCapacity}
+            </span>
           </div>
+          <p className="text-sm text-gray-500 mt-2 text-center">
+            {Math.round((eventInfo.spotsUsed / eventInfo.totalCapacity) * 100)}% full
+          </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 rounded-xl p-1">
+        {/* Filter Tabs */}
+        <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setActiveTab('pending')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
               activeTab === 'pending' 
-                ? 'bg-white text-black shadow-sm' 
-                : 'text-gray-600 hover:text-black'
+                ? 'bg-black text-white' 
+                : 'bg-gray-100 text-black hover:bg-gray-200'
             }`}
           >
             Pending ({pendingCount})
           </button>
           <button
             onClick={() => setActiveTab('approved')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
               activeTab === 'approved' 
-                ? 'bg-white text-black shadow-sm' 
-                : 'text-gray-600 hover:text-black'
+                ? 'bg-black text-white' 
+                : 'bg-gray-100 text-black hover:bg-gray-200'
             }`}
           >
             Approved ({approvedCount})
           </button>
           <button
             onClick={() => setActiveTab('attended')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
               activeTab === 'attended' 
-                ? 'bg-white text-black shadow-sm' 
-                : 'text-gray-600 hover:text-black'
+                ? 'bg-black text-white' 
+                : 'bg-gray-100 text-black hover:bg-gray-200'
             }`}
           >
             Attended ({attendedCount})
           </button>
         </div>
 
-        {/* Search and Actions */}
+        {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search guests by name or email..."
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-            />
-          </div>
+          <button
+            onClick={() => router.push(`/dj/events/${params.id}/search`)}
+            className="px-6 py-3 bg-gray-100 text-black rounded-xl font-medium hover:bg-gray-200 transition-colors"
+          >
+            Search Guests
+          </button>
           
           {activeTab === 'pending' && pendingCount > 0 && (
             <button
               onClick={handleApproveAll}
-              className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors whitespace-nowrap"
+              className="px-6 py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-900 transition-colors whitespace-nowrap"
             >
               Approve All Pending
             </button>
@@ -290,81 +280,63 @@ export default function DJEventManagePage() {
         <div className="space-y-4">
           {filteredGuests.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-4xl mb-4">👥</div>
               <h3 className="text-lg font-medium mb-2">No guests found</h3>
               <p className="text-gray-600">
-                {searchQuery 
-                  ? 'Try adjusting your search terms' 
-                  : `No guests in the ${activeTab} category yet`
-                }
+                {`No guests in the ${activeTab} category yet`}
               </p>
             </div>
           ) : (
             filteredGuests.map((guest) => (
-              <div key={guest.id} className="bg-white border border-gray-200 rounded-xl p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <button
+                key={guest.id}
+                onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
+                className="w-full bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors text-left"
+              >
+                <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-1">
                       <h3 className="text-lg font-semibold">{guest.name}</h3>
                       {guest.checkedIn && (
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">
+                        <span className="bg-black text-white px-2 py-1 rounded text-xs font-semibold">
                           Checked In
                         </span>
                       )}
                       {guest.status === 'approved' && !guest.checkedIn && (
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
+                        <span className="bg-black text-white px-2 py-1 rounded text-xs font-semibold">
                           Approved
                         </span>
                       )}
                       {guest.status === 'pending' && (
-                        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">
+                        <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">
                           Pending
                         </span>
                       )}
                     </div>
                     
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p>{guest.email}</p>
-                      <p>{guest.phone}</p>
-                      {guest.instagram && <p>{guest.instagram}</p>}
-                      <p>Submitted {guest.submittedAt}</p>
-                    </div>
+                    {guest.instagram && (
+                      <p className="text-sm text-gray-600">{guest.instagram}</p>
+                    )}
                   </div>
                   
                   <div className="flex items-center gap-4">
-                    {/* Plus Ones Control */}
-                    <div className="text-center">
-                      <label className="text-xs text-gray-500 block mb-1">Plus ones</label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
-                          className="w-8 h-8 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
-                        >
-                          -
-                        </button>
-                        <span className="w-8 text-center font-medium">{guest.plusOnes}</span>
-                        <button
-                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
-                          className="w-8 h-8 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
+                    {/* Plus Ones Display */}
+                    {guest.plusOnes > 0 && (
+                      <span className="text-sm text-gray-600">+{guest.plusOnes}</span>
+                    )}
                     
                     {/* Action Buttons */}
                     {guest.status === 'pending' && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => handleApproveGuest(guest.id)}
                           disabled={isApproving === guest.id}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 text-sm"
+                          className="px-3 py-1 bg-black text-white rounded-lg font-medium hover:bg-gray-900 transition-colors disabled:opacity-50 text-sm"
                         >
                           {isApproving === guest.id ? '...' : 'Approve'}
                         </button>
                         <button
                           onClick={() => handleDenyGuest(guest.id)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors text-sm"
+                          className="px-3 py-1 bg-white text-black border border-black rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
                         >
                           Deny
                         </button>
@@ -372,16 +344,9 @@ export default function DJEventManagePage() {
                     )}
                   </div>
                 </div>
-              </div>
+              </button>
             ))
           )}
-        </div>
-
-        {/* Export Button */}
-        <div className="text-center mt-8">
-          <button className="px-6 py-3 bg-white text-black border-2 border-black rounded-xl font-medium hover:bg-gray-50 transition-colors">
-            Export Guest List
-          </button>
         </div>
       </div>
     </div>
