@@ -138,23 +138,23 @@ export default function DJDashboardPage() {
 
       <div className="max-w-4xl mx-auto p-6">
         {/* Tabs */}
-        <div className="flex gap-1 mb-8 bg-gray-100 rounded-xl p-1">
+        <div className="flex gap-4 mb-8">
           <button
             onClick={() => setActiveTab('events')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors flex-1 ${
+            className={`px-6 py-3 rounded-xl font-medium transition-colors ${
               activeTab === 'events' 
-                ? 'bg-white text-black shadow-sm' 
-                : 'text-gray-600 hover:text-black'
+                ? 'bg-black text-white' 
+                : 'bg-gray-100 text-black hover:bg-gray-200'
             }`}
           >
             Events
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors flex-1 ${
+            className={`px-6 py-3 rounded-xl font-medium transition-colors ${
               activeTab === 'analytics' 
-                ? 'bg-white text-black shadow-sm' 
-                : 'text-gray-600 hover:text-black'
+                ? 'bg-black text-white' 
+                : 'bg-gray-100 text-black hover:bg-gray-200'
             }`}
           >
             Analytics
@@ -180,28 +180,31 @@ export default function DJDashboardPage() {
                       onClick={() => handleEventAction(event.id, 'manage')}
                       className="w-full bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors text-left"
                     >
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold mb-1">{event.name}</h3>
-                          <p className="text-gray-600 mb-2">{event.date}</p>
-                          {event.otherDJs.length > 0 && (
-                            <p className="text-sm text-gray-500">
-                              Also playing: {event.otherDJs.join(', ')}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="text-center">
-                          <div className="text-lg font-semibold">
-                            {event.spotsUsed}/{event.totalSpots}
-                          </div>
-                          <div className="text-xs text-gray-500">spots filled</div>
-                          <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
-                            <div 
-                              className="bg-black h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
-                            ></div>
-                          </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-semibold">{event.name}</h3>
+                        <p className="text-gray-600">{event.date}</p>
+                      </div>
+                      
+                      {event.otherDJs.length > 0 && (
+                        <p className="text-sm text-gray-500 mb-4">
+                          With {event.otherDJs.join(', ')}
+                        </p>
+                      )}
+                      
+                      <div className="relative mt-4">
+                        <div className="bg-gray-200 rounded-full h-3 relative">
+                          <div 
+                            className="bg-black h-3 rounded-full transition-all duration-300"
+                            style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
+                          ></div>
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 bg-white px-1 text-sm font-semibold"
+                            style={{ left: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
+                          >
+                            {event.spotsUsed}
+                          </span>
+                          <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 bg-white px-1 text-sm font-semibold">
+                            {event.totalSpots}
+                          </span>
                         </div>
                       </div>
                     </button>

@@ -217,22 +217,24 @@ export default function DJEventSharePage() {
         </div>
 
         {/* Capacity Chart */}
-        <div className="bg-gray-50 rounded-xl p-6">
+        <div>
           <h3 className="text-lg font-medium mb-4">Event Capacity</h3>
-          <div className="flex items-center gap-4">
-            <div className="flex-1 bg-gray-200 rounded-full h-3">
+          <div className="relative">
+            <div className="bg-gray-200 rounded-full h-3 relative">
               <div 
                 className="bg-black h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
               ></div>
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 bg-white px-1 text-sm font-semibold"
+                style={{ left: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
+              >
+                {eventInfo.spotsUsed}
+              </span>
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 bg-white px-1 text-sm font-semibold">
+                {eventInfo.totalSpots}
+              </span>
             </div>
-            <span className="text-lg font-semibold">
-              {eventInfo.spotsUsed}/{eventInfo.totalSpots}
-            </span>
           </div>
-          <p className="text-sm text-gray-500 mt-2 text-center">
-            {Math.round((eventInfo.spotsUsed / eventInfo.totalSpots) * 100)}% full
-          </p>
         </div>
       </div>
     </div>

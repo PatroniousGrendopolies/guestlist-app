@@ -26,7 +26,7 @@ interface EventInfo {
 export default function DJEventManagePage() {
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null);
   const [guests, setGuests] = useState<Guest[]>([]);
-  const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'attended'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isApproving, setIsApproving] = useState<string | null>(null);
@@ -157,8 +157,6 @@ export default function DJEventManagePage() {
         return guest.status === 'pending';
       case 'approved':
         return guest.status === 'approved';
-      case 'attended':
-        return guest.checkedIn;
       default:
         return true;
     }
@@ -166,7 +164,6 @@ export default function DJEventManagePage() {
 
   const pendingCount = guests.filter(g => g.status === 'pending').length;
   const approvedCount = guests.filter(g => g.status === 'approved').length;
-  const attendedCount = guests.filter(g => g.checkedIn).length;
 
   if (isLoading) {
     return (
@@ -205,22 +202,24 @@ export default function DJEventManagePage() {
 
       <div className="max-w-4xl mx-auto p-6">
         {/* Event Summary */}
-        <div className="bg-gray-50 rounded-xl p-6 mb-6">
+        <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Guest List Overview</h2>
-          <div className="flex items-center gap-4">
-            <div className="flex-1 bg-gray-200 rounded-full h-3">
+          <div className="relative">
+            <div className="bg-gray-200 rounded-full h-3 relative">
               <div 
                 className="bg-black h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalCapacity) * 100}%` }}
               ></div>
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 bg-white px-1 text-sm font-semibold"
+                style={{ left: `${(eventInfo.spotsUsed / eventInfo.totalCapacity) * 100}%` }}
+              >
+                {eventInfo.spotsUsed}
+              </span>
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 bg-white px-1 text-sm font-semibold">
+                {eventInfo.totalCapacity}
+              </span>
             </div>
-            <span className="text-lg font-semibold">
-              {eventInfo.spotsUsed}/{eventInfo.totalCapacity}
-            </span>
           </div>
-          <p className="text-sm text-gray-500 mt-2 text-center">
-            {Math.round((eventInfo.spotsUsed / eventInfo.totalCapacity) * 100)}% full
-          </p>
         </div>
 
         {/* Filter Tabs */}
@@ -244,16 +243,6 @@ export default function DJEventManagePage() {
             }`}
           >
             Approved ({approvedCount})
-          </button>
-          <button
-            onClick={() => setActiveTab('attended')}
-            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-              activeTab === 'attended' 
-                ? 'bg-black text-white' 
-                : 'bg-gray-100 text-black hover:bg-gray-200'
-            }`}
-          >
-            Attended ({attendedCount})
           </button>
         </div>
 
