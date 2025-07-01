@@ -276,64 +276,91 @@ export default function DJEventManagePage() {
             </div>
           ) : (
             filteredGuests.map((guest) => (
-              <button
+              <div
                 key={guest.id}
-                onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
-                className="w-full bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors text-left"
+                className="bg-white border border-gray-200 rounded-xl p-6"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-lg font-semibold">{guest.name}</h3>
-                      {guest.checkedIn && (
-                        <span className="bg-black text-white px-2 py-1 rounded text-xs font-semibold">
-                          Checked In
-                        </span>
-                      )}
-                      {guest.status === 'approved' && !guest.checkedIn && (
-                        <span className="bg-black text-white px-2 py-1 rounded text-xs font-semibold">
-                          Approved
-                        </span>
-                      )}
-                      {guest.status === 'pending' && (
-                        <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">
-                          Pending
-                        </span>
+                  <div className="flex items-center gap-4 flex-1">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold">{guest.name}</h3>
+                        {guest.plusOnes > 0 && (
+                          <span className="text-sm font-medium">+{guest.plusOnes}</span>
+                        )}
+                      </div>
+                      {guest.instagram && (
+                        <p className="text-sm text-gray-600">{guest.instagram}</p>
                       )}
                     </div>
                     
-                    {guest.instagram && (
-                      <p className="text-sm text-gray-600">{guest.instagram}</p>
+                    {/* Status Badge */}
+                    {guest.checkedIn && (
+                      <span className="bg-black text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        Checked In
+                      </span>
+                    )}
+                    {guest.status === 'approved' && !guest.checkedIn && (
+                      <span className="bg-black text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        Approved
+                      </span>
+                    )}
+                    {guest.status === 'pending' && (
+                      <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        Pending
+                      </span>
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-4">
-                    {/* Plus Ones Display */}
-                    {guest.plusOnes > 0 && (
-                      <span className="text-sm text-gray-600">+{guest.plusOnes}</span>
-                    )}
-                    
-                    {/* Action Buttons */}
+                  <div className="flex items-center gap-3">
+                    {/* Plus Ones Controls */}
                     {guest.status === 'pending' && (
-                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                      <>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
+                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                            disabled={guest.plusOnes <= 0}
+                          >
+                            <span className="text-lg leading-none">−</span>
+                          </button>
+                          <button
+                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
+                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                          >
+                            <span className="text-lg leading-none">+</span>
+                          </button>
+                        </div>
+                        
+                        {/* Action Buttons */}
                         <button
                           onClick={() => handleApproveGuest(guest.id)}
                           disabled={isApproving === guest.id}
-                          className="px-3 py-1 bg-black text-white rounded-lg font-medium hover:bg-gray-900 transition-colors disabled:opacity-50 text-sm"
+                          className="px-6 py-2 bg-black text-white rounded-full font-medium hover:bg-gray-900 transition-colors disabled:opacity-50"
                         >
                           {isApproving === guest.id ? '...' : 'Approve'}
                         </button>
                         <button
                           onClick={() => handleDenyGuest(guest.id)}
-                          className="px-3 py-1 bg-white text-black border border-black rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm"
+                          className="px-6 py-2 bg-white text-black border border-black rounded-full font-medium hover:bg-gray-50 transition-colors"
                         >
                           Deny
                         </button>
-                      </div>
+                      </>
+                    )}
+                    
+                    {/* View Details Button for non-pending */}
+                    {guest.status !== 'pending' && (
+                      <button
+                        onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
+                        className="px-6 py-2 bg-gray-100 text-black rounded-full font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        View Details
+                      </button>
                     )}
                   </div>
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
