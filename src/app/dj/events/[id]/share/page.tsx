@@ -225,8 +225,8 @@ export default function DJEventSharePage() {
                 className="bg-black h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
               ></div>
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 bg-white px-1 text-sm font-semibold"
-                style={{ left: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
+              <span className="absolute top-1/2 -translate-y-1/2 text-white px-1 text-sm font-semibold"
+                style={{ left: `${Math.max(2, Math.min(95, (eventInfo.spotsUsed / eventInfo.totalSpots) * 100))}%` }}
               >
                 {eventInfo.spotsUsed}
               </span>

@@ -30,6 +30,7 @@ export default function DJEventManagePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isApproving, setIsApproving] = useState<string | null>(null);
+  const [copyMessage, setCopyMessage] = useState('');
   const router = useRouter();
   const params = useParams();
 
@@ -201,6 +202,34 @@ export default function DJEventManagePage() {
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
+        {/* Invite Link */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-4">Event Link</h2>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={`https://nightlist.app/guest/signup?event=${params.id}&dj=shadow`}
+              readOnly
+              className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-sm font-mono"
+            />
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(`https://nightlist.app/guest/signup?event=${params.id}&dj=shadow`);
+                  setCopyMessage('Copied!');
+                  setTimeout(() => setCopyMessage(''), 2000);
+                } catch (err) {
+                  setCopyMessage('Failed to copy');
+                  setTimeout(() => setCopyMessage(''), 2000);
+                }
+              }}
+              className="px-6 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-900 transition-colors"
+            >
+              {copyMessage || 'Copy'}
+            </button>
+          </div>
+        </div>
+
         {/* Event Summary */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4">Guest List Overview</h2>
@@ -210,8 +239,8 @@ export default function DJEventManagePage() {
                 className="bg-black h-3 rounded-full transition-all duration-300"
                 style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalCapacity) * 100}%` }}
               ></div>
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 bg-white px-1 text-sm font-semibold"
-                style={{ left: `${(eventInfo.spotsUsed / eventInfo.totalCapacity) * 100}%` }}
+              <span className="absolute top-1/2 -translate-y-1/2 text-white px-1 text-sm font-semibold"
+                style={{ left: `${Math.max(2, Math.min(95, (eventInfo.spotsUsed / eventInfo.totalCapacity) * 100))}%` }}
               >
                 {eventInfo.spotsUsed}
               </span>
@@ -281,19 +310,17 @@ export default function DJEventManagePage() {
                 className="bg-white border border-gray-200 rounded-xl p-6"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold">{guest.name}</h3>
-                        {guest.plusOnes > 0 && (
-                          <span className="text-sm font-medium">+{guest.plusOnes}</span>
-                        )}
-                      </div>
-                      {guest.instagram && (
-                        <p className="text-sm text-gray-600">{guest.instagram}</p>
+                  {/* Left side - Guest Info */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-semibold">{guest.name}</h3>
+                      {guest.plusOnes > 0 && (
+                        <span className="text-lg font-semibold">+{guest.plusOnes}</span>
                       )}
                     </div>
-                    
+                    {guest.instagram && (
+                      <p className="text-sm text-gray-600 mb-1">{guest.instagram}</p>
+                    )}
                     {/* Status Badge */}
                     {guest.checkedIn && (
                       <span className="bg-black text-white px-3 py-1 rounded-full text-xs font-semibold">
@@ -312,27 +339,29 @@ export default function DJEventManagePage() {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-3">
-                    {/* Plus Ones Controls */}
+                  {/* Middle - Plus/Minus Controls */}
+                  {guest.status === 'pending' && (
+                    <div className="flex items-center gap-2 mx-8">
+                      <button
+                        onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
+                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                        disabled={guest.plusOnes <= 0}
+                      >
+                        <span className="text-lg leading-none">−</span>
+                      </button>
+                      <button
+                        onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
+                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="text-lg leading-none">+</span>
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Right side - Action Buttons */}
+                  <div className="flex flex-col gap-2">
                     {guest.status === 'pending' && (
                       <>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                            disabled={guest.plusOnes <= 0}
-                          >
-                            <span className="text-lg leading-none">−</span>
-                          </button>
-                          <button
-                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                          >
-                            <span className="text-lg leading-none">+</span>
-                          </button>
-                        </div>
-                        
-                        {/* Action Buttons */}
                         <button
                           onClick={() => handleApproveGuest(guest.id)}
                           disabled={isApproving === guest.id}
