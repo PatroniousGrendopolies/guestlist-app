@@ -17,7 +17,7 @@ function GuestAuthContent() {
   // Event details from URL params or defaults
   const eventName = searchParams.get('event') || 'Summer Vibes';
   const djNames = searchParams.get('dj') || 'DJ Shadow & MC Solar';
-  const eventDate = searchParams.get('date') || 'Saturday, June 24th, 2025';
+  const eventDate = searchParams.get('date') || 'Saturday, June 24, 2025';
 
   // Form state
   const [formData, setFormData] = useState({

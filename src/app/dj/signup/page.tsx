@@ -43,7 +43,7 @@ function DJSignupPageContent() {
       setEventInfo({
         id: eventId,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6th, 2025'
+        date: 'Saturday, July 6, 2025'
       });
     }
   }, [searchParams]);

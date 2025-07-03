@@ -11,27 +11,18 @@ interface Event {
   spotsUsed: number;
   totalSpots: number;
   status: 'upcoming' | 'past';
+  pendingGuests?: number;
+  hasInvitedPastGuests?: boolean;
   conversionRate?: number;
   totalAttendees?: number;
-}
-
-interface QuickStats {
-  lastEventConversion: number;
-  totalGuestsLifetime: number;
-  thisMonthAttendees: number;
 }
 
 export default function DJDashboardPage() {
   const [djName, setDjName] = useState('');
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
-  const [quickStats, setQuickStats] = useState<QuickStats>({
-    lastEventConversion: 85,
-    totalGuestsLifetime: 487,
-    thisMonthAttendees: 67
-  });
-  const [activeTab, setActiveTab] = useState<'events' | 'analytics'>('events');
   const [isLoading, setIsLoading] = useState(true);
+  const [copiedEventId, setCopiedEventId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -52,20 +43,24 @@ export default function DJDashboardPage() {
         {
           id: '1',
           name: 'Saturday Night Sessions',
-          date: 'Sat, July 6th, 2025',
+          date: 'July 6 2025',
           otherDJs: ['DJ Marcus', 'MC Groove'],
           spotsUsed: 23,
           totalSpots: 75,
-          status: 'upcoming'
+          status: 'upcoming',
+          pendingGuests: 2,
+          hasInvitedPastGuests: false
         },
         {
           id: '2',
           name: 'Summer Vibes',
-          date: 'Fri, July 12th, 2025',
+          date: 'July 12 2025',
           otherDJs: ['DJ Luna'],
           spotsUsed: 8,
           totalSpots: 75,
-          status: 'upcoming'
+          status: 'upcoming',
+          pendingGuests: 0,
+          hasInvitedPastGuests: true
         }
       ]);
 
@@ -73,7 +68,7 @@ export default function DJDashboardPage() {
         {
           id: '3',
           name: 'Last Weekend Bash',
-          date: 'Sat, June 29th, 2025',
+          date: 'June 29 2025',
           otherDJs: ['DJ Beats'],
           spotsUsed: 68,
           totalSpots: 75,
@@ -121,15 +116,16 @@ export default function DJDashboardPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-black text-white p-6">
+      <div className="p-6">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div>
+            <p className="text-sm text-gray-600 mb-2">Nightlist</p>
             <h1 className="text-3xl font-light tracking-tight mb-1">Hey {djName}!</h1>
-            <p className="text-gray-300">Manage your events and guest lists</p>
+            <p className="text-gray-600">Manage your events and guest lists</p>
           </div>
           <button
             onClick={handleLogout}
-            className="text-gray-400 hover:text-white transition-colors text-sm"
+            className="text-gray-600 hover:text-black transition-colors text-sm"
           >
             Logout
           </button>
@@ -137,36 +133,12 @@ export default function DJDashboardPage() {
       </div>
 
       <div className="max-w-4xl mx-auto p-6">
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8">
-          <button
-            onClick={() => setActiveTab('events')}
-            className={`px-6 py-3 rounded-xl font-medium transition-colors ${
-              activeTab === 'events' 
-                ? 'bg-black text-white' 
-                : 'bg-gray-100 text-black hover:bg-gray-200'
-            }`}
-          >
-            Events
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`px-6 py-3 rounded-xl font-medium transition-colors ${
-              activeTab === 'analytics' 
-                ? 'bg-black text-white' 
-                : 'bg-gray-100 text-black hover:bg-gray-200'
-            }`}
-          >
-            Analytics
-          </button>
-        </div>
 
-        {/* Events Tab */}
-        {activeTab === 'events' && (
-          <>
+        {/* Events */}
+        <>
             {/* Upcoming Events */}
             <div className="mb-8">
-              <h2 className="text-xl font-medium mb-4">Upcoming Events</h2>
+              <h2 className="text-xl mb-4">Upcoming Events</h2>
               {upcomingEvents.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl p-8 text-center">
                   <h3 className="text-lg font-medium mb-2">No upcoming events</h3>
@@ -175,14 +147,13 @@ export default function DJDashboardPage() {
               ) : (
                 <div className="space-y-4">
                   {upcomingEvents.map((event) => (
-                    <button
+                    <div
                       key={event.id}
-                      onClick={() => handleEventAction(event.id, 'manage')}
-                      className="w-full bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors text-left"
+                      className="bg-white border border-gray-200 rounded-xl p-8"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold">{event.name}</h3>
-                        <p className="text-gray-600">{event.date}</p>
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-lg">{event.name}</h3>
+                        <p className="text-xs text-gray-600">{event.date}</p>
                       </div>
                       
                       {event.otherDJs.length > 0 && (
@@ -191,23 +162,71 @@ export default function DJDashboardPage() {
                         </p>
                       )}
                       
-                      <div className="relative mt-4">
-                        <div className="bg-gray-200 rounded-full h-3 relative">
-                          <div 
-                            className="bg-black h-3 rounded-full transition-all duration-300"
-                            style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
-                          ></div>
-                          <span className="absolute top-1/2 -translate-y-1/2 text-white px-1 text-sm font-semibold"
-                            style={{ left: `${Math.max(2, Math.min(95, (event.spotsUsed / event.totalSpots) * 100))}%` }}
+                      {/* Invite Link */}
+                      <div className="mb-8">
+                        <p className="text-sm text-gray-600 mb-2">Invite guests to sign up for the list:</p>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 relative">
+                            <input
+                              type="text"
+                              value={`https://nightlist.app/guest/signup?event=${event.id}&dj=shadow`}
+                              readOnly
+                              className="w-full bg-gray-100 rounded-full px-4 py-2 text-xs font-mono pr-4"
+                            />
+                            <div className="absolute right-1 top-1 bottom-1 w-8 bg-gradient-to-l from-gray-100 via-gray-100/90 to-transparent rounded-r-full pointer-events-none"></div>
+                          </div>
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const textToCopy = `https://nightlist.app/guest/signup?event=${event.id}&dj=shadow`;
+                              
+                              try {
+                                // Try modern clipboard API first
+                                if (navigator.clipboard && window.isSecureContext) {
+                                  await navigator.clipboard.writeText(textToCopy);
+                                } else {
+                                  // Fallback for mobile Safari
+                                  const textArea = document.createElement('textarea');
+                                  textArea.value = textToCopy;
+                                  textArea.style.position = 'fixed';
+                                  textArea.style.left = '-999999px';
+                                  document.body.appendChild(textArea);
+                                  textArea.select();
+                                  document.execCommand('copy');
+                                  document.body.removeChild(textArea);
+                                }
+                                
+                                setCopiedEventId(event.id);
+                                setTimeout(() => setCopiedEventId(null), 2000);
+                              } catch (err) {
+                                console.error('Failed to copy:', err);
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-white border border-black text-black rounded-full hover:bg-gray-50 transition-colors text-xs"
                           >
-                            {event.spotsUsed}
-                          </span>
-                          <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 bg-white px-1 text-sm font-semibold">
-                            {event.totalSpots}
-                          </span>
+                            {copiedEventId === event.id ? 'Copied!' : 'Copy'}
+                          </button>
                         </div>
                       </div>
-                    </button>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleEventAction(event.id, 'manage')}
+                          className="flex-1 bg-gray-800 text-white py-2 rounded-full text-[10px] hover:bg-gray-900 transition-colors"
+                        >
+                          {event.pendingGuests && event.pendingGuests > 0 
+                            ? 'Review pending guests' 
+                            : 'Review guestlist'}
+                        </button>
+                        <button
+                          onClick={() => router.push(`/dj/events/${event.id}/invite-past-guests`)}
+                          className="flex-1 bg-gray-100 text-black py-2 rounded-full text-[10px] hover:bg-gray-200 transition-colors"
+                        >
+                          Invite past guests
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -215,7 +234,7 @@ export default function DJDashboardPage() {
 
             {/* Past Events */}
             <div>
-              <h2 className="text-xl font-medium mb-4">Past Events</h2>
+              <h2 className="text-xl mb-4">Past Events</h2>
               {pastEvents.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl p-8 text-center">
                   <h3 className="text-lg font-medium mb-2">No past events</h3>
@@ -227,80 +246,34 @@ export default function DJDashboardPage() {
                     <button
                       key={event.id}
                       onClick={() => router.push(`/dj/events/${event.id}`)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors text-left"
+                      className="w-full bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors text-left"
                     >
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold mb-1">{event.name}</h3>
-                          <p className="text-gray-600 mb-2">{event.date}</p>
-                          {event.otherDJs.length > 0 && (
-                            <p className="text-sm text-gray-500">
-                              Also played: {event.otherDJs.join(', ')}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                          <div className="grid grid-cols-2 gap-4 text-center">
-                            <div>
-                              <div className="text-lg font-semibold">{event.spotsUsed}</div>
-                              <div className="text-xs text-gray-500">invited</div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-semibold">{event.totalAttendees}</div>
-                              <div className="text-xs text-gray-500">attended</div>
-                            </div>
-                          </div>
-                          
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-black">{event.conversionRate}%</div>
-                            <div className="text-xs text-gray-500">conversion rate</div>
-                          </div>
-                        </div>
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-lg">{event.name}</h3>
+                        <p className="text-xs text-gray-600">{event.date}</p>
                       </div>
+                      {event.otherDJs.length > 0 && (
+                        <p className="text-sm text-gray-500 mb-4">
+                          With {event.otherDJs.join(', ')}
+                        </p>
+                      )}
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/dj/events/${event.id}/manage`);
+                        }}
+                        className="bg-gray-50 border border-gray-300 text-black px-4 py-2 rounded-full text-sm hover:bg-gray-100 transition-colors"
+                      >
+                        Review guestlist
+                      </button>
                     </button>
                   ))}
                 </div>
               )}
             </div>
           </>
-        )}
 
-        {/* Analytics Tab */}
-        {activeTab === 'analytics' && (
-          <>
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="text-sm text-gray-600 font-medium">Last Event Conversion</h3>
-                <p className="text-2xl font-semibold">{quickStats.lastEventConversion}%</p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="text-sm text-gray-600 font-medium">This Month Attendees</h3>
-                <p className="text-2xl font-semibold">{quickStats.thisMonthAttendees}</p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="text-sm text-gray-600 font-medium">Total Guests Lifetime</h3>
-                <p className="text-2xl font-semibold">{quickStats.totalGuestsLifetime}</p>
-              </div>
-            </div>
-
-            {/* Full Analytics Button */}
-            <div className="text-center">
-              <button
-                onClick={() => router.push('/dj/analytics')}
-                className="px-8 py-4 bg-black text-white rounded-xl font-medium hover:bg-gray-900 transition-colors"
-              >
-                View Full Analytics
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Navigation hint */}
-        <div className="mt-12 text-center text-gray-500 text-sm">
-          <p>Use the action buttons above to manage your events and guest lists</p>
-        </div>
       </div>
     </div>
   );

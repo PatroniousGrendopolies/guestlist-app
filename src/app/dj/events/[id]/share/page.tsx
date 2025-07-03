@@ -35,7 +35,7 @@ export default function DJEventSharePage() {
       const mockEventInfo = {
         id: params.id as string,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6th, 2025',
+        date: 'Saturday, July 6, 2025',
         venue: 'Nightlist',
         spotsUsed: 23,
         totalSpots: 75
@@ -159,7 +159,7 @@ export default function DJEventSharePage() {
             onClick={() => router.push('/dj/dashboard')}
             className="text-gray-400 hover:text-white transition-colors mb-4 text-sm"
           >
-            ← Back to Dashboard
+            ← Dashboard
           </button>
           <h1 className="text-2xl font-light mb-2">Share Event Link</h1>
           <p className="text-gray-300">{eventInfo.name}</p>
@@ -220,17 +220,16 @@ export default function DJEventSharePage() {
         <div>
           <h3 className="text-lg font-medium mb-4">Event Capacity</h3>
           <div className="relative">
-            <div className="bg-gray-200 rounded-full h-3 relative">
+            <div className="bg-gray-200 rounded-full h-3 relative overflow-hidden">
               <div 
-                className="bg-black h-3 rounded-full transition-all duration-300"
+                className="bg-black h-3 rounded-full transition-all duration-300 relative"
                 style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
-              ></div>
-              <span className="absolute top-1/2 -translate-y-1/2 text-white px-1 text-sm font-semibold"
-                style={{ left: `${Math.max(2, Math.min(95, (eventInfo.spotsUsed / eventInfo.totalSpots) * 100))}%` }}
               >
-                {eventInfo.spotsUsed}
-              </span>
-              <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 bg-white px-1 text-sm font-semibold">
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-sm font-semibold">
+                  {eventInfo.spotsUsed}
+                </span>
+              </div>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-black text-sm font-semibold">
                 {eventInfo.totalSpots}
               </span>
             </div>

@@ -126,7 +126,7 @@ export default function JoinGuestListPage() {
               <div className="space-y-md">
                 <div className="text-sm text-gray-600">
                   DJ Shadow & MC Solar<br />
-                  Saturday, June 24th, 2025<br />
+                  Saturday, June 24, 2025<br />
                   10:00 PM
                 </div>
               </div>
@@ -147,7 +147,7 @@ export default function JoinGuestListPage() {
             <strong>{inviterInfo?.name}</strong> invited you to join their guest list for
           </p>
           <p className="text-xl font-medium mt-sm">DJ Shadow & MC Solar</p>
-          <p className="text-lg text-gray-600">Saturday, June 24th, 2025</p>
+          <p className="text-lg text-gray-600">Saturday, June 24, 2025</p>
         </div>
 
         {/* Form Card */}

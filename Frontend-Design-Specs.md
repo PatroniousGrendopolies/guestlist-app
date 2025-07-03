@@ -866,6 +866,152 @@ navigator.share({
 
 ---
 
+## DESIGN SYSTEM SPECIFICATIONS
+
+### Core Design Principles
+The Nightlist app follows a minimal, clean design philosophy with strict black and white aesthetics for maximum clarity and professional appearance.
+
+### Color Palette
+- **Primary Black**: `#000000` - Used for primary buttons, active states, text
+- **White**: `#FFFFFF` - Used for backgrounds, button text on dark backgrounds
+- **Gray Scale**:
+  - `#F9FAFB` (gray-50) - Light background for secondary cards
+  - `#F3F4F6` (gray-100) - Secondary button backgrounds
+  - `#E5E7EB` (gray-200) - Borders, inactive elements
+  - `#9CA3AF` (gray-400) - Muted text, placeholders
+  - `#6B7280` (gray-500) - Secondary text
+  - `#374151` (gray-700) - Dark text
+- **No Red Text**: All error states and warnings use gray text only
+- **Success Green**: Reserved only for check-in confirmations and success states
+
+### Typography
+- **Font Family**: System font stack (SF Pro on iOS, Roboto on Android, system defaults)
+- **Font Weights**: 
+  - Regular (400) - ALL text content (no bold/medium/semibold anywhere)
+  - Light (300) - Large headlines only when specified
+- **Font Sizes** (Tailwind classes):
+  - `text-xs` (12px) - Small labels, metadata
+  - `text-sm` (14px) - Button text, secondary content, dates
+  - `text-base` (16px) - Body text
+  - `text-lg` (18px) - Event names, subheadings
+  - `text-xl` (20px) - Section headers
+  - `text-2xl` (24px) - Page titles
+  - `text-3xl` (30px) - Dashboard welcomes
+- **No Bold Text Rule**: Never use `font-medium`, `font-semibold`, or `font-bold` classes
+
+### Button Specifications
+- **Corner Radius**: `rounded-full` (fully pill-shaped) for ALL buttons
+- **Padding**: `py-3 px-6` for standard buttons, `py-2 px-4` for small buttons
+- **Primary Buttons**: Black background (`bg-black`), white text, hover to gray-900
+- **Secondary Buttons**: Gray background (`bg-gray-100`), black text, hover to gray-200
+- **Outline Buttons**: White background, thin black border (`border`), black text
+- **Font Size**: `text-sm` for most buttons to maintain clean proportions
+- **Font Weight**: Regular (400) - NO bold text on buttons
+- **Disabled State**: `bg-gray-200 text-gray-400 cursor-not-allowed`
+
+### Card & Container Specifications
+- **Corner Radius**: `rounded-xl` for cards and major containers (NOT rounded-full)
+- **Borders**: 
+  - Standard border width: `border` (1px) - never `border-2`
+  - Border color: `border-gray-200`
+  - **Exception**: No borders on gray background cards (e.g., past events)
+- **Padding**: `p-6` for cards, `p-4` for smaller containers
+- **Shadows**: Minimal or none - rely on borders for definition
+- **Gray Cards**: Use `bg-gray-50` with NO borders, hover to `bg-gray-100`
+
+### Layout & Spacing
+- **Container Max Width**: `max-w-4xl mx-auto` for main content areas
+- **Section Spacing**: `mb-6` between major sections, `mb-4` between related items
+- **Grid Gaps**: `gap-3` for lists, `gap-4` for form layouts
+- **Page Padding**: `p-6` for main content areas
+
+### Form Elements
+- **Input Fields**: 
+  - Corner radius: `rounded-xl`
+  - Padding: `px-4 py-2`
+  - Border: `border border-gray-200`
+  - Focus: `focus:border-black` (no ring/shadow)
+  - Background: `bg-gray-100` for readonly fields
+- **Text Areas**: Same as inputs but with `resize-none`
+- **Character Limits**: Display as gray text only, no red warnings
+
+### Interactive Elements
+- **Hover States**: Subtle color shifts only (gray-100 to gray-200, black to gray-900)
+- **Focus States**: Black border, no outline rings
+- **Active States**: No special styling beyond hover
+- **Loading States**: Subtle opacity changes, black spinners
+- **Transitions**: `transition-colors` for all interactive elements
+
+### Capacity Meters & Progress Bars
+- **Height**: `h-4` (thin bars)
+- **Corner Radius**: `rounded-full`
+- **Background**: `bg-gray-200`
+- **Fill**: `bg-black`
+- **Numbers**: 
+  - Size: `text-[10px]` (very small)
+  - Position: Absolute positioned within bars
+  - Colors: White on black fill, black on gray background
+
+### Navigation & Headers
+- **No Black Backgrounds**: All headers use white/transparent backgrounds (including search pages)
+- **Back Buttons**: Gray text (`text-gray-600`) with hover to black
+- **Breadcrumbs**: Simple text links, no special styling
+- **Page Titles**: `text-2xl font-light` typically
+
+### Filter Tabs & Controls
+- **Active State**: Dark gray background (`bg-gray-600`) with white text
+- **Inactive State**: Light gray background (`bg-gray-100`) with black text
+- **Corner Radius**: `rounded-lg` (not full for tabs)
+- **Padding**: `px-3 py-1`
+- **Font Size**: `text-sm` (regular weight, no bold)
+
+### Status Indicators
+- **Approved**: Black background, white text
+- **Pending**: Gray background (`bg-gray-200`), dark text
+- **Denied**: White background, black text, black border
+- **Success/Check-in**: Green background only for actual success states
+- **All status badges**: `rounded-lg` corners
+
+### Mobile Responsiveness
+- **Touch Targets**: Minimum 44x44pt for all interactive elements
+- **Text Scaling**: Maintain hierarchy across screen sizes
+- **Button Sizing**: Full width on mobile when appropriate
+- **Spacing**: Reduce padding on smaller screens but maintain proportions
+
+### Animation & Transitions
+- **Duration**: `transition-colors` (fast color changes)
+- **Easing**: Default CSS transitions (no custom timing)
+- **Loading**: Simple spinners with `animate-spin`
+- **Auto-dismiss**: 3-second timeouts for success states
+
+### Accessibility Compliance
+- **Contrast**: All text meets WCAG AA standards
+- **Focus Indicators**: Clear black borders on all focusable elements
+- **Touch Targets**: 44x44pt minimum
+- **Color Independence**: No information conveyed by color alone
+
+### Brand Consistency
+- **Logo Usage**: Minimal, clean presentation
+- **Voice**: Professional, concise, friendly
+- **No Decoration**: Avoid gradients, shadows, or ornamental elements
+- **Consistent Spacing**: Use Tailwind's spacing scale consistently
+
+### Quality Assurance Checklist
+- [ ] All buttons use `rounded-full`
+- [ ] All cards use `rounded-xl` 
+- [ ] No `border-2` used anywhere (only `border`)
+- [ ] Gray cards have no borders
+- [ ] No red text for errors/warnings
+- [ ] Capacity meter numbers are `text-[10px]`
+- [ ] Headers have no black backgrounds
+- [ ] Button text is `text-sm`
+- [ ] NO bold text anywhere (`font-medium`, `font-semibold`, `font-bold` forbidden)
+- [ ] All interactive elements have proper hover states
+- [ ] Instagram handles are blue and clickable
+- [ ] Event dates use `text-sm`
+
+---
+
 ## Next Steps
 1. Complete Manager flow documentation
 2. Create wireframes in Magic Patterns

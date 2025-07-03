@@ -170,7 +170,7 @@ export default function GuestDashboard() {
           <div className="card">
             <div className="card-header">
               <h2 className="text-xl font-medium">Tonight's Event</h2>
-              <p className="text-sm text-gray-500 mt-xs">Saturday, June 24th • 10:00 PM</p>
+              <p className="text-sm text-gray-500 mt-xs">Saturday, June 24 • 10:00 PM</p>
             </div>
             <div className="card-body">
               <div className="flex flex-col gap-xl">

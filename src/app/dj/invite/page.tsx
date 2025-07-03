@@ -32,7 +32,7 @@ function DJInvitePageContent() {
       setEventInfo({
         id: 'evt_123',
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6th, 2025',
+        date: 'Saturday, July 6, 2025',
         venue: 'Nightlist',
         otherDJs: ['DJ Shadow', 'MC Groove']
       });

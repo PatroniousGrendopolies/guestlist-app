@@ -45,7 +45,7 @@ export default function DJGuestDetailPage() {
       setEventInfo({
         id: params.id as string,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6th, 2025'
+        date: 'Saturday, July 6, 2025'
       });
 
       // Mock guest data based on guestId
@@ -60,7 +60,6 @@ export default function DJGuestDetailPage() {
           status: 'pending',
           checkedIn: false,
           submittedAt: '2 hours ago',
-          notes: 'Requested table near the DJ booth'
         },
         '2': {
           id: '2',
@@ -96,7 +95,18 @@ export default function DJGuestDetailPage() {
         }
       };
 
-      const foundGuest = mockGuests[params.guestId as string];
+      // Check for updated guest status from management page
+      const storedGuests = localStorage.getItem('event_guests');
+      let foundGuest = mockGuests[params.guestId as string];
+      
+      if (storedGuests && foundGuest) {
+        const guestUpdates = JSON.parse(storedGuests);
+        const guestUpdate = guestUpdates[params.guestId as string];
+        if (guestUpdate) {
+          foundGuest = { ...foundGuest, ...guestUpdate };
+        }
+      }
+      
       setGuest(foundGuest || null);
       setIsLoading(false);
     }, 1000);
@@ -111,7 +121,18 @@ export default function DJGuestDetailPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      setGuest(prev => prev ? { ...prev, status: 'approved' } : null);
+      setGuest(prev => {
+        if (!prev) return null;
+        const updatedGuest = { ...prev, status: 'approved' as const };
+        
+        // Save to localStorage for sync with management page
+        const storedGuests = localStorage.getItem('event_guests');
+        const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
+        guestUpdates[prev.id] = { status: 'approved' };
+        localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
+        
+        return updatedGuest;
+      });
     } catch (error) {
       console.error('Failed to approve guest:', error);
     } finally {
@@ -128,7 +149,18 @@ export default function DJGuestDetailPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      setGuest(prev => prev ? { ...prev, status: 'denied' } : null);
+      setGuest(prev => {
+        if (!prev) return null;
+        const updatedGuest = { ...prev, status: 'denied' as const };
+        
+        // Save to localStorage for sync with management page
+        const storedGuests = localStorage.getItem('event_guests');
+        const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
+        guestUpdates[prev.id] = { status: 'denied' };
+        localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
+        
+        return updatedGuest;
+      });
     } catch (error) {
       console.error('Failed to deny guest:', error);
     } finally {
@@ -145,7 +177,7 @@ export default function DJGuestDetailPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
-        return 'bg-black text-white';
+        return 'bg-white text-black border border-gray-300';
       case 'pending':
         return 'bg-gray-200 text-gray-700';
       case 'denied':
@@ -175,7 +207,7 @@ export default function DJGuestDetailPage() {
             onClick={() => router.push(`/dj/events/${params.id}/manage`)}
             className="text-black hover:underline"
           >
-            ← Back to Guest List
+            ← Guest List
           </button>
         </div>
       </div>
@@ -185,16 +217,16 @@ export default function DJGuestDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-black text-white p-6">
+      <div className="p-6">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={() => router.push(`/dj/events/${params.id}/manage`)}
-            className="text-gray-400 hover:text-white transition-colors mb-4 text-sm"
+            className="text-gray-600 hover:text-black transition-colors mb-4 text-sm"
           >
-            ← Back to Guest List
+            ← Guest List
           </button>
           <h1 className="text-2xl font-light mb-2">Guest Details</h1>
-          <p className="text-gray-300">{eventInfo.name}</p>
+          <p className="text-gray-600">{eventInfo.name}</p>
         </div>
       </div>
 
@@ -203,15 +235,22 @@ export default function DJGuestDetailPage() {
         <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-semibold mb-2">{guest.name}</h2>
+              <h2 className="text-2xl font-light mb-2">{guest.name}</h2>
               {guest.instagram && (
-                <p className="text-lg text-gray-600 mb-1">{guest.instagram}</p>
+                <a 
+                  href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-lg text-blue-600 hover:text-blue-800 transition-colors mb-1 block"
+                >
+                  {guest.instagram}
+                </a>
               )}
-              <span className={`inline-block px-3 py-1 rounded-lg text-sm font-semibold ${getStatusColor(guest.status)}`}>
+              <span className={`inline-block px-3 py-1 rounded-lg text-sm ${getStatusColor(guest.status)}`}>
                 {guest.status.charAt(0).toUpperCase() + guest.status.slice(1)}
               </span>
               {guest.checkedIn && (
-                <span className="ml-2 bg-black text-white px-3 py-1 rounded-lg text-sm font-semibold">
+                <span className="ml-2 bg-black text-white px-3 py-1 rounded-lg text-sm">
                   Checked In
                 </span>
               )}
@@ -221,19 +260,19 @@ export default function DJGuestDetailPage() {
           {/* Guest Details */}
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-1">Plus Ones</h4>
+              <h4 className="text-sm text-gray-500 mb-1">Plus Ones</h4>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => handleUpdatePlusOnes(guest.plusOnes - 1)}
-                  className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
                   disabled={guest.plusOnes <= 0}
                 >
                   -
                 </button>
-                <span className="text-lg font-semibold w-8 text-center">{guest.plusOnes}</span>
+                <span className="text-lg w-8 text-center">{guest.plusOnes}</span>
                 <button
                   onClick={() => handleUpdatePlusOnes(guest.plusOnes + 1)}
-                  className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
                   +
                 </button>
@@ -241,23 +280,15 @@ export default function DJGuestDetailPage() {
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-1">Submitted</h4>
-              <p className="text-black">{guest.submittedAt}</p>
+              <p className="text-sm text-gray-500">Submitted {guest.submittedAt}</p>
             </div>
 
             {guest.checkInTime && (
               <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1">Check-in Time</h4>
-                <p className="text-black">{guest.checkInTime}</p>
+                <p className="text-sm text-gray-500">Check-in Time {guest.checkInTime}</p>
               </div>
             )}
 
-            {guest.notes && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1">Notes</h4>
-                <p className="text-black">{guest.notes}</p>
-              </div>
-            )}
           </div>
         </div>
 
@@ -267,14 +298,14 @@ export default function DJGuestDetailPage() {
             <button
               onClick={handleApproveGuest}
               disabled={isApproving}
-              className="flex-1 bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-900 transition-colors disabled:opacity-50"
+              className="flex-1 bg-black text-white py-3 rounded-full hover:bg-gray-900 transition-colors disabled:opacity-50"
             >
               {isApproving ? 'Approving...' : 'Approve Guest'}
             </button>
             <button
               onClick={handleDenyGuest}
               disabled={isDenying}
-              className="flex-1 bg-white text-black border-2 border-black py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex-1 bg-white text-black border border-black py-3 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               {isDenying ? 'Denying...' : 'Deny Guest'}
             </button>
@@ -286,7 +317,7 @@ export default function DJGuestDetailPage() {
             <button
               onClick={handleDenyGuest}
               disabled={isDenying}
-              className="w-full bg-white text-black border-2 border-black py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="w-full bg-white text-black border border-gray-300 py-3 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               {isDenying ? 'Removing...' : 'Remove Approval'}
             </button>
@@ -298,29 +329,13 @@ export default function DJGuestDetailPage() {
             <button
               onClick={handleApproveGuest}
               disabled={isApproving}
-              className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-900 transition-colors disabled:opacity-50"
+              className="w-full bg-black text-white py-3 rounded-full hover:bg-gray-900 transition-colors disabled:opacity-50"
             >
               {isApproving ? 'Approving...' : 'Approve Guest'}
             </button>
           </div>
         )}
 
-        {/* Summary Stats */}
-        <div className="bg-gray-50 rounded-xl p-4">
-          <h4 className="text-sm font-medium text-gray-500 mb-3">Guest Summary</h4>
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-lg font-semibold">{1 + guest.plusOnes}</div>
-              <div className="text-xs text-gray-500">Total Spots</div>
-            </div>
-            <div>
-              <div className="text-lg font-semibold">
-                {guest.checkedIn ? 'Yes' : 'No'}
-              </div>
-              <div className="text-xs text-gray-500">Checked In</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

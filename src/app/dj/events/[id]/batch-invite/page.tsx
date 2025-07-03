@@ -47,7 +47,7 @@ export default function DJBatchInvitePage() {
       const mockEventInfo = {
         id: params.id as string,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6th, 2025'
+        date: 'Saturday, July 6, 2025'
       };
 
       const mockPastGuests: PastGuest[] = [
