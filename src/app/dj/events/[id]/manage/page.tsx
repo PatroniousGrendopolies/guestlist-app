@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Toast, { useToast } from '@/components/ui/Toast';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { SafeStorage } from '@/lib/utils/safeStorage';
 
 interface Guest {
   id: string;
@@ -34,100 +37,164 @@ export default function DJEventManagePage() {
   const [showApprovalConfirmation, setShowApprovalConfirmation] = useState(false);
   const [approvedGuestNames, setApprovedGuestNames] = useState<string[]>([]);
   const [isApprovingAll, setIsApprovingAll] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const params = useParams();
+  const { toast, showToast, hideToast } = useToast();
 
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = localStorage.getItem('dj_authenticated');
-    if (!isAuthenticated) {
-      router.push('/dj/login');
-      return;
-    }
-
-    // Mock data - in real app, fetch from API using params.id
-    setTimeout(() => {
-      setEventInfo({
-        id: params.id as string,
-        name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025',
-        totalCapacity: 75,
-        spotsUsed: 23,
-        otherDJs: ['DJ Marcus', 'MC Groove']
-      });
-
-      setGuests([
-        {
-          id: '1',
-          name: 'Sarah Johnson',
-          email: 'sarah@example.com',
-          phone: '+1 (555) 123-4567',
-          instagram: '@sarahj',
-          plusOnes: 2,
-          status: 'pending',
-          checkedIn: false,
-          submittedAt: '2 hours ago'
-        },
-        {
-          id: '2',
-          name: 'Mike Chen',
-          email: 'mike@example.com',
-          phone: '+1 (555) 234-5678',
-          plusOnes: 1,
-          status: 'pending',
-          checkedIn: false,
-          submittedAt: '4 hours ago'
-        },
-        {
-          id: '3',
-          name: 'Alex Rivera',
-          email: 'alex@example.com',
-          phone: '+1 (555) 345-6789',
-          instagram: '@alexr',
-          plusOnes: 0,
-          status: 'approved',
-          checkedIn: true,
-          submittedAt: '1 day ago'
-        },
-        {
-          id: '4',
-          name: 'Jamie Smith',
-          email: 'jamie@example.com',
-          phone: '+1 (555) 456-7890',
-          plusOnes: 3,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '1 day ago'
+    const loadEventData = async () => {
+      try {
+        // Check authentication
+        const isAuthenticated = SafeStorage.getItem('dj_authenticated');
+        if (!isAuthenticated) {
+          router.push('/dj/login');
+          return;
         }
-      ]);
 
-      setIsLoading(false);
-    }, 1000);
+        // Validate event ID
+        if (!params.id || typeof params.id !== 'string') {
+          setError('Invalid event ID');
+          setIsLoading(false);
+          return;
+        }
+
+        // Mock data loading with potential failure simulation
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Simulate random API failure in development (5% chance)
+        if (process.env.NODE_ENV === 'development' && Math.random() < 0.05) {
+          throw new Error('Simulated API failure');
+        }
+
+        setEventInfo({
+          id: params.id as string,
+          name: 'Saturday Night Sessions',
+          date: 'Saturday, July 6, 2025',
+          totalCapacity: 75,
+          spotsUsed: 23,
+          otherDJs: ['DJ Marcus', 'MC Groove']
+        });
+
+        setGuests([
+          {
+            id: '1',
+            name: 'Sarah Johnson',
+            email: 'sarah@example.com',
+            phone: '+1 (555) 123-4567',
+            instagram: '@sarahj',
+            plusOnes: 2,
+            status: 'pending',
+            checkedIn: false,
+            submittedAt: '2 hours ago'
+          },
+          {
+            id: '2',
+            name: 'Mike Chen',
+            email: 'mike@example.com',
+            phone: '+1 (555) 234-5678',
+            plusOnes: 1,
+            status: 'pending',
+            checkedIn: false,
+            submittedAt: '4 hours ago'
+          },
+          {
+            id: '3',
+            name: 'Alex Rivera',
+            email: 'alex@example.com',
+            phone: '+1 (555) 345-6789',
+            instagram: '@alexr',
+            plusOnes: 0,
+            status: 'approved',
+            checkedIn: true,
+            submittedAt: '1 day ago'
+          },
+          {
+            id: '4',
+            name: 'Jamie Smith',
+            email: 'jamie@example.com',
+            phone: '+1 (555) 456-7890',
+            plusOnes: 3,
+            status: 'approved',
+            checkedIn: false,
+            submittedAt: '1 day ago'
+          }
+        ]);
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to load event data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load event data');
+        setIsLoading(false);
+        showToast('Failed to load event data. Please try again.', 'error');
+      }
+    };
+
+    loadEventData();
   }, [router, params.id]);
 
   const handleApproveGuest = async (guestId: string) => {
+    if (!eventInfo) {
+      showToast('Event data not loaded', 'error');
+      return;
+    }
+
     setIsApproving(guestId);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Check capacity before approving
+      const guest = guests.find(g => g.id === guestId);
+      if (!guest) {
+        throw new Error('Guest not found');
+      }
+
+      const currentApproved = guests.filter(g => g.status === 'approved');
+      const currentUsed = currentApproved.reduce((total, g) => total + 1 + g.plusOnes, 0);
+      const newCapacity = currentUsed + 1 + guest.plusOnes;
+
+      if (newCapacity > eventInfo.totalCapacity) {
+        showToast(`Cannot approve: would exceed capacity (${newCapacity}/${eventInfo.totalCapacity})`, 'warning');
+        setIsApproving(null);
+        return;
+      }
+
+      // Simulate API call with potential failure
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() < 0.1) { // 10% chance of failure
+            reject(new Error('Network error'));
+          } else {
+            resolve(undefined);
+          }
+        }, 500);
+      });
       
       setGuests(prev => prev.map(guest => {
         if (guest.id === guestId) {
           const updatedGuest = { ...guest, status: 'approved' as const };
           
           // Save to localStorage for sync with detail page
-          const storedGuests = localStorage.getItem('event_guests');
-          const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
-          guestUpdates[guestId] = { status: 'approved' };
-          localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
+          const success = SafeStorage.setJSON('event_guests', {
+            ...SafeStorage.getJSON('event_guests') || {},
+            [guestId]: { status: 'approved' }
+          });
+          
+          if (!success) {
+            console.warn('Failed to save guest status to localStorage');
+          }
           
           return updatedGuest;
         }
         return guest;
       }));
+
+      showToast(`${guest.name} approved successfully`, 'success');
     } catch (error) {
       console.error('Failed to approve guest:', error);
+      showToast(
+        error instanceof Error ? error.message : 'Failed to approve guest. Please try again.',
+        'error'
+      );
     } finally {
       setIsApproving(null);
     }
@@ -246,6 +313,32 @@ export default function DJEventManagePage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <div className="text-4xl mb-4">⚠️</div>
+          <h1 className="text-xl font-medium mb-2">Unable to load event</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push('/dj/dashboard')}
+              className="w-full bg-gray-100 text-black py-3 rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!eventInfo) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -294,7 +387,8 @@ export default function DJEventManagePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
@@ -504,6 +598,15 @@ export default function DJEventManagePage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
+    </ErrorBoundary>
   );
 }

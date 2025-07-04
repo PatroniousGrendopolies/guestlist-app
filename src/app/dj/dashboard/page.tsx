@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DebugPanel from '@/components/debug/DebugPanel';
 
 interface Event {
   id: string;
@@ -100,6 +101,70 @@ export default function DJDashboardPage() {
     localStorage.removeItem('dj_authenticated');
     localStorage.removeItem('dj_email');
     router.push('/dj/login');
+  };
+
+  // Debug functions
+  const resetData = () => {
+    // Reset events to initial state
+    setUpcomingEvents([
+      {
+        id: '1',
+        name: 'Saturday Night Sessions',
+        date: 'July 6 2025',
+        otherDJs: ['DJ Marcus', 'MC Groove'],
+        spotsUsed: 23,
+        totalSpots: 75,
+        status: 'upcoming',
+        pendingGuests: 2,
+        hasInvitedPastGuests: false
+      },
+      {
+        id: '2',
+        name: 'Summer Vibes',
+        date: 'July 12 2025',
+        otherDJs: ['DJ Luna'],
+        spotsUsed: 8,
+        totalSpots: 75,
+        status: 'upcoming',
+        pendingGuests: 0,
+        hasInvitedPastGuests: true
+      }
+    ]);
+    
+    // Clear guest data from localStorage
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('guest_') || key.startsWith('event_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
+  const fillToCapacity = () => {
+    setUpcomingEvents(prev => prev.map(event => ({
+      ...event,
+      spotsUsed: event.totalSpots - 2, // Leave 2 spots
+      pendingGuests: 3 // Add some pending
+    })));
+  };
+
+  const generateRandomGuests = () => {
+    setUpcomingEvents(prev => prev.map(event => ({
+      ...event,
+      pendingGuests: Math.floor(Math.random() * 10) + 1
+    })));
+  };
+
+  const clearStorage = () => {
+    window.location.reload();
+  };
+
+  const toggleLoading = () => {
+    setIsLoading(prev => !prev);
+  };
+
+  const simulateError = () => {
+    alert('Simulated error: Network connection failed');
   };
 
   if (isLoading) {
@@ -275,6 +340,16 @@ export default function DJDashboardPage() {
           </>
 
       </div>
+
+      {/* Debug Panel */}
+      <DebugPanel
+        onResetData={resetData}
+        onFillToCapacity={fillToCapacity}
+        onGenerateRandomGuests={generateRandomGuests}
+        onClearStorage={clearStorage}
+        onToggleLoading={toggleLoading}
+        onSimulateError={simulateError}
+      />
     </div>
   );
 }
