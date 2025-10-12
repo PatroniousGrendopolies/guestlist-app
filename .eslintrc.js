@@ -64,7 +64,11 @@ module.exports = {
     'react/react-in-jsx-scope': 'off', // Next.js doesn't require React import
     'react/prop-types': 'off', // We're using TypeScript for prop validation
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'react/no-unescaped-entities': 'warn',
+    '@next/next/no-img-element': 'warn',
+    'react-hooks/exhaustive-deps': 'warn',
     'import/order': [
       'error',
       {

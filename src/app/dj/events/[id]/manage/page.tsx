@@ -5,6 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import Toast, { useToast } from '@/components/ui/Toast';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { SafeStorage } from '@/lib/utils/safeStorage';
+import DebugPanel from '@/components/debug/DebugPanel';
+import ExplosionAnimation from '@/components/ui/ExplosionAnimation';
 
 interface Guest {
   id: string;
@@ -38,9 +40,23 @@ export default function DJEventManagePage() {
   const [approvedGuestNames, setApprovedGuestNames] = useState<string[]>([]);
   const [isApprovingAll, setIsApprovingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showExplosion, setShowExplosion] = useState(false);
+  const [explosionButtonPos, setExplosionButtonPos] = useState({ x: 50, y: 50 });
   const router = useRouter();
   const params = useParams();
   const { toast, showToast, hideToast } = useToast();
+
+  // Handle approval confirmation timeout with proper cleanup
+  useEffect(() => {
+    if (showApprovalConfirmation && !isApprovingAll) {
+      const timeoutId = setTimeout(() => {
+        setShowApprovalConfirmation(false);
+        setApprovedGuestNames([]);
+      }, 3000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [showApprovalConfirmation, isApprovingAll]);
 
   useEffect(() => {
     const loadEventData = async () => {
@@ -142,18 +158,24 @@ export default function DJEventManagePage() {
     setIsApproving(guestId);
     
     try {
-      // Check capacity before approving
+      // Check capacity before approving (atomic operation)
       const guest = guests.find(g => g.id === guestId);
       if (!guest) {
         throw new Error('Guest not found');
       }
 
+      // Calculate current capacity INCLUDING any guests currently being approved
       const currentApproved = guests.filter(g => g.status === 'approved');
       const currentUsed = currentApproved.reduce((total, g) => total + 1 + g.plusOnes, 0);
-      const newCapacity = currentUsed + 1 + guest.plusOnes;
+      
+      // Account for other guests currently being approved (race condition protection)
+      const currentlyApproving = guests.filter(g => g.id !== guestId && isApproving === g.id);
+      const pendingApprovalCapacity = currentlyApproving.reduce((total, g) => total + 1 + g.plusOnes, 0);
+      
+      const totalProjectedCapacity = currentUsed + pendingApprovalCapacity + 1 + guest.plusOnes;
 
-      if (newCapacity > eventInfo.totalCapacity) {
-        showToast(`Cannot approve: would exceed capacity (${newCapacity}/${eventInfo.totalCapacity})`, 'warning');
+      if (totalProjectedCapacity > eventInfo.totalCapacity) {
+        showToast(`Cannot approve: would exceed capacity (${totalProjectedCapacity}/${eventInfo.totalCapacity})`, 'warning');
         setIsApproving(null);
         return;
       }
@@ -174,8 +196,9 @@ export default function DJEventManagePage() {
           const updatedGuest = { ...guest, status: 'approved' as const };
           
           // Save to localStorage for sync with detail page
+          const existingGuests = SafeStorage.getJSON('event_guests') || {};
           const success = SafeStorage.setJSON('event_guests', {
-            ...SafeStorage.getJSON('event_guests') || {},
+            ...existingGuests,
             [guestId]: { status: 'approved' }
           });
           
@@ -224,60 +247,213 @@ export default function DJEventManagePage() {
     }
   };
 
-  const handleApproveAll = async () => {
+  const handleApproveAll = async (event: React.MouseEvent) => {
     const pendingGuests = filteredGuests.filter(guest => guest.status === 'pending');
     
     if (pendingGuests.length === 0) return;
     
+    // Capture button position for explosion animation
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((rect.left + rect.width / 2) / window.innerWidth) * 100;
+    const y = ((rect.top + rect.height / 2) / window.innerHeight) * 100;
+    setExplosionButtonPos({ x, y });
+    
     setIsApprovingAll(true);
     setApprovedGuestNames(pendingGuests.map(guest => guest.name));
-    setShowApprovalConfirmation(true);
+    
+    // Start explosion animation
+    setShowExplosion(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate API call (during explosion animation)
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setGuests(prev => {
-        const storedGuests = localStorage.getItem('event_guests');
-        const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
-        
+      setGuests(prev => {        
         return prev.map(guest => {
           if (guest.status === 'pending') {
-            const updatedGuest = { ...guest, status: 'approved' as const };
-            guestUpdates[guest.id] = { status: 'approved' };
-            return updatedGuest;
+            return { ...guest, status: 'approved' as const };
           }
           return guest;
         });
       });
       
-      // Save all updates to localStorage
-      const storedGuests = localStorage.getItem('event_guests');
-      const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
+      // Save all updates to localStorage using SafeStorage
+      const existingGuests = (SafeStorage.getJSON('event_guests') || {}) as Record<string, {status: string}>;
       pendingGuests.forEach(guest => {
-        guestUpdates[guest.id] = { status: 'approved' };
+        existingGuests[guest.id] = { status: 'approved' };
       });
-      localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
+      SafeStorage.setJSON('event_guests', existingGuests);
       
       setIsApprovingAll(false);
-      
-      // Hide confirmation after 3 more seconds
-      setTimeout(() => {
-        setShowApprovalConfirmation(false);
-        setApprovedGuestNames([]);
-      }, 3000);
     } catch (error) {
       console.error('Failed to approve all guests:', error);
       setIsApprovingAll(false);
-      setShowApprovalConfirmation(false);
+      setShowExplosion(false);
       setApprovedGuestNames([]);
+      showToast('Failed to approve guests. Please try again.', 'error');
     }
   };
 
+  const handleExplosionComplete = () => {
+    setShowExplosion(false);
+    // Skip the white approval confirmation screen - go straight back to main interface
+    setShowApprovalConfirmation(false);
+    setApprovedGuestNames([]);
+  };
+
   const handleUpdatePlusOnes = (guestId: string, newPlusOnes: number) => {
+    if (!eventInfo) {
+      showToast('Event data not loaded', 'error');
+      return;
+    }
+
+    // Prevent negative plus ones
+    const validPlusOnes = Math.max(0, newPlusOnes);
+    
+    const guest = guests.find(g => g.id === guestId);
+    if (!guest) {
+      showToast('Guest not found', 'error');
+      return;
+    }
+
+    // Calculate current capacity
+    const currentApproved = guests.filter(g => g.status === 'approved');
+    const currentUsed = currentApproved.reduce((total, g) => total + 1 + g.plusOnes, 0);
+    
+    // Calculate change in capacity
+    const capacityChange = validPlusOnes - guest.plusOnes;
+    const newTotalCapacity = currentUsed + capacityChange;
+
+    // Check if increasing plus ones would exceed capacity
+    if (capacityChange > 0 && newTotalCapacity > eventInfo.totalCapacity) {
+      showToast(`Cannot add plus ones: would exceed capacity (${newTotalCapacity}/${eventInfo.totalCapacity})`, 'warning');
+      return;
+    }
+
+    // Update the guest's plus ones
     setGuests(prev => prev.map(guest =>
-      guest.id === guestId ? { ...guest, plusOnes: Math.max(0, newPlusOnes) } : guest
+      guest.id === guestId ? { ...guest, plusOnes: validPlusOnes } : guest
     ));
+
+    // Save to localStorage
+    const existingGuests = (SafeStorage.getJSON('event_guests') || {}) as Record<string, {status?: string; plusOnes?: number}>;
+    SafeStorage.setJSON('event_guests', {
+      ...existingGuests,
+      [guestId]: { ...existingGuests[guestId], plusOnes: validPlusOnes }
+    });
+
+    showToast(`Updated plus ones for ${guest.name}`, 'success');
+  };
+
+  // Debug functions for guest management
+  const debugResetGuests = () => {
+    setGuests([
+      {
+        id: '1',
+        name: 'Sarah Johnson',
+        email: 'sarah@example.com',
+        phone: '+1 (555) 123-4567',
+        instagram: '@sarahj',
+        plusOnes: 2,
+        status: 'pending',
+        checkedIn: false,
+        submittedAt: '2 hours ago'
+      },
+      {
+        id: '2',
+        name: 'Mike Chen',
+        email: 'mike@example.com',
+        phone: '+1 (555) 234-5678',
+        plusOnes: 1,
+        status: 'pending',
+        checkedIn: false,
+        submittedAt: '4 hours ago'
+      }
+    ]);
+    SafeStorage.removeItem('event_guests');
+    showToast('Reset guest list to initial state', 'success');
+  };
+
+  const debugFillToCapacity = () => {
+    if (!eventInfo) return;
+    
+    const newGuests = [];
+    let totalUsed = 0;
+    
+    // Add guests until near capacity
+    for (let i = 1; totalUsed < eventInfo.totalCapacity - 5; i++) {
+      const plusOnes = Math.floor(Math.random() * 3);
+      newGuests.push({
+        id: `debug${i}`,
+        name: `Debug Guest ${i}`,
+        email: `debug${i}@test.com`,
+        phone: `+1 (555) ${i.toString().padStart(3, '0')}-0000`,
+        instagram: `@debug${i}`,
+        plusOnes,
+        status: 'approved' as const,
+        checkedIn: false,
+        submittedAt: `${i} hours ago`
+      });
+      totalUsed += 1 + plusOnes;
+    }
+    
+    setGuests(newGuests);
+    showToast(`Filled to near capacity (${totalUsed}/${eventInfo.totalCapacity})`, 'success');
+  };
+
+  const debugAddEdgeCaseGuests = () => {
+    const edgeCases = [
+      {
+        id: 'edge1',
+        name: 'Alexandriaaaaaa Constantinopolous-Van Der Berg',
+        email: 'very.long.email.address.that.might.break.layouts@example.com',
+        phone: '+1 (555) 999-0000',
+        instagram: '@alexandriaaaaaa_constantinopolous_van_der_berg_official',
+        plusOnes: 8,
+        status: 'pending' as const,
+        checkedIn: false,
+        submittedAt: '30 seconds ago'
+      },
+      {
+        id: 'edge2',
+        name: 'X',
+        email: 'x@x.co',
+        phone: '+1',
+        plusOnes: 0,
+        status: 'pending' as const,
+        checkedIn: false,
+        submittedAt: '999 days ago'
+      },
+      {
+        id: 'edge3',
+        name: 'Test User With émojis 🎉🎊✨',
+        email: 'emoji@test.com',
+        phone: '+1 (555) 123-4567',
+        instagram: '@test_émojis_🎉',
+        plusOnes: 15,
+        status: 'pending' as const,
+        checkedIn: false,
+        submittedAt: '2 minutes ago'
+      }
+    ];
+    
+    setGuests(prev => [...prev, ...edgeCases]);
+    showToast('Added edge case guests for testing', 'success');
+  };
+
+  const debugClearStorage = () => {
+    SafeStorage.removeItem('event_guests');
+    SafeStorage.removeItem('dj_authenticated');
+    SafeStorage.removeItem('dj_email');
+    window.location.reload();
+  };
+
+  const debugToggleLoading = () => {
+    setIsLoading(prev => !prev);
+  };
+
+  const debugSimulateError = () => {
+    showToast('Simulated network error occurred', 'error');
   };
 
   const filteredGuests = guests.filter(guest => {
@@ -507,77 +683,83 @@ export default function DJEventManagePage() {
                 key={guest.id}
                 className="bg-white border border-gray-200 rounded-xl p-4"
               >
-                <div className="flex items-center justify-between">
-                  {/* Left side - Guest Info */}
-                  <div className="flex-1">
+                <div className="relative">
+                  {/* Plus/Minus Controls - Top Left */}
+                  {guest.status === 'pending' && (
+                    <div className="absolute top-0 left-0 flex items-center gap-1">
+                      <button
+                        onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
+                        className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                        disabled={guest.plusOnes <= 0}
+                      >
+                        <span className="leading-none">−</span>
+                      </button>
+                      <button
+                        onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
+                        className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                      >
+                        <span className="leading-none">+</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Main Content Area */}
+                  <div className="pt-8 pb-10">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg">{guest.name}</h3>
+                      <h3 className="text-lg truncate pr-2" title={guest.name}>{guest.name}</h3>
                       {guest.plusOnes > 0 && (
-                        <span className="text-lg">+{guest.plusOnes}</span>
-                      )}
-                      {/* Plus/Minus Controls */}
-                      {guest.status === 'pending' && (
-                        <div className="flex items-center gap-1 ml-2">
-                          <button
-                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
-                            className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                            disabled={guest.plusOnes <= 0}
-                          >
-                            <span className="leading-none">−</span>
-                          </button>
-                          <button
-                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
-                            className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                          >
-                            <span className="leading-none">+</span>
-                          </button>
-                        </div>
+                        <span className="text-lg shrink-0">+{guest.plusOnes}</span>
                       )}
                     </div>
+                    
                     {guest.instagram && (
                       <a 
                         href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 transition-colors mb-1 block"
+                        className="text-sm text-blue-600 hover:text-blue-800 transition-colors mb-2 block truncate"
+                        title={guest.instagram}
                       >
                         {guest.instagram}
                       </a>
                     )}
+                    
                     {/* Status Badge */}
-                    {guest.checkedIn && (
-                      <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
-                        Checked In
-                      </span>
-                    )}
-                    {guest.status === 'approved' && !guest.checkedIn && (
-                      <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
-                        Approved
-                      </span>
-                    )}
-                    {guest.status === 'pending' && (
-                      <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs">
-                        Pending
-                      </span>
-                    )}
+                    <div>
+                      {guest.checkedIn && (
+                        <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
+                          Checked In
+                        </span>
+                      )}
+                      {guest.status === 'approved' && !guest.checkedIn && (
+                        <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
+                          Approved
+                        </span>
+                      )}
+                      {guest.status === 'pending' && (
+                        <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* Right side - Action Buttons */}
-                  <div className="flex flex-col gap-2">
+
+                  {/* Action Buttons - Bottom Right */}
+                  <div className="absolute bottom-0 right-0 flex gap-2">
                     {guest.status === 'pending' && (
                       <>
+                        <button
+                          onClick={() => handleDenyGuest(guest.id)}
+                          className="px-3 py-1 bg-white text-black border border-black rounded-full text-xs hover:bg-gray-50 transition-colors"
+                        >
+                          Deny
+                        </button>
                         <button
                           onClick={() => handleApproveGuest(guest.id)}
                           disabled={isApproving === guest.id}
                           className="px-3 py-1 bg-black text-white rounded-full text-xs hover:bg-gray-900 transition-colors disabled:opacity-50"
                         >
                           {isApproving === guest.id ? '...' : 'Approve'}
-                        </button>
-                        <button
-                          onClick={() => handleDenyGuest(guest.id)}
-                          className="px-3 py-1 bg-white text-black border border-black rounded-full text-xs hover:bg-gray-50 transition-colors"
-                        >
-                          Deny
                         </button>
                       </>
                     )}
@@ -606,6 +788,24 @@ export default function DJEventManagePage() {
         type={toast.type}
         isVisible={toast.isVisible}
         onClose={hideToast}
+      />
+
+      {/* Debug Panel */}
+      <DebugPanel
+        onResetData={debugResetGuests}
+        onFillToCapacity={debugFillToCapacity}
+        onGenerateRandomGuests={debugAddEdgeCaseGuests}
+        onClearStorage={debugClearStorage}
+        onToggleLoading={debugToggleLoading}
+        onSimulateError={debugSimulateError}
+      />
+
+      {/* Explosion Animation */}
+      <ExplosionAnimation
+        isVisible={showExplosion}
+        onAnimationComplete={handleExplosionComplete}
+        approvedNames={approvedGuestNames}
+        buttonPosition={explosionButtonPos}
       />
     </ErrorBoundary>
   );

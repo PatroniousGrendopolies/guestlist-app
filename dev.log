@@ -1,0 +1,353 @@
+
+> guestlist-app@0.1.0 dev
+> next dev -H 0.0.0.0
+
+   ▲ Next.js 15.3.3
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1431ms
+ ✓ Compiled /middleware in 237ms (180 modules)
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ○ Compiling /promoter/dashboard ...
+ ✓ Compiled /promoter/dashboard in 998ms (696 modules)
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/dashboard 200 in 1283ms
+ HEAD /promoter/dashboard 200 in 289ms
+Middleware disabled, allowing all access to: /promoter/login
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 652ms (716 modules)
+ GET /favicon.ico 200 in 888ms
+ GET /promoter/login 404 in 760ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 47ms
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ✓ Compiled in 905ms (330 modules)
+ GET /promoter/dashboard 200 in 577ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 12ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 25ms
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/dashboard 200 in 32ms
+ ✓ Compiled in 252ms (330 modules)
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 24ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 24ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 22ms
+ ✓ Compiled in 167ms (330 modules)
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 14ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 28ms
+ ✓ Compiled in 141ms (330 modules)
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 18ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 38ms
+ ✓ Compiled in 117ms (330 modules)
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 13ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 28ms
+ ✓ Compiled in 137ms (330 modules)
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 40ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 32ms
+ ✓ Compiled in 277ms (330 modules)
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 14ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 404 in 33ms
+Middleware disabled, allowing all access to: /promoter/login
+ ○ Compiling /promoter/login ...
+ ✓ Compiled /promoter/login in 956ms (887 modules)
+ GET /promoter/login 200 in 687ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 200 in 15ms
+Middleware disabled, allowing all access to: /promoter/login
+ HEAD /promoter/login 200 in 46ms
+ ✓ Compiled in 257ms (332 modules)
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 200 in 23ms
+Middleware disabled, allowing all access to: /promoter/login
+ GET /promoter/login 200 in 46ms
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/dashboard 200 in 28ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 35ms
+ ✓ Compiled in 619ms (721 modules)
+Middleware disabled, allowing all access to: /promoter/login
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/login 200 in 114ms
+ GET /promoter/dashboard 200 in 117ms
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/dashboard 200 in 94ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 53ms
+ ✓ Compiled /favicon.ico in 134ms (405 modules)
+ GET /favicon.ico 200 in 216ms
+ ✓ Compiled in 185ms (332 modules)
+Middleware disabled, allowing all access to: /promoter/login
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/dashboard 200 in 97ms
+ GET /promoter/login 200 in 99ms
+ GET /favicon.ico 200 in 11ms
+ ✓ Compiled in 201ms (332 modules)
+Middleware disabled, allowing all access to: /promoter/login
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/login 200 in 71ms
+ GET /promoter/dashboard 200 in 73ms
+ GET /favicon.ico 200 in 14ms
+ ✓ Compiled in 363ms (737 modules)
+Middleware disabled, allowing all access to: /promoter/login
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/login 200 in 115ms
+ GET /promoter/dashboard 200 in 120ms
+Middleware disabled, allowing all access to: /guest/auth
+ ○ Compiling /guest/auth ...
+ ✓ Compiled /guest/auth in 1447ms (879 modules)
+ GET /guest/auth 200 in 1785ms
+ ✓ Compiled in 561ms (893 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 79ms
+ ✓ Compiled in 341ms (893 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 64ms
+ ✓ Compiled in 441ms (893 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 40ms
+ ✓ Compiled in 189ms (401 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 19ms
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/dashboard 200 in 35ms
+Middleware disabled, allowing all access to: /promoter/events/event_5/manage
+ ✓ Compiled /promoter/events/[id]/manage in 485ms (900 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 28ms
+ GET /promoter/events/event_5/manage 200 in 1141ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ ✓ Compiled /_not-found in 406ms (890 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 499ms
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /promoter/dashboard 200 in 90ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 37ms
+ ✓ Compiled /favicon.ico in 286ms (514 modules)
+ GET /favicon.ico 200 in 412ms
+Middleware disabled, allowing all access to: /join/test
+ ○ Compiling /join/test ...
+ ✓ Compiled /join/test in 593ms (888 modules)
+ GET /join/test?inviter=YOUR-GUEST-ID 200 in 785ms
+ ✓ Compiled /favicon.ico in 104ms (513 modules)
+ GET /favicon.ico 200 in 178ms
+Middleware disabled, allowing all access to: /promoter/login
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 514ms (892 modules)
+ GET /promoter/login 404 in 865ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 44ms
+ GET /_next/static/css/app/layout.css?v=1752022936257 404 in 42ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 57ms
+ GET /_next/static/chunks/main-app.js?v=1752022936257 404 in 59ms
+ ✓ Compiled /favicon.ico in 123ms (514 modules)
+ GET /favicon.ico 200 in 340ms
+ ✓ Compiled in 1246ms (902 modules)
+Middleware disabled, allowing all access to: /guest/auth
+Middleware disabled, allowing all access to: /join/test
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js',
+  page: '/join/test'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js',
+  page: '/promoter/dashboard'
+}
+ GET /guest/auth 200 in 218ms
+ ○ Compiling /_not-found ...
+Middleware disabled, allowing all access to: /guest/auth
+ ✓ Compiled /_not-found in 1198ms (1226 modules)
+ GET /_next/static/css/app/layout.css?v=1752023181130 404 in 1324ms
+ GET /guest/auth 200 in 680ms
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 15ms
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 12ms
+ GET /_next/static/css/app/layout.css?v=1752023182676 404 in 24ms
+ GET /join/test?inviter=YOUR-GUEST-ID 500 in 1866ms
+ GET /promoter/dashboard 500 in 1866ms
+Middleware disabled, allowing all access to: /join/test
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js',
+  page: '/join/test'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js',
+  page: '/promoter/dashboard'
+}
+ GET /join/test?inviter=YOUR-GUEST-ID 500 in 260ms
+Middleware disabled, allowing all access to: /join/test
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js',
+  page: '/join/test'
+}
+ GET /promoter/dashboard 500 in 333ms
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js',
+  page: '/promoter/dashboard'
+}
+ GET /join/test?inviter=YOUR-GUEST-ID 500 in 396ms
+Middleware disabled, allowing all access to: /join/test
+ GET /promoter/dashboard 500 in 414ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js',
+  page: '/join/test'
+}
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js',
+  page: '/promoter/dashboard'
+}
+ GET /join/test?inviter=YOUR-GUEST-ID 500 in 310ms
+ GET /promoter/dashboard 500 in 243ms
+Middleware disabled, allowing all access to: /join/test
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/join/test/page.js',
+  page: '/join/test'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js'] {
+  errno: -2,
+  syscall: 'open',
+  code: 'ENOENT',
+  path: '/Users/patrickgregoire/CascadeProjects/guestlist JUN 8/guestlist-app/.next/server/app/promoter/dashboard/page.js',
+  page: '/promoter/dashboard'
+}
+ GET /join/test?inviter=YOUR-GUEST-ID 500 in 246ms
+ GET /promoter/dashboard 500 in 272ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 25ms
+ ✓ Compiled in 810ms (1206 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 106ms
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 171ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+Middleware disabled, allowing all access to: /promoter/dashboard
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 547ms (1183 modules)
+Middleware disabled, allowing all access to: /promoter/dashboard
+ GET /_next/static/chunks/main-app.js?v=1752023454472 404 in 888ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 887ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /promoter/dashboard 200 in 327ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 96ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 131ms
+ GET /_next/static/chunks/app/promoter/dashboard/page.js 404 in 133ms
+ GET /_next/static/chunks/main-app.js?v=1752023455482 404 in 134ms
+ ✓ Compiled /favicon.ico in 425ms (559 modules)
+ GET /favicon.ico 200 in 505ms
+ GET /favicon.ico 200 in 8ms
+ ✓ Compiled in 835ms (1213 modules)
+ ✓ Compiled in 347ms (1213 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 206ms
+ GET /_next/static/chunks/main-app.js?v=1752023563784 404 in 81ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 78ms
+ GET /favicon.ico 200 in 26ms
+ ✓ Compiled in 720ms (1213 modules)
+ ✓ Compiled in 378ms (1213 modules)
+ ✓ Compiled in 392ms (1213 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 207ms
+ GET /_next/static/chunks/main-app.js?v=1752023630793 404 in 374ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 346ms
+ GET /favicon.ico 200 in 22ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 24ms
+ ✓ Compiled in 454ms (1213 modules)
+ ✓ Compiled in 518ms (1213 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 238ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 107ms
+ GET /_next/static/chunks/main-app.js?v=1752023672214 404 in 115ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 122ms
+ GET /favicon.ico 200 in 26ms
+ ✓ Compiled in 464ms (1213 modules)
+ ✓ Compiled in 506ms (1213 modules)
+ ✓ Compiled in 477ms (1193 modules)
+ ✓ Compiled in 399ms (1193 modules)
+ ✓ Compiled in 571ms (1193 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 214ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ ✓ Compiled /_not-found in 413ms (1183 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 491ms
+ GET /_next/static/chunks/main-app.js?v=1752023768447 404 in 590ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 553ms
+ ✓ Compiled /favicon.ico in 250ms (559 modules)
+ GET /favicon.ico 200 in 329ms
+ ✓ Compiled in 543ms (1213 modules)
+ ✓ Compiled in 510ms (1213 modules)
+ ✓ Compiled in 450ms (1193 modules)
+ ✓ Compiled in 299ms (1193 modules)
+ ✓ Compiled in 259ms (1193 modules)
+ ✓ Compiled in 271ms (1193 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 206ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ ✓ Compiled /_not-found in 476ms (1183 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 659ms
+ GET /_next/static/chunks/main-app.js?v=1752023883746 404 in 645ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 638ms
+ ✓ Compiled /favicon.ico in 153ms (559 modules)
+ GET /favicon.ico 200 in 236ms
+ ✓ Compiled in 1148ms (1213 modules)
+ ✓ Compiled in 455ms (1193 modules)
+Middleware disabled, allowing all access to: /guest/auth
+ GET /guest/auth 200 in 262ms
+Middleware disabled, allowing all access to: /.well-known/appspecific/com.chrome.devtools.json
+ ✓ Compiled /_not-found in 283ms (1183 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 405ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 409ms
+ GET /_next/static/chunks/main-app.js?v=1752023992793 404 in 421ms
+ ✓ Compiled /favicon.ico in 122ms (559 modules)
+ GET /favicon.ico 200 in 240ms
+[?25h

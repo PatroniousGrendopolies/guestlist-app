@@ -35,7 +35,7 @@ export default function StaffDashboardPage() {
         {
           id: '1',
           name: 'Saturday Night Sessions',
-          date: 'July 6 2025',
+          date: 'Sat Jul 6',
           djs: ['DJ Marcus', 'MC Groove'],
           spotsUsed: 3,
           totalSpots: 5,
@@ -44,7 +44,7 @@ export default function StaffDashboardPage() {
         {
           id: '2',
           name: 'Summer Vibes',
-          date: 'July 12 2025',
+          date: 'Fri Jul 12',
           djs: ['DJ Luna'],
           spotsUsed: 5,
           totalSpots: 5,
@@ -53,7 +53,7 @@ export default function StaffDashboardPage() {
         {
           id: '3',
           name: 'Weekend Warmup',
-          date: 'July 13 2025',
+          date: 'Sat Jul 13',
           djs: ['DJ Beats', 'MC Flow'],
           spotsUsed: 2,
           totalSpots: 5,
@@ -66,7 +66,7 @@ export default function StaffDashboardPage() {
         {
           id: '4',
           name: 'Late Night Sessions',
-          date: 'July 19 2025',
+          date: 'Sat Jul 19',
           djs: ['DJ Shadow'],
           spotsUsed: 0,
           totalSpots: 5,
@@ -75,7 +75,7 @@ export default function StaffDashboardPage() {
         {
           id: '5',
           name: 'Friday Night Fever',
-          date: 'July 25 2025',
+          date: 'Fri Jul 25',
           djs: ['DJ Electric', 'MC Smooth'],
           spotsUsed: 1,
           totalSpots: 5,
@@ -109,7 +109,7 @@ export default function StaffDashboardPage() {
         return;
       } catch (error) {
         console.error('Web Share API failed:', error);
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           console.log('User cancelled the share');
           return;
         }
@@ -185,11 +185,10 @@ export default function StaffDashboardPage() {
             </button>
           </div>
           <h1 className="text-3xl font-light tracking-tight mb-1">Hey {staffName}!</h1>
-          <p className="text-gray-600">Manage your guest lists and events</p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto px-6 pb-6">
         {/* Upcoming Events */}
         <div className="mb-8">
           <h2 className="text-xl mb-1">Datcha's Upcoming Events</h2>
@@ -255,7 +254,7 @@ export default function StaffDashboardPage() {
                   </div>
 
                   {/* Capacity Request Section */}
-                  <div className="border-t border-gray-200 pt-4">
+                  <div className="pt-4">
                     {capacityRequestEventId === event.id ? (
                       <div className="space-y-3">
                         <p className="text-sm text-gray-600">Request additional spots:</p>
@@ -295,7 +294,7 @@ export default function StaffDashboardPage() {
                     ) : (
                       <button
                         onClick={() => setCapacityRequestEventId(event.id)}
-                        className="bg-gray-50 border border-gray-300 text-black px-4 py-2 rounded-full text-sm hover:bg-gray-100 transition-colors"
+                        className="w-full bg-gray-50 border border-gray-300 text-black px-4 py-2 rounded-full text-sm hover:bg-gray-100 transition-colors"
                       >
                         Request Additional Spots
                       </button>
@@ -366,7 +365,7 @@ export default function StaffDashboardPage() {
                   </div>
 
                   {/* Capacity Request Section */}
-                  <div className="border-t border-gray-200 pt-4">
+                  <div className="pt-4">
                     {capacityRequestEventId === event.id ? (
                       <div className="space-y-3">
                         <p className="text-sm text-gray-600">Request additional spots:</p>
@@ -406,7 +405,7 @@ export default function StaffDashboardPage() {
                     ) : (
                       <button
                         onClick={() => setCapacityRequestEventId(event.id)}
-                        className="bg-gray-50 border border-gray-300 text-black px-4 py-2 rounded-full text-sm hover:bg-gray-100 transition-colors"
+                        className="w-full bg-gray-50 border border-gray-300 text-black px-4 py-2 rounded-full text-sm hover:bg-gray-100 transition-colors"
                       >
                         Request Additional Spots
                       </button>

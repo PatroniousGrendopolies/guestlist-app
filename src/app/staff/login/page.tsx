@@ -19,11 +19,24 @@ export default function StaffLoginPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock authentication - in real app, validate credentials
-      if (email && password) {
+      // Mock validation - detect user type from credentials
+      if (email === 'dj@test.com' && password === 'password123') {
+        // DJ credentials
+        localStorage.setItem('dj_authenticated', 'true');
+        localStorage.setItem('dj_email', email);
+        router.push('/dj/dashboard');
+      } else if (email === 'staff@test.com' && password === 'password123') {
+        // Staff credentials
+        localStorage.setItem('staff_authenticated', 'true');
+        localStorage.setItem('staff_email', email);
         router.push('/staff/dashboard');
+      } else if (email === 'promoter@test.com' && password === 'password123') {
+        // Promoter credentials
+        localStorage.setItem('promoter_authenticated', 'true');
+        localStorage.setItem('promoter_email', email);
+        router.push('/promoter/dashboard');
       } else {
-        setError('Please enter both email and password');
+        setError('Invalid email or password');
       }
     } catch (error) {
       setError('Login failed. Please try again.');
@@ -37,7 +50,7 @@ export default function StaffLoginPage() {
       <div className="max-w-md w-full mx-auto p-6">
         <div className="text-center mb-8">
           <p className="text-sm text-gray-600 mb-2">Nightlist</p>
-          <h1 className="text-2xl font-light mb-2">Staff Portal</h1>
+          <h1 className="text-2xl font-light mb-2">Login</h1>
           <p className="text-gray-600">Sign in to manage your guest lists</p>
         </div>
 
@@ -98,11 +111,27 @@ export default function StaffLoginPage() {
 
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            Not a staff member?{' '}
+            Need help?{' '}
             <a href="/" className="text-black hover:underline">
               Go to main site
             </a>
           </p>
+        </div>
+
+        {/* Demo Credentials */}
+        <div className="mt-8 p-4 bg-gray-50 rounded-xl">
+          <h4 className="text-sm mb-2">Demo Credentials:</h4>
+          <div className="space-y-2">
+            <div>
+              <p className="text-xs text-gray-600">DJ: dj@test.com / password123</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600">Staff: staff@test.com / password123</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600">Promoter: promoter@test.com / password123</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

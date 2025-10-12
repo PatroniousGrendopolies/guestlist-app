@@ -22,14 +22,22 @@ export default function DJLoginPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock validation
+      // Mock validation - detect user type from credentials
       if (email === 'dj@test.com' && password === 'password123') {
-        // Store authentication
+        // DJ credentials
         localStorage.setItem('dj_authenticated', 'true');
         localStorage.setItem('dj_email', email);
-        
-        // Redirect to dashboard
         router.push('/dj/dashboard');
+      } else if (email === 'staff@test.com' && password === 'password123') {
+        // Staff credentials
+        localStorage.setItem('staff_authenticated', 'true');
+        localStorage.setItem('staff_email', email);
+        router.push('/staff/dashboard');
+      } else if (email === 'promoter@test.com' && password === 'password123') {
+        // Promoter credentials
+        localStorage.setItem('promoter_authenticated', 'true');
+        localStorage.setItem('promoter_email', email);
+        router.push('/promoter/dashboard');
       } else {
         setError('Invalid email or password');
       }
@@ -130,7 +138,7 @@ export default function DJLoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light tracking-tight mb-2">Nightlist</h1>
-          <h2 className="text-xl font-light mb-4">DJ Login</h2>
+          <h2 className="text-xl font-light mb-4">Login</h2>
           <p className="text-gray-600">Access your events and guest lists</p>
         </div>
 
@@ -212,8 +220,17 @@ export default function DJLoginPage() {
         {/* Demo Credentials */}
         <div className="mt-8 p-4 bg-gray-50 rounded-xl">
           <h4 className="font-medium text-sm mb-2">Demo Credentials:</h4>
-          <p className="text-xs text-gray-600 mb-1">Email: dj@test.com</p>
-          <p className="text-xs text-gray-600">Password: password123</p>
+          <div className="space-y-2">
+            <div>
+              <p className="text-xs text-gray-600">DJ: dj@test.com / password123</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600">Staff: staff@test.com / password123</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600">Promoter: promoter@test.com / password123</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

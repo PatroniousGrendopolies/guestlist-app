@@ -22,8 +22,8 @@ export default function DebugPanel({
   const [isOpen, setIsOpen] = useState(false);
   const [showStorage, setShowStorage] = useState(false);
 
-  // Only show in development
-  if (process.env.NODE_ENV !== 'development') {
+  // Only show in development (more flexible check)
+  if (process.env.NODE_ENV === 'production') {
     return null;
   }
 

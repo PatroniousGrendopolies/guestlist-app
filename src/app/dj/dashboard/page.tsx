@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DebugPanel from '@/components/debug/DebugPanel';
+import { SafeStorage } from '@/lib/utils/safeStorage';
 
 interface Event {
   id: string;
@@ -98,8 +99,8 @@ export default function DJDashboardPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('dj_authenticated');
-    localStorage.removeItem('dj_email');
+    SafeStorage.removeItem('dj_authenticated');
+    SafeStorage.removeItem('dj_email');
     router.push('/dj/login');
   };
 
@@ -153,6 +154,45 @@ export default function DJDashboardPage() {
       ...event,
       pendingGuests: Math.floor(Math.random() * 10) + 1
     })));
+    
+    // Add realistic edge case guests to localStorage for testing
+    const edgeCaseGuests = [
+      {
+        id: 'edge1',
+        name: 'Alexandriaaaaaa Constantinopolous-Van Der Berg',
+        email: 'very.long.email.address.that.might.break.layouts@example.com',
+        phone: '+1 (555) 999-0000',
+        instagram: '@alexandriaaaaaa_constantinopolous_van_der_berg_official',
+        plusOnes: 8,
+        status: 'pending',
+        checkedIn: false,
+        submittedAt: '30 seconds ago'
+      },
+      {
+        id: 'edge2', 
+        name: 'X',
+        email: 'x@x.co',
+        phone: '+1',
+        plusOnes: 0,
+        status: 'pending',
+        checkedIn: false,
+        submittedAt: '999 days ago'
+      },
+      {
+        id: 'edge3',
+        name: 'Test User With émojis 🎉🎊✨',
+        email: 'emoji@test.com',
+        phone: '+1 (555) 123-4567',
+        instagram: '@test_émojis_🎉',
+        plusOnes: 15,
+        status: 'pending', 
+        checkedIn: false,
+        submittedAt: '2 minutes ago'
+      }
+    ];
+    
+    SafeStorage.setJSON('edge_case_guests', edgeCaseGuests);
+    console.log('Added edge case guests for testing');
   };
 
   const clearStorage = () => {
@@ -278,17 +318,21 @@ export default function DJDashboardPage() {
                       <div className="flex gap-3">
                         <button
                           onClick={() => handleEventAction(event.id, 'manage')}
-                          className="flex-1 bg-gray-800 text-white py-2 rounded-full text-[10px] hover:bg-gray-900 transition-colors"
+                          className="flex-1 bg-gray-800 text-white py-3 px-4 rounded-full text-sm hover:bg-gray-900 transition-colors min-h-[48px] flex items-center justify-center"
                         >
-                          {event.pendingGuests && event.pendingGuests > 0 
-                            ? 'Review pending guests' 
-                            : 'Review guestlist'}
+                          <span className="text-center leading-tight">
+                            {event.pendingGuests && event.pendingGuests > 0 
+                              ? 'Review pending guests' 
+                              : 'Review guestlist'}
+                          </span>
                         </button>
                         <button
                           onClick={() => router.push(`/dj/events/${event.id}/invite-past-guests`)}
-                          className="flex-1 bg-gray-100 text-black py-2 rounded-full text-[10px] hover:bg-gray-200 transition-colors"
+                          className="flex-1 bg-gray-100 text-black py-3 px-4 rounded-full text-sm hover:bg-gray-200 transition-colors min-h-[48px] flex items-center justify-center"
                         >
-                          Invite past guests
+                          <span className="text-center leading-tight">
+                            Invite past guests
+                          </span>
                         </button>
                       </div>
                     </div>

@@ -30,7 +30,7 @@ export default function StaffEventManagePage() {
   const [allGuests, setAllGuests] = useState<Guest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterTab, setFilterTab] = useState<'all' | 'checked-in' | 'pending'>('all');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'staff' | 'dj' | 'promoter'>('all');
+  const [personFilter, setPersonFilter] = useState<string>('all');
 
   useEffect(() => {
     // Simulate API call
@@ -226,9 +226,9 @@ export default function StaffEventManagePage() {
         break;
     }
     
-    // Filter by role
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter(guest => guest.addedByType === roleFilter);
+    // Filter by person
+    if (personFilter !== 'all') {
+      filtered = filtered.filter(guest => guest.addedBy === personFilter);
     }
     
     return filtered;
@@ -238,9 +238,13 @@ export default function StaffEventManagePage() {
   const totalGuestCount = allGuests.length;
   const checkedInCount = allGuests.filter(g => g.checkedIn).length;
   const pendingCount = allGuests.filter(g => !g.checkedIn && g.status === 'approved').length;
-  const staffCount = allGuests.filter(g => g.addedByType === 'staff').length;
-  const djCount = allGuests.filter(g => g.addedByType === 'dj').length;
-  const promoterCount = allGuests.filter(g => g.addedByType === 'promoter').length;
+  
+  // Get unique people who added guests
+  const uniquePeople = Array.from(new Set(allGuests.map(g => g.addedBy)));
+  const personCounts = uniquePeople.reduce((acc, person) => {
+    acc[person] = allGuests.filter(g => g.addedBy === person).length;
+    return acc;
+  }, {} as Record<string, number>);
 
   if (isLoading) {
     return (
@@ -303,30 +307,18 @@ export default function StaffEventManagePage() {
               <div className="space-y-3">
                 {myGuests.map((guest) => (
                   <div key={guest.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-center justify-between mb-1">
                       {/* Left side - Guest Info */}
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2">
                           <h3 className="text-lg">{guest.name}</h3>
                           {guest.plusOnes > 0 && (
                             <span className="text-lg">+{guest.plusOnes}</span>
                           )}
                         </div>
-                        <div>
-                          {guest.instagram && (
-                            <a 
-                              href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800 transition-colors block"
-                            >
-                              {guest.instagram}
-                            </a>
-                          )}
-                        </div>
                       </div>
                       
-                      {/* Top Right - Plus/Minus Controls */}
+                      {/* Right side - Controls */}
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
@@ -343,14 +335,28 @@ export default function StaffEventManagePage() {
                       </div>
                     </div>
                     
-                    {/* Bottom Right - Checked In Status */}
-                    {guest.checkedIn && (
-                      <div className="flex justify-end mt-2">
-                        <span className="px-2 py-1 rounded-lg text-xs bg-green-100 text-green-800">
-                          Checked in
-                        </span>
+                    {/* Bottom row - Instagram and Tags */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        {guest.instagram && (
+                          <a 
+                            href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            {guest.instagram}
+                          </a>
+                        )}
                       </div>
-                    )}
+                      <div className="flex items-center gap-2">
+                        {guest.checkedIn && (
+                          <span className="px-2 py-1 rounded-lg text-xs bg-green-100 text-green-800">
+                            Checked in
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -361,115 +367,89 @@ export default function StaffEventManagePage() {
         {/* Full Event Tab */}
         {activeTab === 'full-event' && (
           <div>
-            {/* Filter Controls */}
-            <div className="flex gap-3 mb-4">
-              {/* Status Dropdown */}
-              <select
-                value={filterTab}
-                onChange={(e) => setFilterTab(e.target.value as 'all' | 'checked-in' | 'pending')}
-                className="px-3 py-1 rounded-lg text-sm border border-gray-200 bg-white"
+            {/* Person Filter Buttons */}
+            <div className="flex gap-2 mb-4 flex-wrap">
+              <button
+                onClick={() => setPersonFilter('all')}
+                className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                  personFilter === 'all'
+                    ? 'bg-gray-600 text-white'
+                    : 'bg-gray-100 text-black hover:bg-gray-200'
+                }`}
               >
-                <option value="all">All ({totalGuestCount})</option>
-                <option value="checked-in">Checked In ({checkedInCount})</option>
-                <option value="pending">Pending Check-in ({pendingCount})</option>
-              </select>
-              
-              {/* Role Filter Buttons */}
-              <div className="flex gap-2">
+                All
+              </button>
+              {uniquePeople.map((person) => (
                 <button
-                  onClick={() => setRoleFilter('all')}
+                  key={person}
+                  onClick={() => setPersonFilter(person)}
                   className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    roleFilter === 'all'
+                    personFilter === person
                       ? 'bg-gray-600 text-white'
                       : 'bg-gray-100 text-black hover:bg-gray-200'
                   }`}
                 >
-                  All
+                  {person} ({personCounts[person]})
                 </button>
-                <button
-                  onClick={() => setRoleFilter('staff')}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    roleFilter === 'staff'
-                      ? 'bg-gray-600 text-white'
-                      : 'bg-gray-100 text-black hover:bg-gray-200'
-                  }`}
-                >
-                  Staff ({staffCount})
-                </button>
-                <button
-                  onClick={() => setRoleFilter('dj')}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    roleFilter === 'dj'
-                      ? 'bg-gray-600 text-white'
-                      : 'bg-gray-100 text-black hover:bg-gray-200'
-                  }`}
-                >
-                  DJ ({djCount})
-                </button>
-                <button
-                  onClick={() => setRoleFilter('promoter')}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    roleFilter === 'promoter'
-                      ? 'bg-gray-600 text-white'
-                      : 'bg-gray-100 text-black hover:bg-gray-200'
-                  }`}
-                >
-                  Promoter ({promoterCount})
-                </button>
-              </div>
+              ))}
             </div>
 
             <div className="space-y-3">
               {filterGuestsByTab(allGuests).map((guest) => (
                 <div key={guest.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-1">
                     {/* Left side - Guest Info */}
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2">
                         <h3 className="text-lg">{guest.name}</h3>
                         {guest.plusOnes > 0 && (
                           <span className="text-lg">+{guest.plusOnes}</span>
                         )}
-                        {/* Only show +/- controls for staff member's own guests */}
-                        {guest.addedByType === 'staff' && guest.addedBy === 'Alex' && (
-                          <div className="flex items-center gap-1 ml-2">
-                            <button
-                              onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
-                              className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                            >
-                              −
-                            </button>
-                            <button
-                              onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
-                              className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                            >
-                              +
-                            </button>
-                          </div>
-                        )}
-                        {guest.checkedIn && (
-                          <span className="px-2 py-1 rounded-lg text-xs bg-green-100 text-green-800 ml-2">
-                            Checked in
-                          </span>
-                        )}
                       </div>
-                      <div>
-                        {guest.instagram && (
-                          <a 
-                            href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-blue-600 hover:text-blue-800 transition-colors block"
-                          >
-                            {guest.instagram}
-                          </a>
-                        )}
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="px-2 py-1 rounded-full border border-gray-300 text-gray-600">
-                            Added by: {guest.addedBy}
-                          </span>
-                        </div>
+                    </div>
+                    
+                    {/* Right side - Controls (only for staff member's own guests) */}
+                    {guest.addedByType === 'staff' && guest.addedBy === 'Alex' && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
+                          className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                        >
+                          −
+                        </button>
+                        <button
+                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
+                          className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                        >
+                          +
+                        </button>
                       </div>
+                    )}
+                  </div>
+                  
+                  {/* Bottom row - Instagram and Tags */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {guest.instagram && (
+                        <a 
+                          href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          {guest.instagram}
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {guest.checkedIn && (
+                        <span className="px-2 py-1 rounded-lg text-xs bg-green-100 text-green-800">
+                          Checked in
+                        </span>
+                      )}
+                      <span className="px-2 py-1 rounded-full border border-gray-300 text-gray-600 text-xs">
+                        Added by: {guest.addedBy}
+                      </span>
                     </div>
                   </div>
                 </div>

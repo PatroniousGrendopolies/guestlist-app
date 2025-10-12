@@ -4,11 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GuestAuthService, GuestSession } from '@/lib/auth/guest-auth';
 import { supabase } from '@/lib/supabase/client';
+import { useToast, ToastProvider } from '@/components/ui/ToastProvider';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { SafeStorage } from '@/lib/utils/safeStorage';
 
 const guestAuth = new GuestAuthService();
 
-export default function GuestDashboard() {
+function GuestDashboardContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [guest, setGuest] = useState<GuestSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [plusOneCount, setPlusOneCount] = useState(0);
@@ -16,34 +20,53 @@ export default function GuestDashboard() {
   const [shareSupported, setShareSupported] = useState(false);
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for guest session
-    const sessionData = sessionStorage.getItem('guestSession');
-    if (!sessionData) {
-      router.push('/guest/auth');
-      return;
-    }
+    const initializeSession = async () => {
+      try {
+        // Check for guest session using SafeStorage
+        const sessionData = SafeStorage.getItem('guestSession');
+        if (!sessionData) {
+          showToast('Please sign in to continue', 'error');
+          router.push('/guest/auth');
+          return;
+        }
 
-    try {
-      const guestSession = JSON.parse(sessionData);
-      setGuest(guestSession);
-      // TODO: Load actual guest data from database
-      setPlusOneCount(2); // Mock data
-      setQrCode('mock-qr-code-data'); // Mock QR code
-      
-      // Check if Web Share API is supported
-      setShareSupported(typeof navigator !== 'undefined' && 'share' in navigator);
-      
-      // Load friends list
-      loadFriendsList(guestSession.guestId);
-    } catch (err) {
-      console.error('Invalid session data:', err);
-      router.push('/guest/auth');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router]);
+        const guestSession = JSON.parse(sessionData);
+        
+        // Validate session and fetch latest guest data
+        const currentGuest = await guestAuth.getGuestSession(guestSession.guestId);
+        if (!currentGuest) {
+          showToast('Session expired. Please sign in again.', 'error');
+          SafeStorage.removeItem('guestSession');
+          router.push('/guest/auth');
+          return;
+        }
+
+        setGuest(currentGuest);
+        
+        // Load guest's plus-one count from database
+        await loadGuestData(currentGuest.guestId);
+        
+        // Check if Web Share API is supported
+        setShareSupported(typeof navigator !== 'undefined' && 'share' in navigator);
+        
+        // Load friends list
+        await loadFriendsList(currentGuest.guestId);
+        
+      } catch (err) {
+        console.error('Session initialization error:', err);
+        setError('Failed to load dashboard data');
+        showToast('Failed to load dashboard data', 'error');
+        router.push('/guest/auth');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeSession();
+  }, [router, showToast]);
 
   // Refresh friends list when page comes back into focus
   useEffect(() => {
@@ -57,6 +80,27 @@ export default function GuestDashboard() {
     return () => window.removeEventListener('focus', handleFocus);
   }, [guest]);
 
+  const loadGuestData = async (guestId: string) => {
+    try {
+      // Load guest's plus-one settings from database
+      const { data: guestData, error: guestError } = await supabase
+        .from('guests')
+        .select('id, plus_one_count')
+        .eq('id', guestId)
+        .single();
+
+      if (guestError) {
+        console.error('Error loading guest data:', guestError);
+        setPlusOneCount(0); // Default to 0 if error
+      } else {
+        setPlusOneCount(guestData?.plus_one_count || 0);
+      }
+    } catch (err) {
+      console.error('Failed to load guest data:', err);
+      setPlusOneCount(0);
+    }
+  };
+
   const loadFriendsList = async (guestId: string) => {
     try {
       const { data, error } = await supabase
@@ -67,64 +111,91 @@ export default function GuestDashboard() {
 
       if (error) {
         console.error('Error loading friends list:', error);
+        showToast('Failed to load friends list', 'error');
       } else {
         setFriendsList(data || []);
       }
     } catch (err) {
       console.error('Failed to load friends list:', err);
+      showToast('Failed to load friends list', 'error');
     }
   };
 
   const handleSignOut = () => {
-    sessionStorage.removeItem('guestSession');
+    SafeStorage.removeItem('guestSession');
+    showToast('Signed out successfully', 'success');
     router.push('/guest/auth');
   };
 
   const handleUpdatePlusOne = async (change: number) => {
+    if (!guest) return;
+    
     const newCount = Math.max(0, Math.min(10, plusOneCount + change));
+    const previousCount = plusOneCount;
     setPlusOneCount(newCount);
     
     // Update in database immediately (auto-save)
     try {
-      // TODO: Create a guest_list_entries table and update the plus_one count there
-      // For now, we'll just update local state
-      console.log(`Plus-one count updated to ${newCount} for guest ${guest?.guestId}`);
+      const { error } = await supabase
+        .from('guests')
+        .update({ plus_one_count: newCount })
+        .eq('id', guest.guestId);
+
+      if (error) {
+        console.error('Failed to update plus-one count:', error);
+        showToast('Failed to update plus-one count', 'error');
+        // Revert on error
+        setPlusOneCount(previousCount);
+      } else {
+        showToast(`Plus-one count updated to ${newCount}`, 'success');
+      }
     } catch (error) {
       console.error('Failed to update plus-one count:', error);
+      showToast('Failed to update plus-one count', 'error');
       // Revert on error
-      setPlusOneCount(plusOneCount);
+      setPlusOneCount(previousCount);
     }
   };
 
   const handleShare = async () => {
+    if (!guest) return;
+    
     const shareData = {
       title: 'Join me at Summer Vibes!',
       text: `Hey! I'm on the guest list for DJ Shadow & MC Solar this Saturday. Want to come with me? Use my link to get on the list:`,
-      url: `https://guestlist.app/join/${guest?.guestId}`
+      url: `https://guestlist.app/join/test?inviter=${guest.guestId}`
     };
 
     try {
       if (shareSupported) {
         // Use native share on mobile devices
         await navigator.share(shareData);
+        showToast('Share successful!', 'success');
       } else {
         // Fallback: copy to clipboard on desktop
         await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-        alert('Link copied to clipboard!');
+        showToast('Message copied to clipboard!', 'success');
       }
     } catch (error) {
       // User cancelled share or error occurred
-      console.log('Share cancelled or failed:', error);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Share failed:', error);
+        showToast('Share failed. Please try copying the link instead.', 'error');
+      }
     }
   };
 
   const handleCopyLink = async () => {
+    if (!guest) return;
+    
     try {
-      await navigator.clipboard.writeText(`https://guestlist.app/join/${guest?.guestId}`);
+      await navigator.clipboard.writeText(`https://guestlist.app/join/test?inviter=${guest.guestId}`);
       setCopied(true);
+      showToast('Link copied to clipboard!', 'success');
       setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
       console.error('Failed to copy:', err);
+      showToast('Failed to copy link', 'error');
     }
   };
 
@@ -149,12 +220,12 @@ export default function GuestDashboard() {
         <div className="container-sm py-xl">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-medium">Welcome back</h1>
+              <h1 className="text-2xl">Welcome back</h1>
               <p className="text-sm text-gray-500">{guest.name}</p>
             </div>
             <button
               onClick={handleSignOut}
-              className="btn btn-ghost btn-sm"
+              className="bg-gray-100 text-black rounded-full py-2 px-4 text-sm hover:bg-gray-200 transition-colors"
             >
               Sign Out
             </button>
@@ -169,13 +240,13 @@ export default function GuestDashboard() {
           {/* Tonight's Event Card */}
           <div className="card">
             <div className="card-header">
-              <h2 className="text-xl font-medium">Tonight's Event</h2>
+              <h2 className="text-xl">Tonight's Event</h2>
               <p className="text-sm text-gray-500 mt-xs">Saturday, June 24 • 10:00 PM</p>
             </div>
             <div className="card-body">
               <div className="flex flex-col gap-xl">
                 <div>
-                  <h3 className="font-medium mb-sm">Summer Vibes</h3>
+                  <h3 className="mb-sm">Summer Vibes</h3>
                   <p className="text-sm text-gray-600">
                     Join us for an unforgettable night of music and dancing. 
                     Dress code: Smart casual.
@@ -202,28 +273,28 @@ export default function GuestDashboard() {
           {/* Plus One Management */}
           <div className="card">
             <div className="card-header">
-              <h2 className="text-xl font-medium">Your Guest List</h2>
+              <h2 className="text-xl">Your Guest List</h2>
               <p className="text-sm text-gray-500 mt-xs">Bring friends to tonight's event</p>
             </div>
             <div className="card-body">
               <div className="flex flex-col gap-xl">
                 <div className="flex items-center justify-between p-lg bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium">Plus One Count</p>
+                    <p className="">Plus One Count</p>
                     <p className="text-sm text-gray-600">Additional guests you can bring</p>
                   </div>
                   <div className="flex items-center gap-md">
                     <button
                       onClick={() => handleUpdatePlusOne(-1)}
-                      className="btn btn-ghost btn-sm w-10 h-10 p-0 flex items-center justify-center"
+                      className="bg-gray-100 text-black rounded-full w-10 h-10 p-0 flex items-center justify-center text-sm hover:bg-gray-200 transition-colors disabled:bg-gray-200 disabled:text-gray-400"
                       disabled={plusOneCount === 0}
                     >
                       −
                     </button>
-                    <span className="text-2xl font-medium w-8 text-center">{plusOneCount}</span>
+                    <span className="text-2xl w-8 text-center">{plusOneCount}</span>
                     <button
                       onClick={() => handleUpdatePlusOne(1)}
-                      className="btn btn-ghost btn-sm w-10 h-10 p-0 flex items-center justify-center"
+                      className="bg-gray-100 text-black rounded-full w-10 h-10 p-0 flex items-center justify-center text-sm hover:bg-gray-200 transition-colors disabled:bg-gray-200 disabled:text-gray-400"
                       disabled={plusOneCount >= 10}
                     >
                       +
@@ -239,20 +310,20 @@ export default function GuestDashboard() {
                     <div className="flex gap-sm mb-lg">
                       <input
                         type="text"
-                        value={`https://guestlist.app/join/${guest.guestId}`}
+                        value={`https://guestlist.app/join/test?inviter=${guest.guestId}`}
                         readOnly
-                        className="input text-sm flex-1"
+                        className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors text-sm flex-1 bg-gray-100"
                       />
                       <button
                         onClick={handleCopyLink}
-                        className={`btn btn-sm transition-all ${copied ? 'btn-primary' : 'btn-secondary'}`}
+                        className={`rounded-full py-2 px-4 text-sm transition-colors ${copied ? 'bg-black text-white hover:bg-gray-900' : 'bg-gray-100 text-black hover:bg-gray-200'}`}
                       >
                         {copied ? '✓ Copied!' : 'Copy'}
                       </button>
                     </div>
                     <button
                       onClick={handleShare}
-                      className="btn btn-primary w-full"
+                      className="bg-black text-white rounded-full py-3 px-6 text-sm w-full hover:bg-gray-900 transition-colors"
                     >
                       {shareSupported ? '📱 Share via Text/Social' : '📋 Copy Message'}
                     </button>
@@ -268,12 +339,12 @@ export default function GuestDashboard() {
               <div className="card-header">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-medium">Friends Coming Tonight</h2>
+                    <h2 className="text-xl">Friends Coming Tonight</h2>
                     <p className="text-sm text-gray-500 mt-xs">{friendsList.length} friends on your list</p>
                   </div>
                   <button 
                     onClick={() => guest && loadFriendsList(guest.guestId)}
-                    className="btn btn-ghost btn-sm"
+                    className="bg-gray-100 text-black rounded-full py-2 px-4 text-sm hover:bg-gray-200 transition-colors"
                   >
                     ↻ Refresh
                   </button>
@@ -284,7 +355,7 @@ export default function GuestDashboard() {
                   {friendsList.map((friend) => (
                     <div key={friend.id} className="flex items-center justify-between p-md bg-gray-50 rounded-lg">
                       <div>
-                        <p className="font-medium">{friend.first_name} {friend.last_name}</p>
+                        <p className="">{friend.first_name} {friend.last_name}</p>
                         <p className="text-sm text-gray-600">{friend.phone}</p>
                       </div>
                       <div className="text-sm text-gray-500">
@@ -300,7 +371,7 @@ export default function GuestDashboard() {
           {/* Account Info */}
           <div className="card">
             <div className="card-header">
-              <h2 className="text-xl font-medium">Account Settings</h2>
+              <h2 className="text-xl">Account Settings</h2>
             </div>
             <div className="card-body">
               <div className="flex flex-col gap-lg">
@@ -315,7 +386,7 @@ export default function GuestDashboard() {
                   </span>
                 </div>
                 {!guest.verified && (
-                  <button className="btn btn-secondary btn-sm">
+                  <button className="bg-gray-100 text-black rounded-full py-2 px-4 text-sm hover:bg-gray-200 transition-colors">
                     Resend Verification Email
                   </button>
                 )}
@@ -327,11 +398,11 @@ export default function GuestDashboard() {
           <div className="card">
             <div className="card-body">
               <div className="text-center">
-                <h3 className="font-medium mb-sm">Need Help?</h3>
+                <h3 className="mb-sm">Need Help?</h3>
                 <p className="text-sm text-gray-600 mb-lg">
                   Contact our support team if you have any questions about tonight's event.
                 </p>
-                <button className="btn btn-ghost">
+                <button className="bg-gray-100 text-black rounded-full py-3 px-6 text-sm hover:bg-gray-200 transition-colors">
                   Contact Support
                 </button>
               </div>
@@ -341,5 +412,15 @@ export default function GuestDashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function GuestDashboard() {
+  return (
+    <ErrorBoundary>
+      <ToastProvider>
+        <GuestDashboardContent />
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }

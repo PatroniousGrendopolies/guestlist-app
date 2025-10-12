@@ -206,7 +206,7 @@ body {
 
 .form-label {
   font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-normal);
   color: var(--color-black);
 }
 
