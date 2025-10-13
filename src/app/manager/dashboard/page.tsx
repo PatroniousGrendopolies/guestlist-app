@@ -95,6 +95,8 @@ export default function ManagerDashboardPage() {
     phone: '',
     upcomingGigDate: ''
   });
+  const [selectedDjId, setSelectedDjId] = useState<string | null>(null);
+  const [djModalTab, setDjModalTab] = useState<'overview' | 'guests' | 'history' | 'analytics'>('overview');
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'guests' | 'users' | 'analytics'>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -1107,7 +1109,8 @@ export default function ManagerDashboardPage() {
                       key={dj.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => {
-                        // Will open DJ detail modal - to be implemented
+                        setSelectedDjId(dj.id);
+                        setDjModalTab('overview');
                       }}
                     >
                       <td className="px-4 py-3">
@@ -1176,6 +1179,267 @@ export default function ManagerDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* DJ Detail Modal */}
+      {selectedDjId && (() => {
+        const selectedDj = djs.find(dj => dj.id === selectedDjId);
+        if (!selectedDj) return null;
+
+        // Mock DJ guests for the Guests tab
+        const djGuests = guests.filter(g => g.addedBy.includes(selectedDj.name));
+
+        // Mock event history for the Event History tab (12 months)
+        const eventHistory = Array.from({ length: selectedDj.totalEvents }, (_, i) => {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          return {
+            id: `event_${i}`,
+            date: date.toISOString().split('T')[0],
+            eventName: ['Saturday Night Sessions', 'Deep House Vibes', 'Techno Warehouse', 'Underground Collective'][i % 4],
+            attendance: Math.floor(Math.random() * 30) + 40,
+            capacity: selectedDj.defaultCap,
+            revenue: Math.floor(Math.random() * 2000) + 1000
+          };
+        });
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-light mb-1">{selectedDj.name}</h2>
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <span>{selectedDj.email}</span>
+                      {selectedDj.instagram && (
+                        <>
+                          <span>•</span>
+                          <span>{selectedDj.instagram}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedDjId(null)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Performance Metrics */}
+                {selectedDj.status === 'active' && (
+                  <div className="grid grid-cols-4 gap-4 mt-6">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-xs text-gray-600 mb-1">Total Events</div>
+                      <div className="text-2xl font-light">{selectedDj.totalEvents}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-xs text-gray-600 mb-1">Avg Attendance</div>
+                      <div className="text-2xl font-light">{selectedDj.avgAttendance}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-xs text-gray-600 mb-1">Total Guests</div>
+                      <div className="text-2xl font-light">{selectedDj.totalGuestsAdded}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-xs text-gray-600 mb-1">Upcoming Gigs</div>
+                      <div className="text-2xl font-light">{selectedDj.upcomingGigs}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Internal Tab Navigation */}
+              <div className="px-6 border-b border-gray-200">
+                <div className="flex gap-6">
+                  <button
+                    onClick={() => setDjModalTab('overview')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      djModalTab === 'overview' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Overview
+                    {djModalTab === 'overview' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setDjModalTab('guests')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      djModalTab === 'guests' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Guests
+                    {djModalTab === 'guests' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setDjModalTab('history')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      djModalTab === 'history' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Event History
+                    {djModalTab === 'history' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setDjModalTab('analytics')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      djModalTab === 'analytics' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Analytics
+                    {djModalTab === 'analytics' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Overview Tab */}
+                {djModalTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Default Capacity
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue={selectedDj.defaultCap}
+                        className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Hospitality Rider
+                      </label>
+                      <textarea
+                        placeholder="Click to edit hospitality requirements..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        rows={4}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tech Rider
+                      </label>
+                      <textarea
+                        placeholder="Click to edit technical requirements..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Guests Tab */}
+                {djModalTab === 'guests' && (
+                  <div>
+                    <div className="mb-4 text-sm text-gray-600">
+                      {djGuests.length} {djGuests.length === 1 ? 'guest' : 'guests'}
+                    </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Name</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Email</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Attendance</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Last Attended</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {djGuests.map((guest) => (
+                            <tr key={guest.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm">{guest.name}</td>
+                              <td className="px-4 py-3 text-sm text-gray-600">{guest.email}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{guest.totalAttendance}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">
+                                {new Date(guest.lastAttended).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {djGuests.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                          No guests added by this DJ yet
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Event History Tab */}
+                {djModalTab === 'history' && (
+                  <div>
+                    <div className="mb-4 text-sm text-gray-600">
+                      {eventHistory.length} {eventHistory.length === 1 ? 'event' : 'events'}
+                    </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="max-h-96 overflow-y-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Event Name</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Attendance</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Capacity</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Revenue</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {eventHistory.map((event) => (
+                              <tr key={event.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm text-gray-700">
+                                  {new Date(event.date).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </td>
+                                <td className="px-4 py-3 text-sm">{event.eventName}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{event.attendance}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{event.capacity}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">${event.revenue.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {eventHistory.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                          No event history available
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Analytics Tab */}
+                {djModalTab === 'analytics' && (
+                  <div className="text-center py-12 text-gray-500">
+                    Analytics coming soon
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Invite DJ Modal */}
       {showInviteDjModal && (
