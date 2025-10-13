@@ -19,10 +19,11 @@ interface Event {
 
 interface Alert {
   id: string;
-  type: 'warning' | 'error' | 'info';
+  type: 'warning' | 'error' | 'info' | 'capacity';
   message: string;
   action?: string;
   actionUrl?: string;
+  capacityRequestId?: string;
 }
 
 interface CapacityRequest {
@@ -81,7 +82,7 @@ export default function ManagerDashboardPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [guestSearch, setGuestSearch] = useState('');
   const [guestFilter, setGuestFilter] = useState<string>('all');
-  const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
+  const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
   const [guestSortColumn, setGuestSortColumn] = useState<'name' | 'attendance' | 'lastAttended' | 'addedBy'>('name');
   const [guestSortDirection, setGuestSortDirection] = useState<'asc' | 'desc'>('asc');
   const [djs, setDjs] = useState<DJ[]>([]);
@@ -98,6 +99,7 @@ export default function ManagerDashboardPage() {
   const [selectedDjId, setSelectedDjId] = useState<string | null>(null);
   const [djModalTab, setDjModalTab] = useState<'overview' | 'guests' | 'history' | 'analytics'>('overview');
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'guests' | 'users' | 'analytics'>('overview');
+  const [userType, setUserType] = useState<'djs' | 'staff' | 'promoters' | 'managers'>('djs');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
@@ -117,48 +119,61 @@ export default function ManagerDashboardPage() {
     setManagerName(name);
     setManagerRole(role);
 
-    // Mock data - 7 days of events
+    // Mock data - Generate events for current month and next month
     setTimeout(() => {
       const today = new Date();
       const mockEvents: Event[] = [];
       const mockAlerts: Alert[] = [];
 
-      for (let i = 0; i < 7; i++) {
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      const djOptions = [
+        'DJ Marcus & Sarah Deep',
+        'Techno Collective',
+        'DJ Shadow & MC Solar',
+        'Underground Sessions',
+        'House Masters',
+        'Vinyl Vince',
+        'Bass Queen',
+        'Techno Tom'
+      ];
+
+      const eventNameOptions = [
+        'Saturday Night Sessions',
+        'Techno Warehouse',
+        'Deep House Vibes',
+        'Underground Collective',
+        'House Party',
+        'Vinyl Sessions',
+        'Bass Night',
+        'Warehouse Party'
+      ];
+
+      // Generate events for 60 days to cover current and next month
+      for (let i = -15; i < 45; i++) {
         const eventDate = new Date(today);
         eventDate.setDate(today.getDate() + i);
 
-        // Add events for certain days
-        if (i % 2 === 0 || i === 1) {
-          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Add events for Friday and Saturday nights, plus some weekday events
+        const dayOfWeek = eventDate.getDay();
+        const isFriday = dayOfWeek === 5;
+        const isSaturday = dayOfWeek === 6;
+        const isThursday = dayOfWeek === 4;
+        const randomWeekday = Math.random() > 0.8;
 
-          const totalGuests = Math.floor(Math.random() * 60) + 40;
-          const approvedGuests = Math.floor(totalGuests * (0.5 + Math.random() * 0.4));
-          const pendingGuests = totalGuests - approvedGuests;
+        if (isFriday || isSaturday || isThursday || randomWeekday) {
+          const totalGuests = Math.floor(Math.random() * 40) + 60; // 60-100 capacity
+          const approvedGuests = Math.floor(Math.random() * 40) + 30; // 30-70 approved
+          const pendingGuests = Math.floor(Math.random() * 15); // 0-15 pending
           const approvalRatio = (approvedGuests / totalGuests) * 100;
-
-          const djOptions = [
-            'DJ Marcus & Sarah Deep',
-            'Techno Collective',
-            'DJ Shadow & MC Solar',
-            'Underground Sessions',
-            'House Masters'
-          ];
-
-          const eventNameOptions = [
-            'Saturday Night Sessions',
-            'Techno Warehouse',
-            'Deep House Vibes',
-            'Underground Collective',
-            'House Party'
-          ];
 
           const event: Event = {
             id: `event_${i}`,
             date: `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`,
             dayOfWeek: dayNames[eventDate.getDay()],
-            djNames: djOptions[i % djOptions.length],
-            eventName: eventNameOptions[i % eventNameOptions.length],
+            djNames: djOptions[Math.floor(Math.random() * djOptions.length)],
+            eventName: eventNameOptions[Math.floor(Math.random() * eventNameOptions.length)],
             approvalRatio,
             totalGuests,
             approvedGuests,
@@ -220,10 +235,9 @@ export default function ManagerDashboardPage() {
         mockCapacityRequests.forEach(req => {
           mockAlerts.push({
             id: `capacity_${req.id}`,
-            type: 'info',
+            type: 'capacity',
             message: `${req.requesterName} requests ${req.spotsRequested} additional spots for ${req.eventName}`,
-            action: 'Review Request',
-            actionUrl: '/manager/capacity-requests'
+            capacityRequestId: req.id
           });
         });
       } else {
@@ -539,22 +553,6 @@ export default function ManagerDashboardPage() {
     }
   };
 
-  const handleSelectGuest = (guestId: string) => {
-    if (selectedGuests.includes(guestId)) {
-      setSelectedGuests(selectedGuests.filter(id => id !== guestId));
-    } else {
-      setSelectedGuests([...selectedGuests, guestId]);
-    }
-  };
-
-  const handleSelectAllGuests = () => {
-    if (selectedGuests.length === filteredGuests.length) {
-      setSelectedGuests([]);
-    } else {
-      setSelectedGuests(filteredGuests.map(g => g.id));
-    }
-  };
-
   // Filter and sort guests
   const filteredGuests = guests
     .filter(guest => {
@@ -649,17 +647,23 @@ export default function ManagerDashboardPage() {
     });
   };
 
-  // Handle escape key to close modal
+  // Handle escape key to close modals
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showInviteDjModal) {
-        setShowInviteDjModal(false);
+      if (e.key === 'Escape') {
+        if (showInviteDjModal) {
+          setShowInviteDjModal(false);
+        } else if (selectedGuestId) {
+          setSelectedGuestId(null);
+        } else if (selectedDjId) {
+          setSelectedDjId(null);
+        }
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showInviteDjModal]);
+  }, [showInviteDjModal, selectedGuestId, selectedDjId]);
 
   if (isLoading) {
     return (
@@ -780,7 +784,7 @@ export default function ManagerDashboardPage() {
                   {alerts.map((alert) => (
                     <div
                       key={alert.id}
-                      className={`p-4 rounded-xl border ${
+                      className={`p-4 rounded-2xl border ${
                         alert.type === 'error'
                           ? 'bg-red-50 border-red-200'
                           : alert.type === 'warning'
@@ -790,14 +794,35 @@ export default function ManagerDashboardPage() {
                     >
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-700">{alert.message}</p>
-                        {alert.action && (
+                        {alert.type === 'capacity' ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                console.log('Approved capacity request:', alert.capacityRequestId);
+                                setAlerts(alerts.filter(a => a.id !== alert.id));
+                              }}
+                              className="text-sm bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-900 transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => {
+                                console.log('Denied capacity request:', alert.capacityRequestId);
+                                setAlerts(alerts.filter(a => a.id !== alert.id));
+                              }}
+                              className="text-sm bg-white border border-gray-300 px-4 py-1.5 rounded-full hover:bg-gray-50 transition-colors"
+                            >
+                              Deny
+                            </button>
+                          </div>
+                        ) : alert.action ? (
                           <button
                             onClick={() => router.push(alert.actionUrl || '#')}
                             className="text-sm bg-white border border-gray-300 px-3 py-1 rounded-full hover:bg-gray-50 transition-colors"
                           >
                             {alert.action}
                           </button>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   ))}
@@ -805,14 +830,14 @@ export default function ManagerDashboardPage() {
               </div>
             )}
 
-            {/* Week at a Glance */}
+            {/* This Week */}
             <div className="mb-8">
-              <h2 className="text-xl mb-4">Week at a Glance</h2>
+              <h2 className="text-xl mb-4">This Week</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {events.map((event) => (
                   <div
                     key={event.id}
-                    className={`bg-white border rounded-xl p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
+                    className={`bg-white border rounded-3xl p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
                       event.status === 'today' ? 'border-red-500 border-2' : 'border-gray-200'
                     }`}
                     onClick={() => router.push(`/manager/events/${event.id}`)}
@@ -832,25 +857,6 @@ export default function ManagerDashboardPage() {
                     <div className="mb-4">
                       <div className="w-full">
                         <div className="relative">
-                          {/* Pending label above the meter bar when it would conflict */}
-                          {event.pendingGuests > 0 && (() => {
-                            const pendingCenterPosition = ((event.approvedGuests + (event.pendingGuests / 2)) / event.totalGuests) * 100;
-                            const wouldOverlapConfirmed = pendingCenterPosition < 25;
-                            const wouldOverlapSpots = pendingCenterPosition > 70;
-
-                            return (wouldOverlapConfirmed || wouldOverlapSpots) ? (
-                              <div
-                                className="absolute -top-5 text-xs text-gray-500"
-                                style={{
-                                  left: `${pendingCenterPosition}%`,
-                                  transform: 'translateX(-50%)'
-                                }}
-                              >
-                                Pending
-                              </div>
-                            ) : null;
-                          })()}
-
                           <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
                             {/* Pending + Confirmed (light gray) bar - shows total */}
                             <div
@@ -903,7 +909,7 @@ export default function ManagerDashboardPage() {
                               ) : null;
                             })()}
 
-                            <span className="text-xs text-gray-500">Spots available</span>
+                            <span className="text-xs text-gray-500">Total</span>
                           </div>
                         </div>
                       </div>
@@ -918,9 +924,216 @@ export default function ManagerDashboardPage() {
         {/* Calendar Tab */}
         {activeTab === 'calendar' && (
           <div>
-            <h2 className="text-2xl mb-6">Calendar</h2>
-            <div className="bg-gray-50 rounded-xl p-8 text-center">
-              <p className="text-gray-600">Calendar view coming soon</p>
+            {/* Calendar Header with Month Navigation */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    const newDate = new Date(selectedMonth);
+                    newDate.setMonth(newDate.getMonth() - 1);
+                    setSelectedMonth(newDate);
+                  }}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+                >
+                  ‹
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowMonthPicker(!showMonthPicker)}
+                    className="text-lg font-light hover:text-gray-600 transition-colors"
+                  >
+                    {selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </button>
+                  {showMonthPicker && (
+                    <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg p-4 z-50 min-w-[280px]">
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, idx) => (
+                          <button
+                            key={month}
+                            onClick={() => {
+                              const newDate = new Date(selectedMonth);
+                              newDate.setMonth(idx);
+                              setSelectedMonth(newDate);
+                              setShowMonthPicker(false);
+                            }}
+                            className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                              selectedMonth.getMonth() === idx
+                                ? 'bg-black text-white'
+                                : 'hover:bg-gray-100'
+                            }`}
+                          >
+                            {month}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-200 pt-3">
+                        <input
+                          type="number"
+                          value={selectedMonth.getFullYear()}
+                          onChange={(e) => {
+                            const newDate = new Date(selectedMonth);
+                            newDate.setFullYear(parseInt(e.target.value) || new Date().getFullYear());
+                            setSelectedMonth(newDate);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                          placeholder="Year"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    const newDate = new Date(selectedMonth);
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    setSelectedMonth(newDate);
+                  }}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+                >
+                  ›
+                </button>
+              </div>
+              <button
+                onClick={() => setSelectedMonth(new Date())}
+                className="px-4 py-2 text-sm bg-gray-100 text-black rounded-full hover:bg-gray-200 transition-colors"
+              >
+                Today
+              </button>
+            </div>
+
+            {/* Calendar Grid */}
+            <div>
+              {/* Day Headers */}
+              <div className="grid grid-cols-7 gap-3 mb-3">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="text-sm font-medium text-gray-600">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Days */}
+              <div className="grid grid-cols-7 gap-3">
+                {(() => {
+                  const year = selectedMonth.getFullYear();
+                  const month = selectedMonth.getMonth();
+                  const firstDay = new Date(year, month, 1).getDay();
+                  const daysInMonth = new Date(year, month + 1, 0).getDate();
+                  const today = new Date();
+                  const todayStr = today.toISOString().split('T')[0];
+
+                  const days = [];
+
+                  // Empty cells for days before month starts
+                  for (let i = 0; i < firstDay; i++) {
+                    days.push(
+                      <div key={`empty-${i}`} className="min-h-[120px]"></div>
+                    );
+                  }
+
+                  // Days of the month
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const isToday = dateStr === todayStr;
+
+                    // Find events for this day
+                    const dayEvents = events.filter(event => {
+                      // Parse the event.date string (e.g., "Mon Oct 13")
+                      // Extract month and day from event.date format: "Mon Oct 13"
+                      const parts = event.date.split(' ');
+                      const eventMonthName = parts[1]; // "Oct"
+                      const eventDay = parseInt(parts[2]); // 13
+
+                      // Get the full month name from our date
+                      const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+
+                      // Match if same month and same day
+                      return eventMonthName === monthName && eventDay === day;
+                    });
+
+                    days.push(
+                      <div
+                        key={day}
+                        onClick={() => {
+                          if (dayEvents.length > 0) {
+                            router.push(`/manager/events/${dayEvents[0].id}`);
+                          }
+                        }}
+                        className={`min-h-[120px] p-3 rounded-xl border transition-colors flex flex-col ${
+                          isToday
+                            ? 'bg-white border-red-500/50 border-2'
+                            : 'bg-white border-gray-100 hover:border-gray-300'
+                        } ${dayEvents.length > 0 ? 'cursor-pointer' : ''}`}
+                      >
+                        <div className={`text-sm mb-2 ${
+                          isToday ? 'font-bold text-black' : 'text-gray-400'
+                        }`}>
+                          {day}
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          {dayEvents.map((event) => (
+                            <div
+                              key={event.id}
+                              className="cursor-pointer"
+                            >
+                              <div className="text-xs font-normal text-gray-900 leading-tight">
+                                {event.djNames.split(' & ').map((name, idx, arr) => (
+                                  <span key={idx}>
+                                    {name}
+                                    {idx < arr.length - 1 && <br />}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {dayEvents.length > 0 && (
+                          <div className="relative mt-2">
+                            <div className="bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                              {/* Use the first event's data for the meter */}
+                              {(() => {
+                                const event = dayEvents[0];
+                                const confirmedPercent = (event.approvedGuests / event.totalGuests) * 100;
+                                const totalPercent = ((event.approvedGuests + event.pendingGuests) / event.totalGuests) * 100;
+                                const showConfirmedNumber = confirmedPercent > 15; // Show if black bar is wider than 15%
+                                const showTotalNumber = totalPercent < 90; // Hide if gray bar takes up more than 90%
+
+                                return (
+                                  <>
+                                    {/* Pending + Confirmed bar */}
+                                    <div
+                                      className="bg-gray-400 h-3 rounded-full absolute top-0 left-0"
+                                      style={{ width: `${totalPercent}%` }}
+                                    ></div>
+                                    {/* Confirmed bar */}
+                                    <div
+                                      className="bg-black h-3 rounded-full relative z-10 flex items-center justify-between px-1"
+                                      style={{ width: `${confirmedPercent}%` }}
+                                    >
+                                      {showConfirmedNumber && (
+                                        <span className="text-white text-[9px]">{event.approvedGuests}</span>
+                                      )}
+                                    </div>
+                                    {/* Total number on the right */}
+                                    {showTotalNumber && (
+                                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-black text-[9px] z-20">
+                                        {event.totalGuests}
+                                      </span>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return days;
+                })()}
+              </div>
             </div>
           </div>
         )}
@@ -935,10 +1148,10 @@ export default function ManagerDashboardPage() {
               </div>
             </div>
 
-            {/* Search and Filter Bar */}
-            <div className="mb-6 flex gap-4">
+            {/* Search Bar */}
+            <div className="mb-6">
               {/* Search Input */}
-              <div className="relative flex-1">
+              <div className="relative">
                 <svg
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                   fill="none"
@@ -957,51 +1170,16 @@ export default function ManagerDashboardPage() {
                   placeholder="Search guests by name, email, or Instagram..."
                   value={guestSearch}
                   onChange={(e) => setGuestSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 />
               </div>
-
-              {/* Filter by Added By */}
-              <select
-                value={guestFilter}
-                onChange={(e) => setGuestFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
-              >
-                <option value="all">All Added By</option>
-                {addedByOptions.map(user => (
-                  <option key={user} value={user}>{user}</option>
-                ))}
-              </select>
             </div>
-
-            {/* Bulk Actions */}
-            {selectedGuests.length > 0 && (
-              <div className="mb-4 flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-600">
-                  {selectedGuests.length} selected
-                </span>
-                <button className="px-4 py-1.5 bg-black text-white rounded-full hover:bg-gray-900 transition-colors text-sm">
-                  Add to Event
-                </button>
-                <button className="px-4 py-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors text-sm">
-                  Ban Guests
-                </button>
-              </div>
-            )}
 
             {/* Guests Table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left">
-                      <input
-                        type="checkbox"
-                        checked={selectedGuests.length === filteredGuests.length && filteredGuests.length > 0}
-                        onChange={handleSelectAllGuests}
-                        className="rounded border-gray-300"
-                      />
-                    </th>
                     <th
                       className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
                       onClick={() => handleGuestSort('name')}
@@ -1018,7 +1196,7 @@ export default function ManagerDashboardPage() {
                       onClick={() => handleGuestSort('attendance')}
                     >
                       <div className="flex items-center gap-2">
-                        Attendance
+                        All Time Visits
                         {guestSortColumn === 'attendance' && (
                           <span>{guestSortDirection === 'asc' ? '↑' : '↓'}</span>
                         )}
@@ -1046,32 +1224,28 @@ export default function ManagerDashboardPage() {
                         )}
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                      Status
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredGuests.map((guest) => (
                     <tr
                       key={guest.id}
+                      onClick={() => setSelectedGuestId(guest.id)}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedGuests.includes(guest.id)}
-                          onChange={() => handleSelectGuest(guest.id)}
-                          className="rounded border-gray-300"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </td>
-                      <td className="px-4 py-3">
                         <div>
                           <div className="font-medium text-gray-900">{guest.name}</div>
-                          <div className="text-xs text-gray-500">{guest.email}</div>
                           {guest.instagram && (
-                            <div className="text-xs text-gray-400">{guest.instagram}</div>
+                            <a
+                              href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              {guest.instagram}
+                            </a>
                           )}
                         </div>
                       </td>
@@ -1085,19 +1259,22 @@ export default function ManagerDashboardPage() {
                           year: 'numeric'
                         })}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {guest.addedBy.join(', ')}
-                      </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            guest.status === 'active'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          {guest.status === 'active' ? 'Active' : 'Banned'}
-                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {guest.addedBy.map((dj, idx) => (
+                            <button
+                              key={idx}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Filter by this DJ
+                                setGuestFilter(dj);
+                              }}
+                              className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                            >
+                              {dj}
+                            </button>
+                          ))}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1117,141 +1294,208 @@ export default function ManagerDashboardPage() {
         {activeTab === 'users' && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl">Nightlist Users - DJs</h2>
+              <h2 className="text-2xl">Nightlist Users</h2>
               <button
                 onClick={() => setShowInviteDjModal(true)}
                 className="px-6 py-2 bg-gray-200 text-black rounded-full hover:bg-gray-300 transition-colors text-sm"
               >
-                + Invite New DJ
+                + Invite New {userType === 'djs' ? 'DJ' : userType === 'staff' ? 'Staff' : userType === 'promoters' ? 'Promoter' : 'Manager'}
+              </button>
+            </div>
+
+            {/* User Type Toggle */}
+            <div className="mb-6 flex gap-2">
+              <button
+                onClick={() => setUserType('djs')}
+                className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                  userType === 'djs'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                DJs
+              </button>
+              <button
+                onClick={() => setUserType('staff')}
+                className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                  userType === 'staff'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Staff
+              </button>
+              <button
+                onClick={() => setUserType('promoters')}
+                className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                  userType === 'promoters'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Promoters
+              </button>
+              <button
+                onClick={() => setUserType('managers')}
+                className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                  userType === 'managers'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Managers
               </button>
             </div>
 
             {/* DJs Table */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th
-                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
-                      onClick={() => handleDjSort('name')}
-                    >
-                      <div className="flex items-center gap-2">
-                        DJ Name
-                        {djSortColumn === 'name' && (
-                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                      Contact
-                    </th>
-                    <th
-                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
-                      onClick={() => handleDjSort('totalEvents')}
-                    >
-                      <div className="flex items-center gap-2">
-                        Total Events
-                        {djSortColumn === 'totalEvents' && (
-                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
-                      onClick={() => handleDjSort('avgAttendance')}
-                    >
-                      <div className="flex items-center gap-2">
-                        Avg Attendance
-                        {djSortColumn === 'avgAttendance' && (
-                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                      Default Cap
-                    </th>
-                    <th
-                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
-                      onClick={() => handleDjSort('lastPerformed')}
-                    >
-                      <div className="flex items-center gap-2">
-                        Last Performed
-                        {djSortColumn === 'lastPerformed' && (
-                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                      Upcoming Gigs
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {sortedDJs.map((dj) => (
-                    <tr
-                      key={dj.id}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        setSelectedDjId(dj.id);
-                        setDjModalTab('overview');
-                      }}
-                    >
-                      <td className="px-4 py-3">
-                        <div>
-                          <div className="font-medium text-gray-900">{dj.name}</div>
-                          {dj.instagram && (
-                            <div className="text-xs text-gray-400">{dj.instagram}</div>
+            {userType === 'djs' && (
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleDjSort('name')}
+                      >
+                        <div className="flex items-center gap-2">
+                          DJ Name
+                          {djSortColumn === 'name' && (
+                            <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
                           )}
                         </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-xs text-gray-600">
-                          <div>{dj.email}</div>
-                          <div>{dj.phone}</div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                        Contact
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleDjSort('totalEvents')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Total Events
+                          {djSortColumn === 'totalEvents' && (
+                            <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {dj.totalEvents}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {dj.avgAttendance > 0 ? dj.avgAttendance : '-'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {dj.defaultCap}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {dj.lastPerformed
-                          ? new Date(dj.lastPerformed).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            })
-                          : '-'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700">
-                        {dj.upcomingGigs}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            dj.status === 'active'
-                              ? 'bg-green-100 text-green-700'
-                              : dj.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          {dj.status === 'pending' ? 'Pending invite accept' : dj.status.charAt(0).toUpperCase() + dj.status.slice(1)}
-                        </span>
-                      </td>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleDjSort('avgAttendance')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Attendance
+                          {djSortColumn === 'avgAttendance' && (
+                            <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                        Default Cap
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleDjSort('lastPerformed')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Last Performed
+                          {djSortColumn === 'lastPerformed' && (
+                            <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                        Upcoming Gigs
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                        Status
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {sortedDJs.map((dj) => (
+                      <tr
+                        key={dj.id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedDjId(dj.id);
+                          setDjModalTab('overview');
+                        }}
+                      >
+                        <td className="px-4 py-3">
+                          <div>
+                            <div className="font-medium text-gray-900">{dj.name}</div>
+                            {dj.instagram && (
+                              <div className="text-xs text-gray-400">{dj.instagram}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-xs text-gray-600">
+                            <div>{dj.email}</div>
+                            <div>{dj.phone}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {dj.totalEvents}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {dj.avgAttendance > 0 ? dj.avgAttendance : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {dj.defaultCap}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {dj.lastPerformed
+                            ? new Date(dj.lastPerformed).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })
+                            : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {dj.upcomingGigs}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              dj.status === 'active'
+                                ? 'bg-green-100 text-green-700'
+                                : dj.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {dj.status === 'pending' ? 'Pending invite accept' : dj.status.charAt(0).toUpperCase() + dj.status.slice(1)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Staff View */}
+            {userType === 'staff' && (
+              <div className="text-center py-12 text-gray-500">
+                Staff management coming soon
+              </div>
+            )}
+
+            {/* Promoters View */}
+            {userType === 'promoters' && (
+              <div className="text-center py-12 text-gray-500">
+                Promoters management coming soon
+              </div>
+            )}
+
+            {/* Managers View */}
+            {userType === 'managers' && (
+              <div className="text-center py-12 text-gray-500">
+                Managers management coming soon
+              </div>
+            )}
           </div>
         )}
 
@@ -1265,6 +1509,113 @@ export default function ManagerDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Guest Detail Modal */}
+      {selectedGuestId && (() => {
+        const selectedGuest = guests.find(g => g.id === selectedGuestId);
+        if (!selectedGuest) return null;
+
+        return (
+          <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-light mb-1">{selectedGuest.name}</h2>
+                    <div className="space-y-1">
+                      {selectedGuest.email && (
+                        <div className="text-sm text-gray-500">{selectedGuest.email}</div>
+                      )}
+                      {selectedGuest.instagram && (
+                        <a
+                          href={`https://instagram.com/${selectedGuest.instagram.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-gray-500 hover:text-gray-700 transition-colors block"
+                        >
+                          {selectedGuest.instagram}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedGuestId(null)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="bg-gray-50 rounded-lg p-2">
+                    <div className="text-[10px] text-gray-600 mb-0.5">All Time Visits</div>
+                    <div className="text-lg font-light">{selectedGuest.totalAttendance}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-2">
+                    <div className="text-[10px] text-gray-600 mb-0.5">Last Attended</div>
+                    <div className="text-lg font-light">
+                      {new Date(selectedGuest.lastAttended).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Added By Section */}
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Added to lists by</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGuest.addedBy.map((dj, idx) => (
+                      <div
+                        key={idx}
+                        className="text-sm px-3 py-2 bg-gray-100 text-gray-700 rounded-full"
+                      >
+                        {dj}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Attendance History Section */}
+                {selectedGuest.attendanceHistory && selectedGuest.attendanceHistory.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">Attendance History</h3>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="max-h-64 overflow-y-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600">Date</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600">DJ</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600">Added By</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {selectedGuest.attendanceHistory.map((record, idx) => (
+                              <tr key={idx} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm text-gray-700">{record.eventDate}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{record.djNames}</td>
+                                <td className="px-4 py-3 text-sm text-gray-500">{record.addedBy}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* DJ Detail Modal */}
       {selectedDjId && (() => {
