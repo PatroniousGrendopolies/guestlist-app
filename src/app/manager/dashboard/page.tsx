@@ -66,6 +66,8 @@ interface DJ {
   instagram?: string;
   totalEvents: number;
   avgAttendance: number;
+  paidAttendance: number;
+  avgRevenue: number;
   defaultCap: number;
   lastPerformed: string;
   status: 'active' | 'pending' | 'inactive';
@@ -86,7 +88,7 @@ export default function ManagerDashboardPage() {
   const [guestSortColumn, setGuestSortColumn] = useState<'name' | 'attendance' | 'lastAttended' | 'addedBy'>('name');
   const [guestSortDirection, setGuestSortDirection] = useState<'asc' | 'desc'>('asc');
   const [djs, setDjs] = useState<DJ[]>([]);
-  const [djSortColumn, setDjSortColumn] = useState<'name' | 'totalEvents' | 'avgAttendance' | 'lastPerformed'>('name');
+  const [djSortColumn, setDjSortColumn] = useState<'name' | 'totalEvents' | 'avgAttendance' | 'paidAttendance' | 'conversionRate' | 'avgRevenue' | 'lastPerformed'>('name');
   const [djSortDirection, setDjSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showInviteDjModal, setShowInviteDjModal] = useState(false);
   const [inviteDjForm, setInviteDjForm] = useState({
@@ -97,12 +99,14 @@ export default function ManagerDashboardPage() {
     upcomingGigDate: ''
   });
   const [selectedDjId, setSelectedDjId] = useState<string | null>(null);
-  const [djModalTab, setDjModalTab] = useState<'overview' | 'guests' | 'history' | 'analytics'>('overview');
+  const [djModalTab, setDjModalTab] = useState<'overview' | 'guests' | 'history'>('overview');
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'guests' | 'users' | 'analytics'>('overview');
   const [userType, setUserType] = useState<'djs' | 'staff' | 'promoters' | 'managers'>('djs');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [eventHistorySortColumn, setEventHistorySortColumn] = useState<'date' | 'eventName' | 'attendance' | 'capacity' | 'revenue'>('date');
+  const [eventHistorySortDirection, setEventHistorySortDirection] = useState<'asc' | 'desc'>('desc');
   const router = useRouter();
 
   useEffect(() => {
@@ -422,6 +426,8 @@ export default function ManagerDashboardPage() {
           instagram: '@djmarcus',
           totalEvents: 45,
           avgAttendance: 68,
+          paidAttendance: 52,
+          avgRevenue: 3200,
           defaultCap: 75,
           lastPerformed: '2025-10-06',
           status: 'active',
@@ -436,6 +442,8 @@ export default function ManagerDashboardPage() {
           instagram: '@djshadow',
           totalEvents: 38,
           avgAttendance: 55,
+          paidAttendance: 38,
+          avgRevenue: 2800,
           defaultCap: 60,
           lastPerformed: '2025-10-01',
           status: 'active',
@@ -450,6 +458,8 @@ export default function ManagerDashboardPage() {
           instagram: '@sarahdeep',
           totalEvents: 52,
           avgAttendance: 72,
+          paidAttendance: 58,
+          avgRevenue: 3800,
           defaultCap: 80,
           lastPerformed: '2025-10-10',
           status: 'active',
@@ -463,6 +473,8 @@ export default function ManagerDashboardPage() {
           phone: '+1 555-1004',
           totalEvents: 0,
           avgAttendance: 0,
+          paidAttendance: 0,
+          avgRevenue: 0,
           defaultCap: 50,
           lastPerformed: '',
           status: 'pending',
@@ -477,6 +489,8 @@ export default function ManagerDashboardPage() {
           instagram: '@technotom',
           totalEvents: 28,
           avgAttendance: 48,
+          paidAttendance: 32,
+          avgRevenue: 2400,
           defaultCap: 55,
           lastPerformed: '2025-09-22',
           status: 'active',
@@ -491,6 +505,8 @@ export default function ManagerDashboardPage() {
           instagram: '@vinylvince',
           totalEvents: 61,
           avgAttendance: 82,
+          paidAttendance: 68,
+          avgRevenue: 4500,
           defaultCap: 90,
           lastPerformed: '2025-10-08',
           status: 'active',
@@ -505,6 +521,8 @@ export default function ManagerDashboardPage() {
           instagram: '@bassqueen',
           totalEvents: 19,
           avgAttendance: 41,
+          paidAttendance: 28,
+          avgRevenue: 1800,
           defaultCap: 45,
           lastPerformed: '2025-09-15',
           status: 'active',
@@ -519,6 +537,8 @@ export default function ManagerDashboardPage() {
           instagram: '@housemaster',
           totalEvents: 34,
           avgAttendance: 61,
+          paidAttendance: 45,
+          avgRevenue: 3100,
           defaultCap: 70,
           lastPerformed: '2025-10-03',
           status: 'active',
@@ -590,7 +610,7 @@ export default function ManagerDashboardPage() {
   ).sort();
 
   // DJ management functions
-  const handleDjSort = (column: 'name' | 'totalEvents' | 'avgAttendance' | 'lastPerformed') => {
+  const handleDjSort = (column: 'name' | 'totalEvents' | 'avgAttendance' | 'paidAttendance' | 'conversionRate' | 'avgRevenue' | 'lastPerformed') => {
     if (djSortColumn === column) {
       setDjSortDirection(djSortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -609,6 +629,18 @@ export default function ManagerDashboardPage() {
       comparison = a.totalEvents - b.totalEvents;
     } else if (djSortColumn === 'avgAttendance') {
       comparison = a.avgAttendance - b.avgAttendance;
+    } else if (djSortColumn === 'paidAttendance') {
+      comparison = a.paidAttendance - b.paidAttendance;
+    } else if (djSortColumn === 'conversionRate') {
+      const aRate = a.totalGuestsAdded > 0 && a.avgAttendance > 0
+        ? (a.avgAttendance / a.totalGuestsAdded) * 100
+        : 0;
+      const bRate = b.totalGuestsAdded > 0 && b.avgAttendance > 0
+        ? (b.avgAttendance / b.totalGuestsAdded) * 100
+        : 0;
+      comparison = aRate - bRate;
+    } else if (djSortColumn === 'avgRevenue') {
+      comparison = a.avgRevenue - b.avgRevenue;
     } else if (djSortColumn === 'lastPerformed') {
       if (!a.lastPerformed) return 1;
       if (!b.lastPerformed) return -1;
@@ -617,6 +649,16 @@ export default function ManagerDashboardPage() {
 
     return djSortDirection === 'asc' ? comparison : -comparison;
   });
+
+  // Event History sorting handler
+  const handleEventHistorySort = (column: 'date' | 'eventName' | 'attendance' | 'capacity' | 'revenue') => {
+    if (eventHistorySortColumn === column) {
+      setEventHistorySortDirection(eventHistorySortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setEventHistorySortColumn(column);
+      setEventHistorySortDirection('asc');
+    }
+  };
 
   // Handle invite DJ form submission
   const handleInviteDj = () => {
@@ -629,6 +671,8 @@ export default function ManagerDashboardPage() {
       phone: inviteDjForm.phone,
       totalEvents: 0,
       avgAttendance: 0,
+      paidAttendance: 0,
+      avgRevenue: 0,
       defaultCap: 50,
       lastPerformed: '',
       status: 'pending',
@@ -1293,8 +1337,7 @@ export default function ManagerDashboardPage() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl">Nightlist Users</h2>
+            <div className="flex items-center justify-end mb-6">
               <button
                 onClick={() => setShowInviteDjModal(true)}
                 className="px-6 py-2 bg-gray-200 text-black rounded-full hover:bg-gray-300 transition-colors text-sm"
@@ -1364,9 +1407,6 @@ export default function ManagerDashboardPage() {
                           )}
                         </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                        Contact
-                      </th>
                       <th
                         className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
                         onClick={() => handleDjSort('totalEvents')}
@@ -1389,25 +1429,49 @@ export default function ManagerDashboardPage() {
                           )}
                         </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                        Default Cap
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleDjSort('paidAttendance')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Paid Attendance
+                          {djSortColumn === 'paidAttendance' && (
+                            <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleDjSort('conversionRate')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Conversion Rate
+                          {djSortColumn === 'conversionRate' && (
+                            <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleDjSort('avgRevenue')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Revenue
+                          {djSortColumn === 'avgRevenue' && (
+                            <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
                       </th>
                       <th
                         className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
                         onClick={() => handleDjSort('lastPerformed')}
                       >
                         <div className="flex items-center gap-2">
-                          Last Performed
+                          Last Gig
                           {djSortColumn === 'lastPerformed' && (
                             <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
                           )}
                         </div>
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                        Upcoming Gigs
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
-                        Status
                       </th>
                     </tr>
                   </thead>
@@ -1429,12 +1493,6 @@ export default function ManagerDashboardPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="text-xs text-gray-600">
-                            <div>{dj.email}</div>
-                            <div>{dj.phone}</div>
-                          </div>
-                        </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
                           {dj.totalEvents}
                         </td>
@@ -1442,7 +1500,15 @@ export default function ManagerDashboardPage() {
                           {dj.avgAttendance > 0 ? dj.avgAttendance : '-'}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
-                          {dj.defaultCap}
+                          {dj.paidAttendance > 0 ? dj.paidAttendance : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {dj.totalGuestsAdded > 0 && dj.avgAttendance > 0
+                            ? `${Math.round((dj.avgAttendance / dj.totalGuestsAdded) * 100)}%`
+                            : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {dj.avgRevenue > 0 ? `$${dj.avgRevenue.toLocaleString()}` : '-'}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
                           {dj.lastPerformed
@@ -1452,22 +1518,6 @@ export default function ManagerDashboardPage() {
                                 year: 'numeric'
                               })
                             : '-'}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          {dj.upcomingGigs}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              dj.status === 'active'
-                                ? 'bg-green-100 text-green-700'
-                                : dj.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            {dj.status === 'pending' ? 'Pending invite accept' : dj.status.charAt(0).toUpperCase() + dj.status.slice(1)}
-                          </span>
                         </td>
                       </tr>
                     ))}
@@ -1626,22 +1676,50 @@ export default function ManagerDashboardPage() {
         const djGuests = guests.filter(g => g.addedBy.includes(selectedDj.name));
 
         // Mock event history for the Event History tab (12 months)
+        const otherDjNames = ['DJ Shadow', 'Sarah Deep', 'Techno Tom', 'Vinyl Vince', 'Bass Queen', 'House Master'];
         const eventHistory = Array.from({ length: selectedDj.totalEvents }, (_, i) => {
           const date = new Date();
           date.setMonth(date.getMonth() - i);
+
+          // Sometimes solo, sometimes with other DJs
+          const hasOtherDjs = Math.random() > 0.4; // 60% chance of having other DJs
+          const otherDjs = hasOtherDjs
+            ? otherDjNames
+                .filter(name => name !== selectedDj.name)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, Math.floor(Math.random() * 2) + 1) // 1-2 other DJs
+            : [];
+
           return {
             id: `event_${i}`,
             date: date.toISOString().split('T')[0],
             eventName: ['Saturday Night Sessions', 'Deep House Vibes', 'Techno Warehouse', 'Underground Collective'][i % 4],
             attendance: Math.floor(Math.random() * 30) + 40,
             capacity: selectedDj.defaultCap,
-            revenue: Math.floor(Math.random() * 2000) + 1000
+            revenue: Math.floor(Math.random() * 2000) + 1000,
+            otherDjs: otherDjs.join(', ') || '-'
           };
+        }).sort((a, b) => {
+          let comparison = 0;
+
+          if (eventHistorySortColumn === 'date') {
+            comparison = a.date.localeCompare(b.date);
+          } else if (eventHistorySortColumn === 'eventName') {
+            comparison = a.eventName.localeCompare(b.eventName);
+          } else if (eventHistorySortColumn === 'attendance') {
+            comparison = a.attendance - b.attendance;
+          } else if (eventHistorySortColumn === 'capacity') {
+            comparison = a.capacity - b.capacity;
+          } else if (eventHistorySortColumn === 'revenue') {
+            comparison = a.revenue - b.revenue;
+          }
+
+          return eventHistorySortDirection === 'asc' ? comparison : -comparison;
         });
 
         return (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] min-h-[500px] overflow-hidden flex flex-col">
               {/* Modal Header */}
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-start justify-between">
@@ -1652,7 +1730,15 @@ export default function ManagerDashboardPage() {
                       {selectedDj.instagram && (
                         <>
                           <span>•</span>
-                          <span>{selectedDj.instagram}</span>
+                          <a
+                            href={`https://instagram.com/${selectedDj.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-gray-600 hover:text-gray-900 transition-colors"
+                          >
+                            {selectedDj.instagram}
+                          </a>
                         </>
                       )}
                     </div>
@@ -1664,28 +1750,6 @@ export default function ManagerDashboardPage() {
                     ×
                   </button>
                 </div>
-
-                {/* Performance Metrics */}
-                {selectedDj.status === 'active' && (
-                  <div className="grid grid-cols-4 gap-4 mt-6">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs text-gray-600 mb-1">Total Events</div>
-                      <div className="text-2xl font-light">{selectedDj.totalEvents}</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs text-gray-600 mb-1">Avg Attendance</div>
-                      <div className="text-2xl font-light">{selectedDj.avgAttendance}</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs text-gray-600 mb-1">Total Guests</div>
-                      <div className="text-2xl font-light">{selectedDj.totalGuestsAdded}</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs text-gray-600 mb-1">Upcoming Gigs</div>
-                      <div className="text-2xl font-light">{selectedDj.upcomingGigs}</div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Internal Tab Navigation */}
@@ -1724,17 +1788,6 @@ export default function ManagerDashboardPage() {
                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
                     )}
                   </button>
-                  <button
-                    onClick={() => setDjModalTab('analytics')}
-                    className={`pb-3 text-sm transition-colors relative ${
-                      djModalTab === 'analytics' ? 'text-black' : 'text-gray-500 hover:text-black'
-                    }`}
-                  >
-                    Analytics
-                    {djModalTab === 'analytics' && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
-                    )}
-                  </button>
                 </div>
               </div>
 
@@ -1750,7 +1803,7 @@ export default function ManagerDashboardPage() {
                       <input
                         type="number"
                         defaultValue={selectedDj.defaultCap}
-                        className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
 
@@ -1789,16 +1842,31 @@ export default function ManagerDashboardPage() {
                         <thead className="bg-gray-50 border-b border-gray-200">
                           <tr>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Name</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Email</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">IG Handle</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Attendance</th>
                             <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Last Attended</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Added By Other DJs</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {djGuests.map((guest) => (
                             <tr key={guest.id} className="hover:bg-gray-50">
                               <td className="px-4 py-3 text-sm">{guest.name}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600">{guest.email}</td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {guest.instagram ? (
+                                  <a
+                                    href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                                  >
+                                    {guest.instagram}
+                                  </a>
+                                ) : (
+                                  '-'
+                                )}
+                              </td>
                               <td className="px-4 py-3 text-sm text-gray-700">{guest.totalAttendance}</td>
                               <td className="px-4 py-3 text-sm text-gray-700">
                                 {new Date(guest.lastAttended).toLocaleDateString('en-US', {
@@ -1806,6 +1874,33 @@ export default function ManagerDashboardPage() {
                                   day: 'numeric',
                                   year: 'numeric'
                                 })}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex flex-wrap gap-1">
+                                  {guest.addedBy
+                                    .filter(djName => djName !== selectedDj.name)
+                                    .map((djName, idx) => {
+                                      const matchingDj = djs.find(d => d.name === djName);
+                                      return matchingDj ? (
+                                        <button
+                                          key={idx}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedDjId(matchingDj.id);
+                                            setDjModalTab('overview');
+                                          }}
+                                          className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                                        >
+                                          {djName}
+                                        </button>
+                                      ) : (
+                                        <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded-full">
+                                          {djName}
+                                        </span>
+                                      );
+                                    })}
+                                  {guest.addedBy.filter(djName => djName !== selectedDj.name).length === 0 && '-'}
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1831,11 +1926,62 @@ export default function ManagerDashboardPage() {
                         <table className="w-full">
                           <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                             <tr>
-                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
-                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Event Name</th>
-                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Attendance</th>
-                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Capacity</th>
-                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Revenue</th>
+                              <th
+                                className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                                onClick={() => handleEventHistorySort('date')}
+                              >
+                                <div className="flex items-center gap-2">
+                                  Date
+                                  {eventHistorySortColumn === 'date' && (
+                                    <span>{eventHistorySortDirection === 'asc' ? '↑' : '↓'}</span>
+                                  )}
+                                </div>
+                              </th>
+                              <th
+                                className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                                onClick={() => handleEventHistorySort('eventName')}
+                              >
+                                <div className="flex items-center gap-2">
+                                  Event Name
+                                  {eventHistorySortColumn === 'eventName' && (
+                                    <span>{eventHistorySortDirection === 'asc' ? '↑' : '↓'}</span>
+                                  )}
+                                </div>
+                              </th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Other DJs</th>
+                              <th
+                                className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                                onClick={() => handleEventHistorySort('attendance')}
+                              >
+                                <div className="flex items-center gap-2">
+                                  Attendance
+                                  {eventHistorySortColumn === 'attendance' && (
+                                    <span>{eventHistorySortDirection === 'asc' ? '↑' : '↓'}</span>
+                                  )}
+                                </div>
+                              </th>
+                              <th
+                                className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                                onClick={() => handleEventHistorySort('capacity')}
+                              >
+                                <div className="flex items-center gap-2">
+                                  Capacity
+                                  {eventHistorySortColumn === 'capacity' && (
+                                    <span>{eventHistorySortDirection === 'asc' ? '↑' : '↓'}</span>
+                                  )}
+                                </div>
+                              </th>
+                              <th
+                                className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                                onClick={() => handleEventHistorySort('revenue')}
+                              >
+                                <div className="flex items-center gap-2">
+                                  Revenue
+                                  {eventHistorySortColumn === 'revenue' && (
+                                    <span>{eventHistorySortDirection === 'asc' ? '↑' : '↓'}</span>
+                                  )}
+                                </div>
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200">
@@ -1849,6 +1995,34 @@ export default function ManagerDashboardPage() {
                                   })}
                                 </td>
                                 <td className="px-4 py-3 text-sm">{event.eventName}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                  {event.otherDjs === '-' ? (
+                                    '-'
+                                  ) : (
+                                    <div className="flex flex-wrap gap-1">
+                                      {event.otherDjs.split(', ').map((djName, idx) => {
+                                        const matchingDj = djs.find(d => d.name === djName);
+                                        return matchingDj ? (
+                                          <button
+                                            key={idx}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setSelectedDjId(matchingDj.id);
+                                              setDjModalTab('overview');
+                                            }}
+                                            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                                          >
+                                            {djName}
+                                          </button>
+                                        ) : (
+                                          <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded-full">
+                                            {djName}
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </td>
                                 <td className="px-4 py-3 text-sm text-gray-700">{event.attendance}</td>
                                 <td className="px-4 py-3 text-sm text-gray-700">{event.capacity}</td>
                                 <td className="px-4 py-3 text-sm text-gray-700">${event.revenue.toLocaleString()}</td>
@@ -1863,13 +2037,6 @@ export default function ManagerDashboardPage() {
                         </div>
                       )}
                     </div>
-                  </div>
-                )}
-
-                {/* Analytics Tab */}
-                {djModalTab === 'analytics' && (
-                  <div className="text-center py-12 text-gray-500">
-                    Analytics coming soon
                   </div>
                 )}
               </div>
