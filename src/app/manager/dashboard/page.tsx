@@ -830,62 +830,82 @@ export default function ManagerDashboardPage() {
 
                     {/* Capacity Meter */}
                     <div className="mb-4">
-                      <div className="relative h-6">
-                        {/* Background layer - light gray (spots available) */}
-                        <div className="absolute inset-0 bg-gray-200 rounded-full"></div>
+                      <div className="w-full">
+                        <div className="relative">
+                          {/* Pending label above the meter bar when it would conflict */}
+                          {event.pendingGuests > 0 && (() => {
+                            const pendingCenterPosition = ((event.approvedGuests + (event.pendingGuests / 2)) / event.totalGuests) * 100;
+                            const wouldOverlapConfirmed = pendingCenterPosition < 25;
+                            const wouldOverlapSpots = pendingCenterPosition > 70;
 
-                        {/* Middle layer - dark gray (pending + confirmed) */}
-                        <div
-                          className="absolute left-0 top-0 bottom-0 bg-gray-400 rounded-full transition-all duration-300"
-                          style={{ width: `${((event.approvedGuests + event.pendingGuests) / event.totalGuests) * 100}%` }}
-                        ></div>
+                            return (wouldOverlapConfirmed || wouldOverlapSpots) ? (
+                              <div
+                                className="absolute -top-5 text-xs text-gray-500"
+                                style={{
+                                  left: `${pendingCenterPosition}%`,
+                                  transform: 'translateX(-50%)'
+                                }}
+                              >
+                                Pending
+                              </div>
+                            ) : null;
+                          })()}
 
-                        {/* Top layer - black (confirmed only) */}
-                        <div
-                          className="absolute left-0 top-0 bottom-0 bg-black rounded-full transition-all duration-300"
-                          style={{ width: `${(event.approvedGuests / event.totalGuests) * 100}%` }}
-                        ></div>
-
-                        {/* Numbers overlay */}
-                        <div className="relative h-full flex items-center">
-                          {/* Confirmed number (in black section) */}
-                          {event.approvedGuests > 0 && (
-                            <div className="pl-3">
-                              <span className="text-white text-xs font-medium">
+                          <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
+                            {/* Pending + Confirmed (light gray) bar - shows total */}
+                            <div
+                              className="bg-gray-400 h-4 rounded-full transition-all duration-300 absolute top-0 left-0"
+                              style={{ width: `${((event.approvedGuests + event.pendingGuests) / event.totalGuests) * 100}%` }}
+                            >
+                              {/* Pending count inside the gray bar - only show if bar is wide enough */}
+                              {event.pendingGuests > 0 && (event.pendingGuests / event.totalGuests) > 0.08 && (
+                                <span
+                                  className="absolute top-1/2 -translate-y-1/2 text-white text-[10px] z-20"
+                                  style={{ right: '8px' }}
+                                >
+                                  {event.pendingGuests}
+                                </span>
+                              )}
+                            </div>
+                            {/* Confirmed (black) bar - shows on top */}
+                            <div
+                              className="bg-black h-4 rounded-full transition-all duration-300 relative z-10"
+                              style={{ width: `${(event.approvedGuests / event.totalGuests) * 100}%` }}
+                            >
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-[10px]">
                                 {event.approvedGuests}
                               </span>
                             </div>
-                          )}
-
-                          {/* Pending number (in gray section) */}
-                          {event.pendingGuests > 0 && (
-                            <div
-                              className="absolute flex items-center justify-center"
-                              style={{
-                                left: `${(event.approvedGuests / event.totalGuests) * 100}%`,
-                                width: `${(event.pendingGuests / event.totalGuests) * 100}%`
-                              }}
-                            >
-                              <span className="text-white text-xs font-medium">
-                                {event.pendingGuests}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Total spots (on right) */}
-                          <div className="absolute right-3">
-                            <span className="text-gray-600 text-xs font-medium">
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-black text-[10px] z-20">
                               {event.totalGuests}
                             </span>
                           </div>
+
+                          <div className="flex justify-between mt-2 relative">
+                            <span className="text-xs text-gray-500">Confirmed</span>
+
+                            {/* Pending label below the meter (normal position) - hide if too close to edges */}
+                            {event.pendingGuests > 0 && (() => {
+                              const pendingCenterPosition = ((event.approvedGuests + (event.pendingGuests / 2)) / event.totalGuests) * 100;
+                              const wouldOverlapConfirmed = pendingCenterPosition < 30;
+                              const wouldOverlapSpots = pendingCenterPosition > 65;
+
+                              return (!wouldOverlapConfirmed && !wouldOverlapSpots) ? (
+                                <span
+                                  className="absolute text-xs text-gray-500"
+                                  style={{
+                                    left: `${pendingCenterPosition}%`,
+                                    transform: 'translateX(-50%)'
+                                  }}
+                                >
+                                  Pending
+                                </span>
+                              ) : null;
+                            })()}
+
+                            <span className="text-xs text-gray-500">Spots available</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <div className="flex gap-4 text-xs text-gray-600">
-                          <span>Confirmed</span>
-                          <span>Pending</span>
-                        </div>
-                        <span className="text-xs text-gray-600">Spots available</span>
                       </div>
                     </div>
                   </div>
