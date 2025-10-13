@@ -793,10 +793,10 @@ export default function ManagerDashboardPage() {
                     {/* Capacity Meter */}
                     <div className="mb-4">
                       <div className="relative">
-                        <div className="bg-gray-200 rounded-full h-7 flex overflow-hidden">
+                        <div className="bg-gray-200 rounded-full h-6 flex overflow-hidden">
                           {/* Confirmed section (black) */}
                           <div
-                            className="bg-black rounded-full flex items-center justify-start transition-all duration-300"
+                            className="bg-black flex items-center justify-start transition-all duration-300"
                             style={{ width: `${(event.approvedGuests / event.totalGuests) * 100}%` }}
                           >
                             {event.approvedGuests > 0 && (
@@ -805,7 +805,17 @@ export default function ManagerDashboardPage() {
                               </span>
                             )}
                           </div>
-                          {/* Pending section (gray) - optional to show, currently just part of gray background */}
+                          {/* Pending section (dark gray) */}
+                          <div
+                            className="bg-gray-400 flex items-center justify-center transition-all duration-300"
+                            style={{ width: `${(event.pendingGuests / event.totalGuests) * 100}%` }}
+                          >
+                            {event.pendingGuests > 0 && (
+                              <span className="text-white text-xs font-medium">
+                                {event.pendingGuests}
+                              </span>
+                            )}
+                          </div>
                           {/* Spots available shown on the right */}
                           <div className="flex-1 flex items-center justify-end pr-3">
                             <span className="text-gray-600 text-xs font-medium">
