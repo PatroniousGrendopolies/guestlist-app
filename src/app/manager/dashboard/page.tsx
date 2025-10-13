@@ -191,14 +191,50 @@ export default function ManagerDashboardPage() {
         }
       }
 
-      // Add capacity requests alert
-      mockAlerts.push({
-        id: 'capacity_requests',
-        type: 'info',
-        message: '2 capacity increase requests pending',
-        action: 'Review Requests',
-        actionUrl: '/manager/capacity-requests'
-      });
+      // Generate mock capacity requests
+      const mockCapacityRequests: CapacityRequest[] = [
+        {
+          id: 'cap_req_1',
+          requesterName: 'DJ Marcus',
+          requesterRole: 'dj',
+          eventName: 'Saturday Night Sessions',
+          eventDate: '2025-10-18',
+          spotsRequested: 10,
+          currentCapacity: 75,
+          reason: 'Special guests coming from out of town'
+        },
+        {
+          id: 'cap_req_2',
+          requesterName: 'Sarah (Staff)',
+          requesterRole: 'staff',
+          eventName: 'Deep House Vibes',
+          eventDate: '2025-10-20',
+          spotsRequested: 5,
+          currentCapacity: 60,
+          reason: 'VIP table reservation'
+        }
+      ];
+
+      // Add capacity request alerts - individual if 5 or fewer, grouped if more
+      if (mockCapacityRequests.length <= 5) {
+        mockCapacityRequests.forEach(req => {
+          mockAlerts.push({
+            id: `capacity_${req.id}`,
+            type: 'info',
+            message: `${req.requesterName} requests ${req.spotsRequested} additional spots for ${req.eventName}`,
+            action: 'Review Request',
+            actionUrl: '/manager/capacity-requests'
+          });
+        });
+      } else {
+        mockAlerts.push({
+          id: 'capacity_requests',
+          type: 'info',
+          message: `${mockCapacityRequests.length} capacity increase requests pending`,
+          action: 'Review Requests',
+          actionUrl: '/manager/capacity-requests'
+        });
+      }
 
       // Generate mock guests
       const mockGuests: Guest[] = [
@@ -794,32 +830,50 @@ export default function ManagerDashboardPage() {
 
                     {/* Capacity Meter */}
                     <div className="mb-4">
-                      <div className="relative">
-                        <div className="bg-gray-200 rounded-full h-6 flex overflow-hidden">
-                          {/* Confirmed section (black) */}
-                          <div
-                            className="bg-black flex items-center justify-start transition-all duration-300"
-                            style={{ width: `${(event.approvedGuests / event.totalGuests) * 100}%` }}
-                          >
-                            {event.approvedGuests > 0 && (
-                              <span className="text-white text-xs font-medium pl-3">
+                      <div className="relative h-6">
+                        {/* Background layer - light gray (spots available) */}
+                        <div className="absolute inset-0 bg-gray-200 rounded-full"></div>
+
+                        {/* Middle layer - dark gray (pending + confirmed) */}
+                        <div
+                          className="absolute left-0 top-0 bottom-0 bg-gray-400 rounded-full transition-all duration-300"
+                          style={{ width: `${((event.approvedGuests + event.pendingGuests) / event.totalGuests) * 100}%` }}
+                        ></div>
+
+                        {/* Top layer - black (confirmed only) */}
+                        <div
+                          className="absolute left-0 top-0 bottom-0 bg-black rounded-full transition-all duration-300"
+                          style={{ width: `${(event.approvedGuests / event.totalGuests) * 100}%` }}
+                        ></div>
+
+                        {/* Numbers overlay */}
+                        <div className="relative h-full flex items-center">
+                          {/* Confirmed number (in black section) */}
+                          {event.approvedGuests > 0 && (
+                            <div className="pl-3">
+                              <span className="text-white text-xs font-medium">
                                 {event.approvedGuests}
                               </span>
-                            )}
-                          </div>
-                          {/* Pending section (dark gray) */}
-                          <div
-                            className="bg-gray-400 flex items-center justify-center transition-all duration-300"
-                            style={{ width: `${(event.pendingGuests / event.totalGuests) * 100}%` }}
-                          >
-                            {event.pendingGuests > 0 && (
+                            </div>
+                          )}
+
+                          {/* Pending number (in gray section) */}
+                          {event.pendingGuests > 0 && (
+                            <div
+                              className="absolute flex items-center justify-center"
+                              style={{
+                                left: `${(event.approvedGuests / event.totalGuests) * 100}%`,
+                                width: `${(event.pendingGuests / event.totalGuests) * 100}%`
+                              }}
+                            >
                               <span className="text-white text-xs font-medium">
                                 {event.pendingGuests}
                               </span>
-                            )}
-                          </div>
-                          {/* Spots available shown on the right */}
-                          <div className="flex-1 flex items-center justify-end pr-3">
+                            </div>
+                          )}
+
+                          {/* Total spots (on right) */}
+                          <div className="absolute right-3">
                             <span className="text-gray-600 text-xs font-medium">
                               {event.totalGuests}
                             </span>
