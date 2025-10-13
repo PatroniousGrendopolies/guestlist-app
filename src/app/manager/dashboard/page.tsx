@@ -182,18 +182,6 @@ export default function ManagerDashboardPage() {
     router.push('/manager/login');
   };
 
-  const getApprovalColor = (ratio: number) => {
-    if (ratio >= 80) return 'text-green-600';
-    if (ratio >= 65) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getApprovalBgColor = (ratio: number) => {
-    if (ratio >= 80) return 'bg-green-100';
-    if (ratio >= 65) return 'bg-yellow-100';
-    return 'bg-red-100';
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -318,7 +306,7 @@ export default function ManagerDashboardPage() {
                           ? 'bg-red-50 border-red-200'
                           : alert.type === 'warning'
                           ? 'bg-yellow-50 border-yellow-200'
-                          : 'bg-blue-50 border-blue-200'
+                          : 'bg-gray-50 border-gray-200'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -357,51 +345,40 @@ export default function ManagerDashboardPage() {
                       )}
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-4">{event.djNames}</p>
+                    <p className="text-sm text-gray-600 mb-6">{event.djNames}</p>
 
-                    {/* Approval Ratio Pie Chart */}
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="relative w-16 h-16">
-                        <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="40"
-                            fill="transparent"
-                            stroke="#E5E7EB"
-                            strokeWidth="8"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="40"
-                            fill="transparent"
-                            stroke="#000000"
-                            strokeWidth="8"
-                            strokeDasharray={`${event.approvalRatio * 2.51} 251`}
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className={`text-xs ${getApprovalColor(event.approvalRatio)}`}>
-                            {Math.round(event.approvalRatio)}%
-                          </span>
+                    {/* Capacity Meter */}
+                    <div className="mb-4">
+                      <div className="relative">
+                        <div className="bg-gray-200 rounded-full h-7 flex overflow-hidden">
+                          {/* Confirmed section (black) */}
+                          <div
+                            className="bg-black rounded-full flex items-center justify-start transition-all duration-300"
+                            style={{ width: `${(event.approvedGuests / event.totalGuests) * 100}%` }}
+                          >
+                            {event.approvedGuests > 0 && (
+                              <span className="text-white text-xs font-medium pl-3">
+                                {event.approvedGuests}
+                              </span>
+                            )}
+                          </div>
+                          {/* Pending section (gray) - optional to show, currently just part of gray background */}
+                          {/* Spots available shown on the right */}
+                          <div className="flex-1 flex items-center justify-end pr-3">
+                            <span className="text-gray-600 text-xs font-medium">
+                              {event.totalGuests}
+                            </span>
+                          </div>
                         </div>
                       </div>
-
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-medium">{event.approvedGuests}/{event.totalGuests}</span> approved
-                        </p>
-                        <div className={`text-xs px-2 py-1 rounded-full inline-block ${getApprovalBgColor(event.approvalRatio)} ${getApprovalColor(event.approvalRatio)}`}>
-                          {event.approvalRatio >= 80 ? 'Good' : event.approvalRatio >= 65 ? 'Warning' : 'Low'}
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="flex gap-4 text-xs text-gray-600">
+                          <span>Confirmed</span>
+                          <span>Pending</span>
                         </div>
+                        <span className="text-xs text-gray-600">Spots available</span>
                       </div>
                     </div>
-
-                    <button className="text-sm text-gray-500 hover:text-black transition-colors">
-                      View full guest list →
-                    </button>
                   </div>
                 ))}
               </div>
