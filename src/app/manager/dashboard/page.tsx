@@ -57,6 +57,21 @@ interface Guest {
   attendanceHistory?: AttendanceRecord[];
 }
 
+interface DJ {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  instagram?: string;
+  totalEvents: number;
+  avgAttendance: number;
+  defaultCap: number;
+  lastPerformed: string;
+  status: 'active' | 'pending' | 'inactive';
+  upcomingGigs: number;
+  totalGuestsAdded: number;
+}
+
 export default function ManagerDashboardPage() {
   const [managerName, setManagerName] = useState('');
   const [managerRole, setManagerRole] = useState('');
@@ -69,6 +84,10 @@ export default function ManagerDashboardPage() {
   const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
   const [guestSortColumn, setGuestSortColumn] = useState<'name' | 'attendance' | 'lastAttended' | 'addedBy'>('name');
   const [guestSortDirection, setGuestSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [djs, setDjs] = useState<DJ[]>([]);
+  const [djSortColumn, setDjSortColumn] = useState<'name' | 'totalEvents' | 'avgAttendance' | 'lastPerformed'>('name');
+  const [djSortDirection, setDjSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [showInviteDjModal, setShowInviteDjModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'guests' | 'users' | 'analytics'>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -334,9 +353,125 @@ export default function ManagerDashboardPage() {
         }
       ];
 
+      // Generate mock DJs
+      const mockDJs: DJ[] = [
+        {
+          id: 'dj_1',
+          name: 'DJ Marcus',
+          email: 'marcus@email.com',
+          phone: '+1 555-1001',
+          instagram: '@djmarcus',
+          totalEvents: 45,
+          avgAttendance: 68,
+          defaultCap: 75,
+          lastPerformed: '2025-10-06',
+          status: 'active',
+          upcomingGigs: 3,
+          totalGuestsAdded: 156
+        },
+        {
+          id: 'dj_2',
+          name: 'DJ Shadow',
+          email: 'shadow@email.com',
+          phone: '+1 555-1002',
+          instagram: '@djshadow',
+          totalEvents: 38,
+          avgAttendance: 55,
+          defaultCap: 60,
+          lastPerformed: '2025-10-01',
+          status: 'active',
+          upcomingGigs: 2,
+          totalGuestsAdded: 98
+        },
+        {
+          id: 'dj_3',
+          name: 'Sarah Deep',
+          email: 'sarah.deep@email.com',
+          phone: '+1 555-1003',
+          instagram: '@sarahdeep',
+          totalEvents: 52,
+          avgAttendance: 72,
+          defaultCap: 80,
+          lastPerformed: '2025-10-10',
+          status: 'active',
+          upcomingGigs: 4,
+          totalGuestsAdded: 203
+        },
+        {
+          id: 'dj_4',
+          name: 'MC Groove',
+          email: 'mcgroove@email.com',
+          phone: '+1 555-1004',
+          totalEvents: 0,
+          avgAttendance: 0,
+          defaultCap: 50,
+          lastPerformed: '',
+          status: 'pending',
+          upcomingGigs: 1,
+          totalGuestsAdded: 0
+        },
+        {
+          id: 'dj_5',
+          name: 'Techno Tom',
+          email: 'techno.tom@email.com',
+          phone: '+1 555-1005',
+          instagram: '@technotom',
+          totalEvents: 28,
+          avgAttendance: 48,
+          defaultCap: 55,
+          lastPerformed: '2025-09-22',
+          status: 'active',
+          upcomingGigs: 1,
+          totalGuestsAdded: 72
+        },
+        {
+          id: 'dj_6',
+          name: 'Vinyl Vince',
+          email: 'vinyl.v@email.com',
+          phone: '+1 555-1006',
+          instagram: '@vinylvince',
+          totalEvents: 61,
+          avgAttendance: 82,
+          defaultCap: 90,
+          lastPerformed: '2025-10-08',
+          status: 'active',
+          upcomingGigs: 5,
+          totalGuestsAdded: 287
+        },
+        {
+          id: 'dj_7',
+          name: 'Bass Queen',
+          email: 'bassqueen@email.com',
+          phone: '+1 555-1007',
+          instagram: '@bassqueen',
+          totalEvents: 19,
+          avgAttendance: 41,
+          defaultCap: 45,
+          lastPerformed: '2025-09-15',
+          status: 'active',
+          upcomingGigs: 0,
+          totalGuestsAdded: 53
+        },
+        {
+          id: 'dj_8',
+          name: 'House Master',
+          email: 'housemaster@email.com',
+          phone: '+1 555-1008',
+          instagram: '@housemaster',
+          totalEvents: 34,
+          avgAttendance: 61,
+          defaultCap: 70,
+          lastPerformed: '2025-10-03',
+          status: 'active',
+          upcomingGigs: 2,
+          totalGuestsAdded: 142
+        }
+      ];
+
       setEvents(mockEvents);
       setAlerts(mockAlerts);
       setGuests(mockGuests);
+      setDjs(mockDJs);
       setIsLoading(false);
     }, 1000);
   }, [router]);
@@ -410,6 +545,35 @@ export default function ManagerDashboardPage() {
   const addedByOptions = Array.from(
     new Set(guests.flatMap(g => g.addedBy))
   ).sort();
+
+  // DJ management functions
+  const handleDjSort = (column: 'name' | 'totalEvents' | 'avgAttendance' | 'lastPerformed') => {
+    if (djSortColumn === column) {
+      setDjSortDirection(djSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setDjSortColumn(column);
+      setDjSortDirection('asc');
+    }
+  };
+
+  // Sort DJs
+  const sortedDJs = [...djs].sort((a, b) => {
+    let comparison = 0;
+
+    if (djSortColumn === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (djSortColumn === 'totalEvents') {
+      comparison = a.totalEvents - b.totalEvents;
+    } else if (djSortColumn === 'avgAttendance') {
+      comparison = a.avgAttendance - b.avgAttendance;
+    } else if (djSortColumn === 'lastPerformed') {
+      if (!a.lastPerformed) return 1;
+      if (!b.lastPerformed) return -1;
+      comparison = a.lastPerformed.localeCompare(b.lastPerformed);
+    }
+
+    return djSortDirection === 'asc' ? comparison : -comparison;
+  });
 
   if (isLoading) {
     return (
@@ -816,9 +980,140 @@ export default function ManagerDashboardPage() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            <h2 className="text-2xl mb-6">Nightlist Users</h2>
-            <div className="bg-gray-50 rounded-xl p-8 text-center">
-              <p className="text-gray-600">User management coming soon</p>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl">Nightlist Users - DJs</h2>
+              <button
+                onClick={() => setShowInviteDjModal(true)}
+                className="px-6 py-2 bg-gray-200 text-black rounded-full hover:bg-gray-300 transition-colors text-sm"
+              >
+                + Invite New DJ
+              </button>
+            </div>
+
+            {/* DJs Table */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleDjSort('name')}
+                    >
+                      <div className="flex items-center gap-2">
+                        DJ Name
+                        {djSortColumn === 'name' && (
+                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                      Contact
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleDjSort('totalEvents')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Total Events
+                        {djSortColumn === 'totalEvents' && (
+                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleDjSort('avgAttendance')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Avg Attendance
+                        {djSortColumn === 'avgAttendance' && (
+                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                      Default Cap
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleDjSort('lastPerformed')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Last Performed
+                        {djSortColumn === 'lastPerformed' && (
+                          <span>{djSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                      Upcoming Gigs
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {sortedDJs.map((dj) => (
+                    <tr
+                      key={dj.id}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        // Will open DJ detail modal - to be implemented
+                      }}
+                    >
+                      <td className="px-4 py-3">
+                        <div>
+                          <div className="font-medium text-gray-900">{dj.name}</div>
+                          {dj.instagram && (
+                            <div className="text-xs text-gray-400">{dj.instagram}</div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-xs text-gray-600">
+                          <div>{dj.email}</div>
+                          <div>{dj.phone}</div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {dj.totalEvents}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {dj.avgAttendance > 0 ? dj.avgAttendance : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {dj.defaultCap}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {dj.lastPerformed
+                          ? new Date(dj.lastPerformed).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })
+                          : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {dj.upcomingGigs}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            dj.status === 'active'
+                              ? 'bg-green-100 text-green-700'
+                              : dj.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {dj.status === 'pending' ? 'Pending invite accept' : dj.status.charAt(0).toUpperCase() + dj.status.slice(1)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
