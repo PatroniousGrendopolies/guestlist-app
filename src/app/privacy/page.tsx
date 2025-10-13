@@ -1,3 +1,5 @@
+'use client';
+
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen py-4xl px-xl">

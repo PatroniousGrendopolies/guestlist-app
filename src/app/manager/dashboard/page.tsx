@@ -75,6 +75,53 @@ interface DJ {
   totalGuestsAdded: number;
 }
 
+interface Staff {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  instagram?: string;
+  role: string;
+  totalEventsWorked: number;
+  totalGuestsAdded: number;
+  avgGuestsPerEvent: number;
+  lastWorked: string;
+  status: 'active' | 'pending' | 'inactive';
+  upcomingShifts: number;
+}
+
+interface Promoter {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  instagram?: string;
+  totalEvents: number;
+  totalGuestsAdded: number;
+  avgAttendance: number;
+  paidAttendance: number;
+  conversionRate: number;
+  avgRevenue: number;
+  lastPerformed: string;
+  defaultCap: number;
+}
+
+interface Manager {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  instagram?: string;
+  eventsCreated: number;
+  avgRevenue: number;
+  avgConversion: number; // as percentage, e.g., 67 for 67%
+  avgTotalGuests: number;
+  avgPaidGuests: number;
+  lastActive: string;
+  status: 'active' | 'pending' | 'inactive';
+  team: string;
+}
+
 export default function ManagerDashboardPage() {
   const [managerName, setManagerName] = useState('');
   const [managerRole, setManagerRole] = useState('');
@@ -90,6 +137,17 @@ export default function ManagerDashboardPage() {
   const [djs, setDjs] = useState<DJ[]>([]);
   const [djSortColumn, setDjSortColumn] = useState<'name' | 'totalEvents' | 'avgAttendance' | 'paidAttendance' | 'conversionRate' | 'avgRevenue' | 'lastPerformed'>('name');
   const [djSortDirection, setDjSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [staffSortColumn, setStaffSortColumn] = useState<'name' | 'role' | 'totalEventsWorked' | 'totalGuestsAdded' | 'avgGuestsPerEvent' | 'lastWorked'>('name');
+  const [staffSortDirection, setStaffSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [promoters, setPromoters] = useState<Promoter[]>([]);
+  const [promoterSortColumn, setPromoterSortColumn] = useState<'name' | 'totalEvents' | 'totalGuestsAdded' | 'avgAttendance' | 'paidAttendance' | 'conversionRate' | 'avgRevenue' | 'lastPerformed'>('name');
+  const [promoterSortDirection, setPromoterSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [managers, setManagers] = useState<Manager[]>([]);
+  const [managerSortColumn, setManagerSortColumn] = useState<'name' | 'eventsCreated' | 'avgRevenue' | 'avgConversion' | 'avgTotalGuests' | 'avgPaidGuests'>('name');
+  const [managerSortDirection, setManagerSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [selectedManagerId, setSelectedManagerId] = useState<string | null>(null);
+  const [managerModalTab, setManagerModalTab] = useState<'overview' | 'guests' | 'history'>('overview');
   const [showInviteDjModal, setShowInviteDjModal] = useState(false);
   const [inviteDjForm, setInviteDjForm] = useState({
     stageName: '',
@@ -98,8 +156,26 @@ export default function ManagerDashboardPage() {
     phone: '',
     upcomingGigDate: ''
   });
+  const [showInvitePromoterModal, setShowInvitePromoterModal] = useState(false);
+  const [invitePromoterForm, setInvitePromoterForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    instagram: ''
+  });
+  const [showInviteStaffModal, setShowInviteStaffModal] = useState(false);
+  const [inviteStaffForm, setInviteStaffForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: ''
+  });
   const [selectedDjId, setSelectedDjId] = useState<string | null>(null);
   const [djModalTab, setDjModalTab] = useState<'overview' | 'guests' | 'history'>('overview');
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
+  const [staffModalTab, setStaffModalTab] = useState<'overview' | 'guests' | 'history'>('overview');
+  const [selectedPromoterId, setSelectedPromoterId] = useState<string | null>(null);
+  const [promoterModalTab, setPromoterModalTab] = useState<'overview' | 'guests' | 'history'>('overview');
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'guests' | 'users' | 'analytics'>('overview');
   const [userType, setUserType] = useState<'djs' | 'staff' | 'promoters' | 'managers'>('djs');
   const [isLoading, setIsLoading] = useState(true);
@@ -547,10 +623,575 @@ export default function ManagerDashboardPage() {
         }
       ];
 
+      // Generate mock Staff
+      const mockStaff: Staff[] = [
+        {
+          id: 'staff_1',
+          name: 'Sarah Mitchell',
+          email: 'sarah.mitchell@nightclub.com',
+          phone: '+1 555-2001',
+          instagram: '@sarahmitchell',
+          role: 'Door Manager',
+          totalEventsWorked: 42,
+          totalGuestsAdded: 156,
+          avgGuestsPerEvent: 3.7,
+          lastWorked: '2025-10-11',
+          status: 'active',
+          upcomingShifts: 3
+        },
+        {
+          id: 'staff_2',
+          name: 'Tom Bradley',
+          email: 'tom.bradley@nightclub.com',
+          phone: '+1 555-2002',
+          instagram: '@tombradley',
+          role: 'Door Manager',
+          totalEventsWorked: 38,
+          totalGuestsAdded: 124,
+          avgGuestsPerEvent: 3.3,
+          lastWorked: '2025-10-10',
+          status: 'active',
+          upcomingShifts: 2
+        },
+        {
+          id: 'staff_3',
+          name: 'Alex Chen',
+          email: 'alex.chen@nightclub.com',
+          phone: '+1 555-2003',
+          instagram: '@alexchen',
+          role: 'Bar Manager',
+          totalEventsWorked: 28,
+          totalGuestsAdded: 89,
+          avgGuestsPerEvent: 3.2,
+          lastWorked: '2025-10-09',
+          status: 'active',
+          upcomingShifts: 4
+        },
+        {
+          id: 'staff_4',
+          name: 'Jamie Rodriguez',
+          email: 'jamie.r@nightclub.com',
+          phone: '+1 555-2004',
+          instagram: '@jamierodriguez',
+          role: 'Security',
+          totalEventsWorked: 52,
+          totalGuestsAdded: 45,
+          avgGuestsPerEvent: 0.9,
+          lastWorked: '2025-10-12',
+          status: 'active',
+          upcomingShifts: 5
+        },
+        {
+          id: 'staff_5',
+          name: 'Morgan Lee',
+          email: 'morgan.lee@nightclub.com',
+          phone: '+1 555-2005',
+          instagram: '@morganlee',
+          role: 'VIP Host',
+          totalEventsWorked: 31,
+          totalGuestsAdded: 198,
+          avgGuestsPerEvent: 6.4,
+          lastWorked: '2025-10-08',
+          status: 'active',
+          upcomingShifts: 2
+        },
+        {
+          id: 'staff_6',
+          name: 'David Park',
+          email: 'david.park@nightclub.com',
+          phone: '+1 555-2006',
+          instagram: '@davidpark',
+          role: 'Security',
+          totalEventsWorked: 47,
+          totalGuestsAdded: 38,
+          avgGuestsPerEvent: 0.8,
+          lastWorked: '2025-10-11',
+          status: 'active',
+          upcomingShifts: 4
+        },
+        {
+          id: 'staff_7',
+          name: 'Rachel Foster',
+          email: 'rachel.foster@nightclub.com',
+          phone: '+1 555-2007',
+          instagram: '@rachelfoster',
+          role: 'VIP Host',
+          totalEventsWorked: 25,
+          totalGuestsAdded: 175,
+          avgGuestsPerEvent: 7.0,
+          lastWorked: '2025-10-12',
+          status: 'active',
+          upcomingShifts: 3
+        },
+        {
+          id: 'staff_8',
+          name: 'Marcus Johnson',
+          email: 'marcus.j@nightclub.com',
+          phone: '+1 555-2008',
+          instagram: '@marcusjohnson',
+          role: 'Bar Manager',
+          totalEventsWorked: 35,
+          totalGuestsAdded: 112,
+          avgGuestsPerEvent: 3.2,
+          lastWorked: '2025-10-10',
+          status: 'active',
+          upcomingShifts: 2
+        },
+        {
+          id: 'staff_9',
+          name: 'Elena Vasquez',
+          email: 'elena.v@nightclub.com',
+          phone: '+1 555-2009',
+          instagram: '@elenavasquez',
+          role: 'Door Manager',
+          totalEventsWorked: 44,
+          totalGuestsAdded: 167,
+          avgGuestsPerEvent: 3.8,
+          lastWorked: '2025-10-09',
+          status: 'active',
+          upcomingShifts: 3
+        },
+        {
+          id: 'staff_10',
+          name: 'Kevin O\'Brien',
+          email: 'kevin.obrien@nightclub.com',
+          phone: '+1 555-2010',
+          instagram: '@kevinobrien',
+          role: 'Security',
+          totalEventsWorked: 55,
+          totalGuestsAdded: 42,
+          avgGuestsPerEvent: 0.8,
+          lastWorked: '2025-10-12',
+          status: 'active',
+          upcomingShifts: 5
+        },
+        {
+          id: 'staff_11',
+          name: 'Sophia Turner',
+          email: 'sophia.turner@nightclub.com',
+          phone: '+1 555-2011',
+          instagram: '@sophiaturner',
+          role: 'VIP Host',
+          totalEventsWorked: 29,
+          totalGuestsAdded: 189,
+          avgGuestsPerEvent: 6.5,
+          lastWorked: '2025-10-11',
+          status: 'active',
+          upcomingShifts: 2
+        },
+        {
+          id: 'staff_12',
+          name: 'Andre Williams',
+          email: 'andre.w@nightclub.com',
+          phone: '+1 555-2012',
+          instagram: '@andrewilliams',
+          role: 'Door Manager',
+          totalEventsWorked: 33,
+          totalGuestsAdded: 128,
+          avgGuestsPerEvent: 3.9,
+          lastWorked: '2025-10-08',
+          status: 'active',
+          upcomingShifts: 3
+        },
+        {
+          id: 'staff_13',
+          name: 'Lisa Thompson',
+          email: 'lisa.thompson@nightclub.com',
+          phone: '+1 555-2013',
+          instagram: '@lisathompson',
+          role: 'Bar Manager',
+          totalEventsWorked: 22,
+          totalGuestsAdded: 71,
+          avgGuestsPerEvent: 3.2,
+          lastWorked: '2025-10-07',
+          status: 'active',
+          upcomingShifts: 2
+        },
+        {
+          id: 'staff_14',
+          name: 'Carlos Mendez',
+          email: 'carlos.mendez@nightclub.com',
+          phone: '+1 555-2014',
+          instagram: '@carlosmendez',
+          role: 'Security',
+          totalEventsWorked: 49,
+          totalGuestsAdded: 39,
+          avgGuestsPerEvent: 0.8,
+          lastWorked: '2025-10-10',
+          status: 'active',
+          upcomingShifts: 4
+        },
+        {
+          id: 'staff_15',
+          name: 'Jessica Kim',
+          email: 'jessica.kim@nightclub.com',
+          phone: '+1 555-2015',
+          instagram: '@jessicakim',
+          role: 'VIP Host',
+          totalEventsWorked: 27,
+          totalGuestsAdded: 182,
+          avgGuestsPerEvent: 6.7,
+          lastWorked: '2025-10-09',
+          status: 'active',
+          upcomingShifts: 3
+        },
+        {
+          id: 'staff_16',
+          name: 'Ryan Hughes',
+          email: 'ryan.hughes@nightclub.com',
+          phone: '+1 555-2016',
+          instagram: '@ryanhughes',
+          role: 'Door Manager',
+          totalEventsWorked: 19,
+          totalGuestsAdded: 78,
+          avgGuestsPerEvent: 4.1,
+          lastWorked: '2025-10-06',
+          status: 'active',
+          upcomingShifts: 2
+        },
+        {
+          id: 'staff_17',
+          name: 'Nina Patel',
+          email: 'nina.patel@nightclub.com',
+          phone: '+1 555-2017',
+          instagram: '@ninapatel',
+          role: 'Bar Manager',
+          totalEventsWorked: 31,
+          totalGuestsAdded: 97,
+          avgGuestsPerEvent: 3.1,
+          lastWorked: '2025-10-11',
+          status: 'active',
+          upcomingShifts: 3
+        },
+        {
+          id: 'staff_18',
+          name: 'Derek Stone',
+          email: 'derek.stone@nightclub.com',
+          phone: '+1 555-2018',
+          instagram: '@derekstone',
+          role: 'Security',
+          totalEventsWorked: 41,
+          totalGuestsAdded: 33,
+          avgGuestsPerEvent: 0.8,
+          lastWorked: '2025-10-12',
+          status: 'active',
+          upcomingShifts: 4
+        },
+        {
+          id: 'staff_19',
+          name: 'Amanda Cruz',
+          email: 'amanda.cruz@nightclub.com',
+          phone: '+1 555-2019',
+          instagram: '@amandacruz',
+          role: 'VIP Host',
+          totalEventsWorked: 24,
+          totalGuestsAdded: 165,
+          avgGuestsPerEvent: 6.9,
+          lastWorked: '2025-10-10',
+          status: 'active',
+          upcomingShifts: 2
+        },
+        {
+          id: 'staff_20',
+          name: 'Casey Wilson',
+          email: 'casey.w@nightclub.com',
+          phone: '+1 555-2020',
+          instagram: '@caseywilson',
+          role: 'Door Manager',
+          totalEventsWorked: 0,
+          totalGuestsAdded: 0,
+          avgGuestsPerEvent: 0,
+          lastWorked: '',
+          status: 'pending',
+          upcomingShifts: 1
+        }
+      ];
+
+      // Generate mock Promoters
+      const mockPromoters: Promoter[] = [
+        {
+          id: 'promoter_1',
+          name: 'Alex Martinez',
+          email: 'alex.martinez@promo.com',
+          phone: '+1 555-3001',
+          instagram: '@alexpromotions',
+          totalEvents: 28,
+          totalGuestsAdded: 892,
+          avgAttendance: 42,
+          paidAttendance: 35,
+          conversionRate: 83,
+          avgRevenue: 2100,
+          lastPerformed: '2025-10-11',
+          defaultCap: 50
+        },
+        {
+          id: 'promoter_2',
+          name: 'Taylor Swift Events',
+          email: 'taylor@nightevents.com',
+          phone: '+1 555-3002',
+          instagram: '@taylorpromo',
+          totalEvents: 35,
+          totalGuestsAdded: 1245,
+          avgAttendance: 48,
+          paidAttendance: 41,
+          conversionRate: 85,
+          avgRevenue: 2450,
+          lastPerformed: '2025-10-12',
+          defaultCap: 60
+        },
+        {
+          id: 'promoter_3',
+          name: 'Jordan Blake',
+          email: 'jordan.blake@nightlife.com',
+          phone: '+1 555-3003',
+          instagram: '@jordanblake',
+          totalEvents: 22,
+          totalGuestsAdded: 756,
+          avgAttendance: 38,
+          paidAttendance: 30,
+          conversionRate: 79,
+          avgRevenue: 1800,
+          lastPerformed: '2025-10-09',
+          defaultCap: 45
+        },
+        {
+          id: 'promoter_4',
+          name: 'Sam Rivera',
+          email: 'sam.rivera@vipnights.com',
+          phone: '+1 555-3004',
+          instagram: '@samriveravip',
+          totalEvents: 41,
+          totalGuestsAdded: 1580,
+          avgAttendance: 52,
+          paidAttendance: 45,
+          conversionRate: 87,
+          avgRevenue: 2700,
+          lastPerformed: '2025-10-10',
+          defaultCap: 65
+        },
+        {
+          id: 'promoter_5',
+          name: 'Chris Anderson',
+          email: 'chris.a@nightclub.com',
+          phone: '+1 555-3005',
+          instagram: '@chrisanderson',
+          totalEvents: 19,
+          totalGuestsAdded: 634,
+          avgAttendance: 35,
+          paidAttendance: 28,
+          conversionRate: 80,
+          avgRevenue: 1650,
+          lastPerformed: '2025-10-08',
+          defaultCap: 40
+        },
+        {
+          id: 'promoter_6',
+          name: 'Morgan Chen',
+          email: 'morgan.chen@cityevents.com',
+          phone: '+1 555-3006',
+          instagram: '@morganchen',
+          totalEvents: 33,
+          totalGuestsAdded: 1098,
+          avgAttendance: 45,
+          paidAttendance: 38,
+          conversionRate: 84,
+          avgRevenue: 2250,
+          lastPerformed: '2025-10-11',
+          defaultCap: 55
+        },
+        {
+          id: 'promoter_7',
+          name: 'Riley Foster',
+          email: 'riley.foster@promo.com',
+          phone: '+1 555-3007',
+          instagram: '@rileyfoster',
+          totalEvents: 25,
+          totalGuestsAdded: 823,
+          avgAttendance: 40,
+          paidAttendance: 33,
+          conversionRate: 83,
+          avgRevenue: 1950,
+          lastPerformed: '2025-10-07',
+          defaultCap: 48
+        },
+        {
+          id: 'promoter_8',
+          name: 'Casey Thompson',
+          email: 'casey.t@events.com',
+          phone: '+1 555-3008',
+          instagram: '@caseythompson',
+          totalEvents: 37,
+          totalGuestsAdded: 1334,
+          avgAttendance: 49,
+          paidAttendance: 42,
+          conversionRate: 86,
+          avgRevenue: 2400,
+          lastPerformed: '2025-10-12',
+          defaultCap: 58
+        },
+        {
+          id: 'promoter_9',
+          name: 'Drew Miller',
+          email: 'drew.miller@nightlife.com',
+          phone: '+1 555-3009',
+          instagram: '@drewmiller',
+          totalEvents: 16,
+          totalGuestsAdded: 512,
+          avgAttendance: 32,
+          paidAttendance: 26,
+          conversionRate: 81,
+          avgRevenue: 1550,
+          lastPerformed: '2025-10-06',
+          defaultCap: 38
+        },
+        {
+          id: 'promoter_10',
+          name: 'Quinn Davis',
+          email: 'quinn.davis@vipevents.com',
+          phone: '+1 555-3010',
+          instagram: '@quinndavis',
+          totalEvents: 44,
+          totalGuestsAdded: 1678,
+          avgAttendance: 54,
+          paidAttendance: 47,
+          conversionRate: 87,
+          avgRevenue: 2850,
+          lastPerformed: '2025-10-11',
+          defaultCap: 68
+        }
+      ];
+
+      // Generate mock Managers
+      const mockManagers: Manager[] = [
+        {
+          id: 'manager_1',
+          name: 'Sarah Johnson',
+          email: 'sarah.johnson@venue.com',
+          phone: '+1 555-4001',
+          instagram: '@sarahjohnson',
+          eventsCreated: 45,
+          avgRevenue: 3200,
+          avgConversion: 67,
+          avgTotalGuests: 120,
+          avgPaidGuests: 85,
+          lastActive: '2025-10-12',
+          status: 'active',
+          team: 'Operations'
+        },
+        {
+          id: 'manager_2',
+          name: 'Marcus Chen',
+          email: 'marcus.chen@venue.com',
+          phone: '+1 555-4002',
+          instagram: '@marcuschen',
+          eventsCreated: 38,
+          avgRevenue: 2800,
+          avgConversion: 72,
+          avgTotalGuests: 95,
+          avgPaidGuests: 68,
+          lastActive: '2025-10-11',
+          status: 'active',
+          team: 'Nightlife'
+        },
+        {
+          id: 'manager_3',
+          name: 'Jessica Rodriguez',
+          email: 'jessica.r@venue.com',
+          phone: '+1 555-4003',
+          instagram: '@jessicar',
+          eventsCreated: 52,
+          avgRevenue: 4100,
+          avgConversion: 58,
+          avgTotalGuests: 150,
+          avgPaidGuests: 110,
+          lastActive: '2025-10-13',
+          status: 'active',
+          team: 'Events'
+        },
+        {
+          id: 'manager_4',
+          name: 'David Kim',
+          email: 'david.kim@venue.com',
+          phone: '+1 555-4004',
+          instagram: '@davidkim',
+          eventsCreated: 31,
+          avgRevenue: 2500,
+          avgConversion: 64,
+          avgTotalGuests: 88,
+          avgPaidGuests: 56,
+          lastActive: '2025-10-10',
+          status: 'active',
+          team: 'Marketing'
+        },
+        {
+          id: 'manager_5',
+          name: 'Emily Watson',
+          email: 'emily.watson@venue.com',
+          phone: '+1 555-4005',
+          instagram: '@emilywatson',
+          eventsCreated: 28,
+          avgRevenue: 2200,
+          avgConversion: 70,
+          avgTotalGuests: 78,
+          avgPaidGuests: 55,
+          lastActive: '2025-10-09',
+          status: 'active',
+          team: 'Operations'
+        },
+        {
+          id: 'manager_6',
+          name: 'Robert Taylor',
+          email: 'robert.taylor@venue.com',
+          phone: '+1 555-4006',
+          instagram: '@roberttaylor',
+          eventsCreated: 42,
+          avgRevenue: 3600,
+          avgConversion: 75,
+          avgTotalGuests: 135,
+          avgPaidGuests: 101,
+          lastActive: '2025-10-12',
+          status: 'active',
+          team: 'Nightlife'
+        },
+        {
+          id: 'manager_7',
+          name: 'Amanda Brooks',
+          email: 'amanda.brooks@venue.com',
+          phone: '+1 555-4007',
+          instagram: '@amandabrooks',
+          eventsCreated: 15,
+          avgRevenue: 1800,
+          avgConversion: 62,
+          avgTotalGuests: 65,
+          avgPaidGuests: 40,
+          lastActive: '2025-10-08',
+          status: 'pending',
+          team: 'Events'
+        },
+        {
+          id: 'manager_8',
+          name: 'Michael Anderson',
+          email: 'michael.a@venue.com',
+          phone: '+1 555-4008',
+          instagram: '@michaelanderson',
+          eventsCreated: 48,
+          avgRevenue: 3800,
+          avgConversion: 69,
+          avgTotalGuests: 142,
+          avgPaidGuests: 98,
+          lastActive: '2025-10-11',
+          status: 'active',
+          team: 'Operations'
+        }
+      ];
+
       setEvents(mockEvents);
       setAlerts(mockAlerts);
       setGuests(mockGuests);
       setDjs(mockDJs);
+      setStaff(mockStaff);
+      setPromoters(mockPromoters);
+      setManagers(mockManagers);
       setIsLoading(false);
     }, 1000);
   }, [router]);
@@ -650,6 +1291,110 @@ export default function ManagerDashboardPage() {
     return djSortDirection === 'asc' ? comparison : -comparison;
   });
 
+  // Staff management functions
+  const handleStaffSort = (column: 'name' | 'role' | 'totalEventsWorked' | 'totalGuestsAdded' | 'avgGuestsPerEvent' | 'lastWorked') => {
+    if (staffSortColumn === column) {
+      setStaffSortDirection(staffSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setStaffSortColumn(column);
+      setStaffSortDirection('asc');
+    }
+  };
+
+  // Sort Staff
+  const sortedStaff = [...staff].sort((a, b) => {
+    let comparison = 0;
+
+    if (staffSortColumn === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (staffSortColumn === 'role') {
+      comparison = a.role.localeCompare(b.role);
+    } else if (staffSortColumn === 'totalEventsWorked') {
+      comparison = a.totalEventsWorked - b.totalEventsWorked;
+    } else if (staffSortColumn === 'totalGuestsAdded') {
+      comparison = a.totalGuestsAdded - b.totalGuestsAdded;
+    } else if (staffSortColumn === 'avgGuestsPerEvent') {
+      comparison = a.avgGuestsPerEvent - b.avgGuestsPerEvent;
+    } else if (staffSortColumn === 'lastWorked') {
+      if (!a.lastWorked) return 1;
+      if (!b.lastWorked) return -1;
+      comparison = a.lastWorked.localeCompare(b.lastWorked);
+    }
+
+    return staffSortDirection === 'asc' ? comparison : -comparison;
+  });
+
+  // Promoter management functions
+  const handlePromoterSort = (column: 'name' | 'totalEvents' | 'totalGuestsAdded' | 'avgAttendance' | 'paidAttendance' | 'conversionRate' | 'avgRevenue' | 'lastPerformed') => {
+    if (promoterSortColumn === column) {
+      setPromoterSortDirection(promoterSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setPromoterSortColumn(column);
+      setPromoterSortDirection('asc');
+    }
+  };
+
+  // Sort Promoters
+  const sortedPromoters = [...promoters].sort((a, b) => {
+    let comparison = 0;
+
+    if (promoterSortColumn === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (promoterSortColumn === 'totalEvents') {
+      comparison = a.totalEvents - b.totalEvents;
+    } else if (promoterSortColumn === 'totalGuestsAdded') {
+      comparison = a.totalGuestsAdded - b.totalGuestsAdded;
+    } else if (promoterSortColumn === 'avgAttendance') {
+      comparison = a.avgAttendance - b.avgAttendance;
+    } else if (promoterSortColumn === 'paidAttendance') {
+      comparison = a.paidAttendance - b.paidAttendance;
+    } else if (promoterSortColumn === 'conversionRate') {
+      comparison = a.conversionRate - b.conversionRate;
+    } else if (promoterSortColumn === 'avgRevenue') {
+      comparison = a.avgRevenue - b.avgRevenue;
+    } else if (promoterSortColumn === 'lastPerformed') {
+      if (!a.lastPerformed) return 1;
+      if (!b.lastPerformed) return -1;
+      comparison = a.lastPerformed.localeCompare(b.lastPerformed);
+    }
+
+    return promoterSortDirection === 'asc' ? comparison : -comparison;
+  });
+
+  // Manager management functions
+  const handleManagerSort = (column: 'name' | 'eventsCreated' | 'avgRevenue' | 'avgConversion' | 'avgTotalGuests' | 'avgPaidGuests') => {
+    if (managerSortColumn === column) {
+      setManagerSortDirection(managerSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setManagerSortColumn(column);
+      setManagerSortDirection('asc');
+    }
+  };
+
+  // Sort Managers
+  const sortedManagers = [...managers].sort((a, b) => {
+    let comparison = 0;
+
+    if (managerSortColumn === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (managerSortColumn === 'eventsCreated') {
+      comparison = a.eventsCreated - b.eventsCreated;
+    } else if (managerSortColumn === 'avgRevenue') {
+      comparison = a.avgRevenue - b.avgRevenue;
+    } else if (managerSortColumn === 'avgConversion') {
+      comparison = a.avgConversion - b.avgConversion;
+    } else if (managerSortColumn === 'avgTotalGuests') {
+      comparison = a.avgTotalGuests - b.avgTotalGuests;
+    } else if (managerSortColumn === 'avgPaidGuests') {
+      comparison = a.avgPaidGuests - b.avgPaidGuests;
+    }
+
+    return managerSortDirection === 'asc' ? comparison : -comparison;
+  });
+
+  // Debug logging for managers data
+  console.log('Managers data:', managers, 'Sorted:', sortedManagers, 'Current userType:', userType);
+
   // Event History sorting handler
   const handleEventHistorySort = (column: 'date' | 'eventName' | 'attendance' | 'capacity' | 'revenue') => {
     if (eventHistorySortColumn === column) {
@@ -697,17 +1442,27 @@ export default function ManagerDashboardPage() {
       if (e.key === 'Escape') {
         if (showInviteDjModal) {
           setShowInviteDjModal(false);
+        } else if (showInviteStaffModal) {
+          setShowInviteStaffModal(false);
+        } else if (showInvitePromoterModal) {
+          setShowInvitePromoterModal(false);
         } else if (selectedGuestId) {
           setSelectedGuestId(null);
         } else if (selectedDjId) {
           setSelectedDjId(null);
+        } else if (selectedStaffId) {
+          setSelectedStaffId(null);
+        } else if (selectedPromoterId) {
+          setSelectedPromoterId(null);
+        } else if (selectedManagerId) {
+          setSelectedManagerId(null);
         }
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showInviteDjModal, selectedGuestId, selectedDjId]);
+  }, [showInviteDjModal, showInviteStaffModal, showInvitePromoterModal, selectedGuestId, selectedDjId, selectedStaffId, selectedPromoterId, selectedManagerId]);
 
   if (isLoading) {
     return (
@@ -1339,7 +2094,15 @@ export default function ManagerDashboardPage() {
           <div>
             <div className="flex items-center justify-end mb-6">
               <button
-                onClick={() => setShowInviteDjModal(true)}
+                onClick={() => {
+                  if (userType === 'djs') {
+                    setShowInviteDjModal(true);
+                  } else if (userType === 'staff') {
+                    setShowInviteStaffModal(true);
+                  } else if (userType === 'promoters') {
+                    setShowInvitePromoterModal(true);
+                  }
+                }}
                 className="px-6 py-2 bg-gray-200 text-black rounded-full hover:bg-gray-300 transition-colors text-sm"
               >
                 + Invite New {userType === 'djs' ? 'DJ' : userType === 'staff' ? 'Staff' : userType === 'promoters' ? 'Promoter' : 'Manager'}
@@ -1528,22 +2291,381 @@ export default function ManagerDashboardPage() {
 
             {/* Staff View */}
             {userType === 'staff' && (
-              <div className="text-center py-12 text-gray-500">
-                Staff management coming soon
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleStaffSort('name')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Name
+                          {staffSortColumn === 'name' && (
+                            <span>{staffSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleStaffSort('role')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Role
+                          {staffSortColumn === 'role' && (
+                            <span>{staffSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleStaffSort('totalEventsWorked')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Total Events Worked
+                          {staffSortColumn === 'totalEventsWorked' && (
+                            <span>{staffSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleStaffSort('totalGuestsAdded')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Total Guests Added
+                          {staffSortColumn === 'totalGuestsAdded' && (
+                            <span>{staffSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleStaffSort('avgGuestsPerEvent')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Guests/Event
+                          {staffSortColumn === 'avgGuestsPerEvent' && (
+                            <span>{staffSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleStaffSort('lastWorked')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Last Worked
+                          {staffSortColumn === 'lastWorked' && (
+                            <span>{staffSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {sortedStaff.map((staffMember) => (
+                      <tr
+                        key={staffMember.id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedStaffId(staffMember.id);
+                          setStaffModalTab('overview');
+                        }}
+                      >
+                        <td className="px-4 py-3">
+                          <div>
+                            <div className="font-medium text-gray-900">{staffMember.name}</div>
+                            <div className="text-xs text-gray-400">{staffMember.email}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {staffMember.role}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {staffMember.totalEventsWorked > 0 ? staffMember.totalEventsWorked : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {staffMember.totalGuestsAdded > 0 ? staffMember.totalGuestsAdded : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {staffMember.avgGuestsPerEvent > 0 ? staffMember.avgGuestsPerEvent.toFixed(1) : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {staffMember.lastWorked
+                            ? new Date(staffMember.lastWorked).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })
+                            : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
             {/* Promoters View */}
             {userType === 'promoters' && (
-              <div className="text-center py-12 text-gray-500">
-                Promoters management coming soon
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('name')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Promoter Name
+                          {promoterSortColumn === 'name' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('totalEvents')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Total Events
+                          {promoterSortColumn === 'totalEvents' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('totalGuestsAdded')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Total Guests Added
+                          {promoterSortColumn === 'totalGuestsAdded' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('avgAttendance')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Attendance
+                          {promoterSortColumn === 'avgAttendance' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('paidAttendance')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Paid Attendance
+                          {promoterSortColumn === 'paidAttendance' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('conversionRate')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Conversion Rate
+                          {promoterSortColumn === 'conversionRate' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('avgRevenue')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Revenue
+                          {promoterSortColumn === 'avgRevenue' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handlePromoterSort('lastPerformed')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Last Event
+                          {promoterSortColumn === 'lastPerformed' && (
+                            <span>{promoterSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {sortedPromoters.map((promoter) => (
+                      <tr
+                        key={promoter.id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedPromoterId(promoter.id);
+                          setPromoterModalTab('overview');
+                        }}
+                      >
+                        <td className="px-4 py-3">
+                          <div>
+                            <div className="font-medium text-gray-900">{promoter.name}</div>
+                            {promoter.instagram && (
+                              <div className="text-xs text-gray-400">{promoter.instagram}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {promoter.totalEvents}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {promoter.totalGuestsAdded}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {promoter.avgAttendance > 0 ? promoter.avgAttendance : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {promoter.paidAttendance > 0 ? promoter.paidAttendance : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {promoter.conversionRate > 0 ? `${promoter.conversionRate}%` : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {promoter.avgRevenue > 0 ? `$${promoter.avgRevenue.toLocaleString()}` : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {promoter.lastPerformed
+                            ? new Date(promoter.lastPerformed).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })
+                            : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
             {/* Managers View */}
             {userType === 'managers' && (
-              <div className="text-center py-12 text-gray-500">
-                Managers management coming soon
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleManagerSort('name')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Manager Name
+                          {managerSortColumn === 'name' && (
+                            <span>{managerSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleManagerSort('eventsCreated')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Events Created
+                          {managerSortColumn === 'eventsCreated' && (
+                            <span>{managerSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleManagerSort('avgRevenue')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Revenues
+                          {managerSortColumn === 'avgRevenue' && (
+                            <span>{managerSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleManagerSort('avgConversion')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Conversion
+                          {managerSortColumn === 'avgConversion' && (
+                            <span>{managerSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleManagerSort('avgTotalGuests')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Total Guests
+                          {managerSortColumn === 'avgTotalGuests' && (
+                            <span>{managerSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                        onClick={() => handleManagerSort('avgPaidGuests')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Avg Paid Guests
+                          {managerSortColumn === 'avgPaidGuests' && (
+                            <span>{managerSortDirection === 'asc' ? '↑' : '↓'}</span>
+                          )}
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {sortedManagers.map((manager) => (
+                      <tr
+                        key={manager.id}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedManagerId(manager.id);
+                          setManagerModalTab('overview');
+                        }}
+                      >
+                        <td className="px-4 py-3">
+                          <div>
+                            <div className="font-medium text-gray-900">{manager.name}</div>
+                            {manager.instagram && (
+                              <div className="text-xs text-gray-400">{manager.instagram}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {manager.eventsCreated}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          ${manager.avgRevenue.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {manager.avgConversion}%
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {manager.avgTotalGuests}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {manager.avgPaidGuests}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
@@ -2045,6 +3167,646 @@ export default function ManagerDashboardPage() {
         );
       })()}
 
+      {/* Staff Detail Modal */}
+      {selectedStaffId && (() => {
+        const selectedStaffMember = staff.find(s => s.id === selectedStaffId);
+        if (!selectedStaffMember) return null;
+
+        // Mock staff guests for the Guests tab
+        const staffGuests = guests.filter(g => {
+          // For this mock, we'll show guests added during events where this staff member worked
+          // In a real app, you'd track this in the database
+          return Math.random() > 0.7; // Randomly assign some guests to show in the tab
+        }).slice(0, 15);
+
+        // Mock event history for staff
+        const eventHistory = Array.from({ length: selectedStaffMember.totalEventsWorked }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - i * 3);
+
+          return {
+            id: `event_${i}`,
+            date: date.toISOString().split('T')[0],
+            eventName: ['Saturday Night Sessions', 'Deep House Vibes', 'Techno Warehouse', 'Underground Collective'][i % 4],
+            hoursWorked: Math.floor(Math.random() * 4) + 4, // 4-8 hours
+            guestsProcessed: selectedStaffMember.role === 'Security' ? Math.floor(Math.random() * 20) + 10 : Math.floor(Math.random() * 30) + 20,
+            notes: Math.random() > 0.7 ? ['Excellent performance', 'Great teamwork', 'Handled difficult situation well', 'On time'][Math.floor(Math.random() * 4)] : '-'
+          };
+        }).sort((a, b) => b.date.localeCompare(a.date));
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] min-h-[500px] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-light mb-1">{selectedStaffMember.name}</h2>
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <span>{selectedStaffMember.email}</span>
+                      <span>•</span>
+                      <span>{selectedStaffMember.phone}</span>
+                      <span>•</span>
+                      <span>{selectedStaffMember.instagram || 'Not provided'}</span>
+                      <span>•</span>
+                      <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+                        {selectedStaffMember.role}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedStaffId(null)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              {/* Internal Tab Navigation */}
+              <div className="px-6 border-b border-gray-200">
+                <div className="flex gap-6">
+                  <button
+                    onClick={() => setStaffModalTab('overview')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      staffModalTab === 'overview' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Overview
+                    {staffModalTab === 'overview' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setStaffModalTab('guests')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      staffModalTab === 'guests' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Guests
+                    {staffModalTab === 'guests' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setStaffModalTab('history')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      staffModalTab === 'history' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Event History
+                    {staffModalTab === 'history' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Overview Tab */}
+                {staffModalTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-xs text-gray-600 mb-1">Total Events Worked</div>
+                        <div className="text-xl font-light">{selectedStaffMember.totalEventsWorked}</div>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-xs text-gray-600 mb-1">Total Guests Added</div>
+                        <div className="text-xl font-light">{selectedStaffMember.totalGuestsAdded}</div>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-xs text-gray-600 mb-1">Avg Guests/Event</div>
+                        <div className="text-xl font-light">{selectedStaffMember.avgGuestsPerEvent.toFixed(1)}</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Status
+                      </label>
+                      <select
+                        defaultValue={selectedStaffMember.status}
+                        className="w-48 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="pending">Pending</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Guests Tab */}
+                {staffModalTab === 'guests' && (
+                  <div>
+                    <div className="mb-4 text-sm text-gray-600">
+                      {staffGuests.length} {staffGuests.length === 1 ? 'guest' : 'guests'} added
+                    </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Name</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Email</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Attendance</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Last Attended</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {staffGuests.map((guest) => (
+                            <tr key={guest.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm">{guest.name}</td>
+                              <td className="px-4 py-3 text-sm text-gray-600">{guest.email}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{guest.totalAttendance}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">
+                                {new Date(guest.lastAttended).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {staffGuests.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                          No guests added by this staff member yet
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Event History Tab */}
+                {staffModalTab === 'history' && (
+                  <div>
+                    <div className="mb-4 text-sm text-gray-600">
+                      {eventHistory.length} {eventHistory.length === 1 ? 'event' : 'events'} worked
+                    </div>
+                    <div>
+                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Event</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Hours Worked</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Guests Processed</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Notes</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {eventHistory.map((event) => (
+                              <tr key={event.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm text-gray-700">
+                                  {new Date(event.date).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-900">{event.eventName}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{event.hoursWorked}h</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{event.guestsProcessed}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 italic">{event.notes}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {eventHistory.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                          No event history available
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Promoter Detail Modal */}
+      {selectedPromoterId && (() => {
+        const selectedPromoter = promoters.find(p => p.id === selectedPromoterId);
+        if (!selectedPromoter) return null;
+
+        // Mock promoter guests for the Guests tab
+        const promoterGuests = guests.filter(g => g.addedBy.includes(selectedPromoter.name));
+
+        // Mock event history for the promoter
+        const otherPromoterNames = ['Alex Martinez', 'Taylor Swift Events', 'Jordan Blake', 'Sam Rivera', 'Morgan Chen'];
+        const eventHistory = Array.from({ length: selectedPromoter.totalEvents }, (_, i) => {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+
+          // Sometimes solo, sometimes with other promoters
+          const hasOtherPromoters = Math.random() > 0.6;
+          const otherPromoters = hasOtherPromoters
+            ? otherPromoterNames
+                .filter(name => name !== selectedPromoter.name)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, Math.floor(Math.random() * 2) + 1)
+            : [];
+
+          return {
+            id: `event_${i}`,
+            date: date.toISOString().split('T')[0],
+            eventName: ['Saturday Night Sessions', 'Deep House Vibes', 'Techno Warehouse', 'Underground Collective'][i % 4],
+            attendance: Math.floor(Math.random() * 30) + 40,
+            capacity: selectedPromoter.defaultCap,
+            revenue: Math.floor(Math.random() * 2000) + 1000,
+            otherPromoters: otherPromoters.join(', ') || '-'
+          };
+        }).sort((a, b) => b.date.localeCompare(a.date));
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] min-h-[500px] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-light mb-1">{selectedPromoter.name}</h2>
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <span>{selectedPromoter.email}</span>
+                      {selectedPromoter.instagram && (
+                        <>
+                          <span>•</span>
+                          <a
+                            href={`https://instagram.com/${selectedPromoter.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-gray-600 hover:text-gray-900 transition-colors"
+                          >
+                            {selectedPromoter.instagram}
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedPromoterId(null)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              {/* Internal Tab Navigation */}
+              <div className="px-6 border-b border-gray-200">
+                <div className="flex gap-6">
+                  <button
+                    onClick={() => setPromoterModalTab('overview')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      promoterModalTab === 'overview' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Overview
+                    {promoterModalTab === 'overview' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setPromoterModalTab('guests')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      promoterModalTab === 'guests' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Guests
+                    {promoterModalTab === 'guests' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setPromoterModalTab('history')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      promoterModalTab === 'history' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Event History
+                    {promoterModalTab === 'history' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Overview Tab */}
+                {promoterModalTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Default Capacity
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue={selectedPromoter.defaultCap}
+                        className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Notes
+                      </label>
+                      <textarea
+                        placeholder="Add notes about this promoter..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        rows={6}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Guests Tab */}
+                {promoterModalTab === 'guests' && (
+                  <div>
+                    <div className="mb-4 text-sm text-gray-600">
+                      {promoterGuests.length} {promoterGuests.length === 1 ? 'guest' : 'guests'}
+                    </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Name</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">IG Handle</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Attendance</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Last Attended</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {promoterGuests.map((guest) => (
+                            <tr key={guest.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm">{guest.name}</td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {guest.instagram ? (
+                                  <a
+                                    href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                                  >
+                                    {guest.instagram}
+                                  </a>
+                                ) : (
+                                  '-'
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{guest.totalAttendance}</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">
+                                {new Date(guest.lastAttended).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {promoterGuests.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                          No guests added by this promoter yet
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Event History Tab */}
+                {promoterModalTab === 'history' && (
+                  <div>
+                    <div className="mb-4 text-sm text-gray-600">
+                      {eventHistory.length} {eventHistory.length === 1 ? 'event' : 'events'}
+                    </div>
+                    <div>
+                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Event</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Other Promoters</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Attendance</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Capacity</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Revenue</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {eventHistory.map((event) => (
+                              <tr key={event.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm text-gray-700">
+                                  {new Date(event.date).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                  })}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-900">{event.eventName}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">{event.otherPromoters}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{event.attendance}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{event.capacity}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">${event.revenue.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {eventHistory.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                          No event history available
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Manager Detail Modal */}
+      {selectedManagerId && (() => {
+        const selectedManager = managers.find(m => m.id === selectedManagerId);
+        if (!selectedManager) return null;
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] min-h-[500px] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-light mb-1">{selectedManager.name}</h2>
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <span>{selectedManager.email}</span>
+                      <span>•</span>
+                      <span>{selectedManager.team}</span>
+                      {selectedManager.instagram && (
+                        <>
+                          <span>•</span>
+                          <a
+                            href={`https://instagram.com/${selectedManager.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-gray-600 hover:text-gray-900 transition-colors"
+                          >
+                            {selectedManager.instagram}
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedManagerId(null)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              {/* Internal Tab Navigation */}
+              <div className="px-6 border-b border-gray-200">
+                <div className="flex gap-6">
+                  <button
+                    onClick={() => setManagerModalTab('overview')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      managerModalTab === 'overview' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Overview
+                    {managerModalTab === 'overview' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setManagerModalTab('guests')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      managerModalTab === 'guests' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Guests
+                    {managerModalTab === 'guests' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setManagerModalTab('history')}
+                    className={`pb-3 text-sm transition-colors relative ${
+                      managerModalTab === 'history' ? 'text-black' : 'text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    Event History
+                    {managerModalTab === 'history' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black"></div>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Overview Tab */}
+                {managerModalTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-600 mb-1">Events Created</div>
+                        <div className="text-2xl font-light">{selectedManager.eventsCreated}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-600 mb-1">Avg Total Guests</div>
+                        <div className="text-2xl font-light">{selectedManager.avgTotalGuests}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-600 mb-1">Avg Paid Guests</div>
+                        <div className="text-2xl font-light">{selectedManager.avgPaidGuests}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-600 mb-1">Avg Revenue</div>
+                        <div className="text-2xl font-light">${selectedManager.avgRevenue.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-600 mb-1">Avg Conversion</div>
+                        <div className="text-2xl font-light">{selectedManager.avgConversion}%</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Information
+                      </label>
+                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-600">Email:</span>
+                          <span className="text-gray-900">{selectedManager.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-600">Phone:</span>
+                          <span className="text-gray-900">{selectedManager.phone}</span>
+                        </div>
+                        {selectedManager.instagram && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-gray-600">Instagram:</span>
+                            <a
+                              href={`https://instagram.com/${selectedManager.instagram.replace('@', '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-900 hover:text-gray-600 transition-colors"
+                            >
+                              {selectedManager.instagram}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Notes
+                      </label>
+                      <textarea
+                        placeholder="Add notes about this manager..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        rows={6}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Guests Tab */}
+                {managerModalTab === 'guests' && (
+                  <div className="text-center py-12 text-gray-500">
+                    No guests tracked for this manager
+                  </div>
+                )}
+
+                {/* Event History Tab */}
+                {managerModalTab === 'history' && (
+                  <div className="text-center py-12 text-gray-500">
+                    No event history available
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Invite DJ Modal */}
       {showInviteDjModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -2135,6 +3897,170 @@ export default function ManagerDashboardPage() {
                 disabled={!inviteDjForm.stageName || !inviteDjForm.email}
                 className={`flex-1 px-4 py-2 rounded-full transition-colors text-sm ${
                   inviteDjForm.stageName && inviteDjForm.email
+                    ? 'bg-black text-white hover:bg-gray-900'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Send Invite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invite Promoter Modal */}
+      {showInvitePromoterModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl mb-6">Invite New Promoter</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm mb-2">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter name"
+                  value={invitePromoterForm.name}
+                  onChange={(e) => setInvitePromoterForm({ ...invitePromoterForm, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={invitePromoterForm.email}
+                  onChange={(e) => setInvitePromoterForm({ ...invitePromoterForm, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-2">Phone</label>
+                <input
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={invitePromoterForm.phone}
+                  onChange={(e) => setInvitePromoterForm({ ...invitePromoterForm, phone: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-2">Instagram Handle</label>
+                <input
+                  type="text"
+                  placeholder="@username"
+                  value={invitePromoterForm.instagram}
+                  onChange={(e) => setInvitePromoterForm({ ...invitePromoterForm, instagram: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowInvitePromoterModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!invitePromoterForm.name || !invitePromoterForm.email}
+                className={`flex-1 px-4 py-2 rounded-full transition-colors text-sm ${
+                  invitePromoterForm.name && invitePromoterForm.email
+                    ? 'bg-black text-white hover:bg-gray-900'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Send Invite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invite Staff Modal */}
+      {showInviteStaffModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl mb-6">Invite New Staff</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm mb-2">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter name"
+                  value={inviteStaffForm.name}
+                  onChange={(e) => setInviteStaffForm({ ...inviteStaffForm, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={inviteStaffForm.email}
+                  onChange={(e) => setInviteStaffForm({ ...inviteStaffForm, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-2">Phone</label>
+                <input
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={inviteStaffForm.phone}
+                  onChange={(e) => setInviteStaffForm({ ...inviteStaffForm, phone: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-2">
+                  Role <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={inviteStaffForm.role}
+                  onChange={(e) => setInviteStaffForm({ ...inviteStaffForm, role: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                >
+                  <option value="">Select a role</option>
+                  <option value="Door Manager">Door Manager</option>
+                  <option value="Security">Security</option>
+                  <option value="VIP Host">VIP Host</option>
+                  <option value="Bar Manager">Bar Manager</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowInviteStaffModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!inviteStaffForm.name || !inviteStaffForm.email || !inviteStaffForm.role}
+                className={`flex-1 px-4 py-2 rounded-full transition-colors text-sm ${
+                  inviteStaffForm.name && inviteStaffForm.email && inviteStaffForm.role
                     ? 'bg-black text-white hover:bg-gray-900'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
