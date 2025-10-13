@@ -776,7 +776,9 @@ export default function ManagerDashboardPage() {
                 {events.map((event) => (
                   <div
                     key={event.id}
-                    className="bg-white border border-gray-200 rounded-xl p-6 hover:bg-gray-50 transition-colors cursor-pointer"
+                    className={`bg-white border rounded-xl p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
+                      event.status === 'today' ? 'border-red-500 border-2' : 'border-gray-200'
+                    }`}
                     onClick={() => router.push(`/manager/events/${event.id}`)}
                   >
                     <div className="flex items-center justify-between mb-3">
