@@ -24,7 +24,7 @@ export default function DJDashboardPage() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [copiedEventId, setCopiedEventId] = useState<string | null>(null);
+  const [shareEventId, setShareEventId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -102,6 +102,53 @@ export default function DJDashboardPage() {
     SafeStorage.removeItem('dj_authenticated');
     SafeStorage.removeItem('dj_email');
     router.push('/dj/login');
+  };
+
+  const handleCopyLink = async (event: Event) => {
+    const shareUrl = `https://nightlist.app/guest/signup?event=${event.id}&dj=shadow`;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      setShareEventId(event.id);
+      setTimeout(() => setShareEventId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleShareEvent = async (event: Event) => {
+    const shareUrl = `https://nightlist.app/guest/signup?event=${event.id}&dj=shadow`;
+    const shareData = {
+      title: `Join me at ${event.name}`,
+      text: `You're invited to ${event.name} on ${event.date}. Sign up for the guest list!`,
+      url: shareUrl
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') {
+          return;
+        }
+      }
+    }
+
+    // Fallback to copy if share not available
+    handleCopyLink(event);
   };
 
   // Debug functions
@@ -246,7 +293,7 @@ export default function DJDashboardPage() {
               <h2 className="text-xl mb-4">Upcoming Events</h2>
               {upcomingEvents.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl p-8 text-center">
-                  <h3 className="text-lg font-medium mb-2">No upcoming events</h3>
+                  <h3 className="text-lg mb-2">No upcoming events</h3>
                   <p className="text-gray-600">You'll see your future performances here once they're scheduled.</p>
                 </div>
               ) : (
@@ -266,50 +313,120 @@ export default function DJDashboardPage() {
                           With {event.otherDJs.join(', ')}
                         </p>
                       )}
-                      
-                      {/* Invite Link */}
-                      <div className="mb-8">
-                        <p className="text-sm text-gray-600 mb-2">Invite guests to sign up for the list:</p>
+
+                      {/* Capacity Meter */}
+                      <div className="mb-4">
+                        <div className="w-full">
+                          <div className="relative">
+                            {/* Pending label above the meter bar when it would conflict */}
+                            {event.pendingGuests && event.pendingGuests > 0 && (() => {
+                              const pendingCenterPosition = ((event.spotsUsed + (event.pendingGuests / 2)) / event.totalSpots) * 100;
+                              const wouldOverlapConfirmed = pendingCenterPosition < 25;
+                              const wouldOverlapSpots = pendingCenterPosition > 70;
+
+                              return (wouldOverlapConfirmed || wouldOverlapSpots) ? (
+                                <div
+                                  className="absolute -top-5 text-xs text-gray-500"
+                                  style={{
+                                    left: `${pendingCenterPosition}%`,
+                                    transform: 'translateX(-50%)'
+                                  }}
+                                >
+                                  Pending
+                                </div>
+                              ) : null;
+                            })()}
+
+                            <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
+                              {/* Pending + Confirmed (light gray) bar - shows total */}
+                              <div
+                                className="bg-gray-400 h-4 rounded-full transition-all duration-300 absolute top-0 left-0"
+                                style={{ width: `${((event.spotsUsed + (event.pendingGuests || 0)) / event.totalSpots) * 100}%` }}
+                              >
+                                {/* Pending count inside the gray bar - only show if bar is wide enough */}
+                                {event.pendingGuests && event.pendingGuests > 0 && (event.pendingGuests / event.totalSpots) > 0.08 && (
+                                  <span
+                                    className="absolute top-1/2 -translate-y-1/2 text-white text-[10px] z-20"
+                                    style={{ right: '8px' }}
+                                  >
+                                    {event.pendingGuests}
+                                  </span>
+                                )}
+                              </div>
+                              {/* Confirmed (black) bar - shows on top */}
+                              <div
+                                className="bg-black h-4 rounded-full transition-all duration-300 relative z-10"
+                                style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
+                              >
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-[10px]">
+                                  {event.spotsUsed}
+                                </span>
+                              </div>
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-black text-[10px] z-20">
+                                {event.totalSpots}
+                              </span>
+                            </div>
+
+                            <div className="flex justify-between mt-2 relative">
+                              <span className="text-xs text-gray-500">Confirmed</span>
+
+                              {/* Pending label below the meter (normal position) - hide if too close to edges */}
+                              {event.pendingGuests && event.pendingGuests > 0 && (() => {
+                                const pendingCenterPosition = ((event.spotsUsed + (event.pendingGuests / 2)) / event.totalSpots) * 100;
+                                const wouldOverlapConfirmed = pendingCenterPosition < 30;
+                                const wouldOverlapSpots = pendingCenterPosition > 65;
+
+                                return (!wouldOverlapConfirmed && !wouldOverlapSpots) ? (
+                                  <span
+                                    className="absolute text-xs text-gray-500"
+                                    style={{
+                                      left: `${pendingCenterPosition}%`,
+                                      transform: 'translateX(-50%)'
+                                    }}
+                                  >
+                                    Pending
+                                  </span>
+                                ) : null;
+                              })()}
+
+                              <span className="text-xs text-gray-500">Spots available</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Share Invite Link */}
+                      <div className="mb-6">
+                        <p className="text-sm text-gray-600 mb-2">Share invite link:</p>
                         <div className="flex items-center gap-2">
                           <div className="flex-1 relative">
                             <input
                               type="text"
                               value={`https://nightlist.app/guest/signup?event=${event.id}&dj=shadow`}
                               readOnly
-                              className="w-full bg-gray-100 rounded-full px-4 py-2 text-xs font-mono pr-4"
+                              onClick={() => handleCopyLink(event)}
+                              className={`w-full bg-gray-100 rounded-full px-4 py-2 text-xs font-mono pr-4 cursor-pointer hover:bg-gray-200 transition-opacity ${
+                                shareEventId === event.id ? 'opacity-0' : 'opacity-100'
+                              }`}
                             />
+                            {shareEventId === event.id && (
+                              <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-600 pointer-events-none">
+                                Copied!
+                              </div>
+                            )}
                             <div className="absolute right-1 top-1 bottom-1 w-8 bg-gradient-to-l from-gray-100 via-gray-100/90 to-transparent rounded-r-full pointer-events-none"></div>
                           </div>
                           <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              const textToCopy = `https://nightlist.app/guest/signup?event=${event.id}&dj=shadow`;
-                              
-                              try {
-                                // Try modern clipboard API first
-                                if (navigator.clipboard && window.isSecureContext) {
-                                  await navigator.clipboard.writeText(textToCopy);
-                                } else {
-                                  // Fallback for mobile Safari
-                                  const textArea = document.createElement('textarea');
-                                  textArea.value = textToCopy;
-                                  textArea.style.position = 'fixed';
-                                  textArea.style.left = '-999999px';
-                                  document.body.appendChild(textArea);
-                                  textArea.select();
-                                  document.execCommand('copy');
-                                  document.body.removeChild(textArea);
-                                }
-                                
-                                setCopiedEventId(event.id);
-                                setTimeout(() => setCopiedEventId(null), 2000);
-                              } catch (err) {
-                                console.error('Failed to copy:', err);
-                              }
-                            }}
-                            className="px-3 py-1.5 bg-white border border-black text-black rounded-full hover:bg-gray-50 transition-colors text-xs"
+                            onClick={() => handleCopyLink(event)}
+                            className="px-3 py-1.5 bg-white text-black border border-black rounded-full hover:bg-gray-50 transition-colors text-xs"
                           >
-                            {copiedEventId === event.id ? 'Copied!' : 'Copy'}
+                            Copy
+                          </button>
+                          <button
+                            onClick={() => handleShareEvent(event)}
+                            className="px-3 py-1.5 bg-black text-white rounded-full hover:bg-gray-900 transition-colors text-xs"
+                          >
+                            Share
                           </button>
                         </div>
                       </div>
@@ -317,22 +434,23 @@ export default function DJDashboardPage() {
                       {/* Action Buttons */}
                       <div className="flex gap-3">
                         <button
-                          onClick={() => handleEventAction(event.id, 'manage')}
-                          className="flex-1 bg-gray-800 text-white py-3 px-4 rounded-full text-sm hover:bg-gray-900 transition-colors min-h-[48px] flex items-center justify-center"
+                          onClick={() => router.push(`/dj/events/${event.id}/capacity`)}
+                          className="flex-1 bg-white text-black border border-gray-300 py-2 rounded-full text-xs hover:bg-gray-50 transition-colors leading-tight"
                         >
-                          <span className="text-center leading-tight">
-                            {event.pendingGuests && event.pendingGuests > 0 
-                              ? 'Review pending guests' 
-                              : 'Review guestlist'}
-                          </span>
+                          Request additional spots
                         </button>
+
                         <button
-                          onClick={() => router.push(`/dj/events/${event.id}/invite-past-guests`)}
-                          className="flex-1 bg-gray-100 text-black py-3 px-4 rounded-full text-sm hover:bg-gray-200 transition-colors min-h-[48px] flex items-center justify-center"
+                          onClick={() => handleEventAction(event.id, 'manage')}
+                          className={`flex-1 py-2 rounded-full text-xs transition-colors leading-tight ${
+                            event.pendingGuests && event.pendingGuests > 0
+                              ? 'bg-gray-400 text-white hover:bg-gray-500'
+                              : 'bg-gray-800 text-white hover:bg-gray-900'
+                          }`}
                         >
-                          <span className="text-center leading-tight">
-                            Invite past guests
-                          </span>
+                          {event.pendingGuests && event.pendingGuests > 0
+                            ? 'Review pending guests'
+                            : 'Review guestlist'}
                         </button>
                       </div>
                     </div>
@@ -346,7 +464,7 @@ export default function DJDashboardPage() {
               <h2 className="text-xl mb-4">Past Events</h2>
               {pastEvents.length === 0 ? (
                 <div className="bg-gray-50 rounded-xl p-8 text-center">
-                  <h3 className="text-lg font-medium mb-2">No past events</h3>
+                  <h3 className="text-lg mb-2">No past events</h3>
                   <p className="text-gray-600">Your performance history will appear here after your first event.</p>
                 </div>
               ) : (

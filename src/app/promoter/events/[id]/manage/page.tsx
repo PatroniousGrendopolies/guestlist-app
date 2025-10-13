@@ -494,13 +494,8 @@ export default function PromoterEventManagePage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {/* Added by tag */}
-                        <span className="bg-white text-gray-600 border border-gray-300 px-2 py-1 rounded-full text-xs">
-                          {guest.addedBy}
-                        </span>
-
                         {/* Action buttons for pending guests that belong to promoter */}
-                        {guest.status === 'pending' && guest.addedBy === 'Alex' && (
+                        {guest.status === 'pending' && guest.addedBy === 'Alex' ? (
                           <div className="flex gap-1">
                             <button
                               onClick={() => handleApproveGuest(guest.id)}
@@ -515,6 +510,13 @@ export default function PromoterEventManagePage() {
                               Deny
                             </button>
                           </div>
+                        ) : (
+                          /* Added by tag - only show in complete guestlist view when no action buttons */
+                          activeTab === 'complete-guestlist' && (
+                            <span className="bg-white text-gray-600 border border-gray-300 px-2 py-1 rounded-full text-xs">
+                              {guest.addedBy}
+                            </span>
+                          )
                         )}
                       </div>
                     </div>

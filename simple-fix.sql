@@ -1,10 +1,25 @@
--- SAFEST FIX: Just ensure events table allows authenticated inserts
--- This doesn't drop anything, just adds a simple policy
+-- CORRECT SYNTAX: PostgreSQL doesn't support IF NOT EXISTS for policies
+  -- Use DO blocks to handle existing policies gracefully
 
--- Add a simple policy to allow authenticated users to insert events
-CREATE POLICY IF NOT EXISTS "allow_authenticated_event_insert" ON events
-  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+  DO $$
+  BEGIN
+      -- Try to create insert policy, ignore if it already exists
+      BEGIN
+          CREATE POLICY "allow_authenticated_event_insert" ON events
+            FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+      EXCEPTION
+          WHEN duplicate_object THEN
+              -- Policy already exists, that's fine
+              RAISE NOTICE 'Policy allow_authenticated_event_insert already exists, skipping';
+      END;
 
--- Add a simple policy to allow authenticated users to select events  
-CREATE POLICY IF NOT EXISTS "allow_authenticated_event_select" ON events
-  FOR SELECT USING (auth.role() = 'authenticated');
+      -- Try to create select policy, ignore if it already exists  
+      BEGIN
+          CREATE POLICY "allow_authenticated_event_select" ON events
+            FOR SELECT USING (auth.role() = 'authenticated');
+      EXCEPTION
+          WHEN duplicate_object THEN
+              -- Policy already exists, that's fine
+              RAISE NOTICE 'Policy allow_authenticated_event_select already exists, skipping';
+      END;
+  END $$;

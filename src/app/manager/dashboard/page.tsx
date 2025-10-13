@@ -65,6 +65,10 @@ export default function ManagerDashboardPage() {
   const [capacityRequests, setCapacityRequests] = useState<CapacityRequest[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [guestSearch, setGuestSearch] = useState('');
+  const [guestFilter, setGuestFilter] = useState<string>('all');
+  const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
+  const [guestSortColumn, setGuestSortColumn] = useState<'name' | 'attendance' | 'lastAttended' | 'addedBy'>('name');
+  const [guestSortDirection, setGuestSortDirection] = useState<'asc' | 'desc'>('asc');
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'guests' | 'users' | 'analytics'>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -168,8 +172,171 @@ export default function ManagerDashboardPage() {
         actionUrl: '/manager/capacity-requests'
       });
 
+      // Generate mock guests
+      const mockGuests: Guest[] = [
+        {
+          id: 'guest_1',
+          name: 'Sarah Johnson',
+          email: 'sarah.j@email.com',
+          phone: '+1 555-0101',
+          instagram: '@sarahjay',
+          totalAttendance: 12,
+          lastAttended: '2025-10-06',
+          addedBy: ['DJ Marcus', 'Staff Sarah'],
+          status: 'active'
+        },
+        {
+          id: 'guest_2',
+          name: 'Mike Chen',
+          email: 'mike.chen@email.com',
+          phone: '+1 555-0102',
+          totalAttendance: 8,
+          lastAttended: '2025-10-01',
+          addedBy: ['DJ Shadow'],
+          status: 'active'
+        },
+        {
+          id: 'guest_3',
+          name: 'Emma Wilson',
+          email: 'emma.w@email.com',
+          phone: '+1 555-0103',
+          instagram: '@emmawilson',
+          totalAttendance: 15,
+          lastAttended: '2025-10-08',
+          addedBy: ['DJ Marcus', 'DJ Shadow', 'Staff Tom'],
+          status: 'active'
+        },
+        {
+          id: 'guest_4',
+          name: 'James Rodriguez',
+          email: 'j.rodriguez@email.com',
+          phone: '+1 555-0104',
+          totalAttendance: 5,
+          lastAttended: '2025-09-28',
+          addedBy: ['Staff Sarah'],
+          status: 'active'
+        },
+        {
+          id: 'guest_5',
+          name: 'Lisa Park',
+          email: 'lisa.park@email.com',
+          phone: '+1 555-0105',
+          instagram: '@lisaparks',
+          totalAttendance: 20,
+          lastAttended: '2025-10-10',
+          addedBy: ['DJ Marcus', 'Promoter Alex'],
+          status: 'active'
+        },
+        {
+          id: 'guest_6',
+          name: 'David Kim',
+          email: 'david.k@email.com',
+          phone: '+1 555-0106',
+          totalAttendance: 3,
+          lastAttended: '2025-09-15',
+          addedBy: ['DJ Shadow'],
+          status: 'banned'
+        },
+        {
+          id: 'guest_7',
+          name: 'Rachel Green',
+          email: 'rachel.g@email.com',
+          phone: '+1 555-0107',
+          instagram: '@rachelgreen',
+          totalAttendance: 18,
+          lastAttended: '2025-10-09',
+          addedBy: ['DJ Marcus', 'Staff Tom'],
+          status: 'active'
+        },
+        {
+          id: 'guest_8',
+          name: 'Tom Anderson',
+          email: 'tom.a@email.com',
+          phone: '+1 555-0108',
+          totalAttendance: 7,
+          lastAttended: '2025-10-02',
+          addedBy: ['Staff Sarah'],
+          status: 'active'
+        },
+        {
+          id: 'guest_9',
+          name: 'Nina Patel',
+          email: 'nina.p@email.com',
+          phone: '+1 555-0109',
+          instagram: '@ninapatel',
+          totalAttendance: 11,
+          lastAttended: '2025-10-07',
+          addedBy: ['DJ Marcus', 'Promoter Alex'],
+          status: 'active'
+        },
+        {
+          id: 'guest_10',
+          name: 'Alex Turner',
+          email: 'alex.t@email.com',
+          phone: '+1 555-0110',
+          totalAttendance: 6,
+          lastAttended: '2025-09-25',
+          addedBy: ['DJ Shadow'],
+          status: 'active'
+        },
+        {
+          id: 'guest_11',
+          name: 'Sophie Martinez',
+          email: 'sophie.m@email.com',
+          phone: '+1 555-0111',
+          instagram: '@sophiem',
+          totalAttendance: 14,
+          lastAttended: '2025-10-11',
+          addedBy: ['DJ Marcus', 'Staff Tom', 'Staff Sarah'],
+          status: 'active'
+        },
+        {
+          id: 'guest_12',
+          name: 'Chris Brown',
+          email: 'chris.b@email.com',
+          phone: '+1 555-0112',
+          totalAttendance: 4,
+          lastAttended: '2025-09-20',
+          addedBy: ['Promoter Alex'],
+          status: 'active'
+        },
+        {
+          id: 'guest_13',
+          name: 'Maya Singh',
+          email: 'maya.s@email.com',
+          phone: '+1 555-0113',
+          instagram: '@mayasingh',
+          totalAttendance: 9,
+          lastAttended: '2025-10-05',
+          addedBy: ['DJ Marcus'],
+          status: 'active'
+        },
+        {
+          id: 'guest_14',
+          name: 'Jordan Lee',
+          email: 'jordan.l@email.com',
+          phone: '+1 555-0114',
+          totalAttendance: 16,
+          lastAttended: '2025-10-12',
+          addedBy: ['DJ Shadow', 'Staff Tom'],
+          status: 'active'
+        },
+        {
+          id: 'guest_15',
+          name: 'Olivia White',
+          email: 'olivia.w@email.com',
+          phone: '+1 555-0115',
+          instagram: '@oliviawhite',
+          totalAttendance: 10,
+          lastAttended: '2025-10-04',
+          addedBy: ['DJ Marcus', 'Promoter Alex'],
+          status: 'active'
+        }
+      ];
+
       setEvents(mockEvents);
       setAlerts(mockAlerts);
+      setGuests(mockGuests);
       setIsLoading(false);
     }, 1000);
   }, [router]);
@@ -181,6 +348,68 @@ export default function ManagerDashboardPage() {
     SafeStorage.removeItem('manager_name');
     router.push('/manager/login');
   };
+
+  // Guest management functions
+  const handleGuestSort = (column: 'name' | 'attendance' | 'lastAttended' | 'addedBy') => {
+    if (guestSortColumn === column) {
+      setGuestSortDirection(guestSortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setGuestSortColumn(column);
+      setGuestSortDirection('asc');
+    }
+  };
+
+  const handleSelectGuest = (guestId: string) => {
+    if (selectedGuests.includes(guestId)) {
+      setSelectedGuests(selectedGuests.filter(id => id !== guestId));
+    } else {
+      setSelectedGuests([...selectedGuests, guestId]);
+    }
+  };
+
+  const handleSelectAllGuests = () => {
+    if (selectedGuests.length === filteredGuests.length) {
+      setSelectedGuests([]);
+    } else {
+      setSelectedGuests(filteredGuests.map(g => g.id));
+    }
+  };
+
+  // Filter and sort guests
+  const filteredGuests = guests
+    .filter(guest => {
+      // Search filter
+      const searchLower = guestSearch.toLowerCase();
+      const matchesSearch =
+        guest.name.toLowerCase().includes(searchLower) ||
+        guest.email.toLowerCase().includes(searchLower) ||
+        (guest.instagram?.toLowerCase().includes(searchLower));
+
+      // Added by filter
+      const matchesFilter = guestFilter === 'all' || guest.addedBy.includes(guestFilter);
+
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      let comparison = 0;
+
+      if (guestSortColumn === 'name') {
+        comparison = a.name.localeCompare(b.name);
+      } else if (guestSortColumn === 'attendance') {
+        comparison = a.totalAttendance - b.totalAttendance;
+      } else if (guestSortColumn === 'lastAttended') {
+        comparison = a.lastAttended.localeCompare(b.lastAttended);
+      } else if (guestSortColumn === 'addedBy') {
+        comparison = a.addedBy.join(', ').localeCompare(b.addedBy.join(', '));
+      }
+
+      return guestSortDirection === 'asc' ? comparison : -comparison;
+    });
+
+  // Get unique "Added By" users for filter dropdown
+  const addedByOptions = Array.from(
+    new Set(guests.flatMap(g => g.addedBy))
+  ).sort();
 
   if (isLoading) {
     return (
@@ -383,43 +612,6 @@ export default function ManagerDashboardPage() {
                 ))}
               </div>
             </div>
-
-            {/* Quick Navigation */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <button
-                onClick={() => setActiveTab('guests')}
-                className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left"
-              >
-                <h3 className="text-lg mb-2">Guest Database</h3>
-                <p className="text-sm text-gray-600">Manage all-time guests</p>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('users')}
-                className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left"
-              >
-                <h3 className="text-lg mb-2">User Management</h3>
-                <p className="text-sm text-gray-600">DJs, Staff, Promoters</p>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('analytics')}
-                className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left"
-              >
-                <h3 className="text-lg mb-2">Analytics</h3>
-                <p className="text-sm text-gray-600">Performance insights</p>
-              </button>
-
-              {managerRole === 'owner' && (
-                <button
-                  onClick={() => router.push('/manager/settings')}
-                  className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left"
-                >
-                  <h3 className="text-lg mb-2">Venue Settings</h3>
-                  <p className="text-sm text-gray-600">Owner only</p>
-                </button>
-              )}
-            </div>
           </div>
         )}
 
@@ -436,9 +628,187 @@ export default function ManagerDashboardPage() {
         {/* Guests Tab */}
         {activeTab === 'guests' && (
           <div>
-            <h2 className="text-2xl mb-6">All-Time Guests</h2>
-            <div className="bg-gray-50 rounded-xl p-8 text-center">
-              <p className="text-gray-600">Guest management coming soon</p>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl">All-Time Guests</h2>
+              <div className="text-sm text-gray-600">
+                {filteredGuests.length} {filteredGuests.length === 1 ? 'guest' : 'guests'}
+              </div>
+            </div>
+
+            {/* Search and Filter Bar */}
+            <div className="mb-6 flex gap-4">
+              {/* Search Input */}
+              <div className="relative flex-1">
+                <svg
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search guests by name, email, or Instagram..."
+                  value={guestSearch}
+                  onChange={(e) => setGuestSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              {/* Filter by Added By */}
+              <select
+                value={guestFilter}
+                onChange={(e) => setGuestFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
+              >
+                <option value="all">All Added By</option>
+                {addedByOptions.map(user => (
+                  <option key={user} value={user}>{user}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Bulk Actions */}
+            {selectedGuests.length > 0 && (
+              <div className="mb-4 flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm text-gray-600">
+                  {selectedGuests.length} selected
+                </span>
+                <button className="px-4 py-1.5 bg-black text-white rounded-full hover:bg-gray-900 transition-colors text-sm">
+                  Add to Event
+                </button>
+                <button className="px-4 py-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors text-sm">
+                  Ban Guests
+                </button>
+              </div>
+            )}
+
+            {/* Guests Table */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedGuests.length === filteredGuests.length && filteredGuests.length > 0}
+                        onChange={handleSelectAllGuests}
+                        className="rounded border-gray-300"
+                      />
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleGuestSort('name')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Name
+                        {guestSortColumn === 'name' && (
+                          <span>{guestSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleGuestSort('attendance')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Attendance
+                        {guestSortColumn === 'attendance' && (
+                          <span>{guestSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleGuestSort('lastAttended')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Last Attended
+                        {guestSortColumn === 'lastAttended' && (
+                          <span>{guestSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:text-black"
+                      onClick={() => handleGuestSort('addedBy')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Added By
+                        {guestSortColumn === 'addedBy' && (
+                          <span>{guestSortDirection === 'asc' ? '↑' : '↓'}</span>
+                        )}
+                      </div>
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredGuests.map((guest) => (
+                    <tr
+                      key={guest.id}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedGuests.includes(guest.id)}
+                          onChange={() => handleSelectGuest(guest.id)}
+                          className="rounded border-gray-300"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>
+                          <div className="font-medium text-gray-900">{guest.name}</div>
+                          <div className="text-xs text-gray-500">{guest.email}</div>
+                          {guest.instagram && (
+                            <div className="text-xs text-gray-400">{guest.instagram}</div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {guest.totalAttendance}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {new Date(guest.lastAttended).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {guest.addedBy.join(', ')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            guest.status === 'active'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {guest.status === 'active' ? 'Active' : 'Banned'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {filteredGuests.length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                  No guests found matching your search criteria
+                </div>
+              )}
             </div>
           </div>
         )}

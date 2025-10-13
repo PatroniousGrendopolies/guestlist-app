@@ -683,48 +683,50 @@ export default function DJEventManagePage() {
                 key={guest.id}
                 className="bg-white border border-gray-200 rounded-xl p-4"
               >
-                <div className="relative">
-                  {/* Plus/Minus Controls - Top Left */}
-                  {guest.status === 'pending' && (
-                    <div className="absolute top-0 left-0 flex items-center gap-1">
-                      <button
-                        onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
-                        className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                        disabled={guest.plusOnes <= 0}
-                      >
-                        <span className="leading-none">−</span>
-                      </button>
-                      <button
-                        onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
-                        className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                      >
-                        <span className="leading-none">+</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Main Content Area */}
-                  <div className="pt-8 pb-10">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg truncate pr-2" title={guest.name}>{guest.name}</h3>
+                <div>
+                  {/* Name and Plus Ones */}
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h3 className="text-lg truncate" title={guest.name}>{guest.name}</h3>
                       {guest.plusOnes > 0 && (
                         <span className="text-lg shrink-0">+{guest.plusOnes}</span>
                       )}
                     </div>
-                    
-                    {guest.instagram && (
-                      <a 
-                        href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 transition-colors mb-2 block truncate"
-                        title={guest.instagram}
-                      >
-                        {guest.instagram}
-                      </a>
+                    {/* Plus/Minus Controls - Right side */}
+                    {guest.status === 'pending' && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
+                          className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                          disabled={guest.plusOnes <= 0}
+                        >
+                          <span className="leading-none">−</span>
+                        </button>
+                        <button
+                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
+                          className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                        >
+                          <span className="leading-none">+</span>
+                        </button>
+                      </div>
                     )}
-                    
-                    {/* Status Badge */}
+                  </div>
+
+                  {/* Instagram Handle */}
+                  {guest.instagram && (
+                    <a
+                      href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:text-blue-800 transition-colors mb-2 block truncate"
+                      title={guest.instagram}
+                    >
+                      {guest.instagram}
+                    </a>
+                  )}
+
+                  {/* Status Badge and Action Buttons on same line */}
+                  <div className="flex items-center justify-between">
                     <div>
                       {guest.checkedIn && (
                         <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
@@ -742,37 +744,37 @@ export default function DJEventManagePage() {
                         </span>
                       )}
                     </div>
-                  </div>
 
-                  {/* Action Buttons - Bottom Right */}
-                  <div className="absolute bottom-0 right-0 flex gap-2">
-                    {guest.status === 'pending' && (
-                      <>
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      {guest.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleDenyGuest(guest.id)}
+                            className="px-3 py-1 bg-white text-black border border-black rounded-full text-xs hover:bg-gray-50 transition-colors"
+                          >
+                            Deny
+                          </button>
+                          <button
+                            onClick={() => handleApproveGuest(guest.id)}
+                            disabled={isApproving === guest.id}
+                            className="px-3 py-1 bg-black text-white rounded-full text-xs hover:bg-gray-900 transition-colors disabled:opacity-50"
+                          >
+                            {isApproving === guest.id ? '...' : 'Approve'}
+                          </button>
+                        </>
+                      )}
+
+                      {/* View Details Button for non-pending */}
+                      {guest.status !== 'pending' && (
                         <button
-                          onClick={() => handleDenyGuest(guest.id)}
-                          className="px-3 py-1 bg-white text-black border border-black rounded-full text-xs hover:bg-gray-50 transition-colors"
+                          onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
+                          className="px-4 py-1.5 bg-gray-100 text-black rounded-full text-xs hover:bg-gray-200 transition-colors"
                         >
-                          Deny
+                          View Details
                         </button>
-                        <button
-                          onClick={() => handleApproveGuest(guest.id)}
-                          disabled={isApproving === guest.id}
-                          className="px-3 py-1 bg-black text-white rounded-full text-xs hover:bg-gray-900 transition-colors disabled:opacity-50"
-                        >
-                          {isApproving === guest.id ? '...' : 'Approve'}
-                        </button>
-                      </>
-                    )}
-                    
-                    {/* View Details Button for non-pending */}
-                    {guest.status !== 'pending' && (
-                      <button
-                        onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
-                        className="px-4 py-1.5 bg-gray-100 text-black rounded-full text-xs hover:bg-gray-200 transition-colors"
-                      >
-                        View Details
-                      </button>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

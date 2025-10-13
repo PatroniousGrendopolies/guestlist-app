@@ -998,7 +998,7 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 
 ### Quality Assurance Checklist
 - [ ] All buttons use `rounded-full`
-- [ ] All cards use `rounded-xl` 
+- [ ] All cards use `rounded-xl`
 - [ ] No `border-2` used anywhere (only `border`)
 - [ ] Gray cards have no borders
 - [ ] No red text for errors/warnings
@@ -1009,6 +1009,108 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - [ ] All interactive elements have proper hover states
 - [ ] Instagram handles are blue and clickable
 - [ ] Event dates use `text-sm`
+
+---
+
+## USER EXPERIENCE PATTERNS & REFINEMENTS
+
+### Guest Card Layout (DJ/Promoter Management Pages)
+**Compact Card Design:**
+- **Line 1**: Name and +N count on left, +/- adjustment buttons on right
+  - Example: `Sarah Johnson +2` [−][+]
+  - +/- buttons only show for pending guests that belong to the current user
+  - Buttons: `w-6 h-6 rounded-full border border-gray-300`
+- **Line 2**: Instagram handle (if present) as blue clickable link
+- **Line 3**: Status badge on left, action buttons on right (same line)
+  - Status badge: "Pending", "Approved", "Checked In", or "Denied"
+  - Action buttons (for pending guests): [Deny] [Approve]
+- **No extra vertical spacing** - cards should be compact and scannable
+
+**"Added By" Tag Rules:**
+- **Never show** when viewing "My List" (redundant - all guests belong to user)
+- **Never show** when Approve/Deny buttons are present (redundant - implies ownership)
+- **Only show** in "Complete Guestlist" view for guests NOT belonging to current user
+
+### Button Text Sizing - Adaptive
+**Dynamic font sizing to prevent wrapping:**
+- Default button text: `text-sm`
+- If button text wraps to multiple lines: automatically use `text-xs` with `leading-tight`
+- Examples:
+  - "Request additional spots" → `text-xs leading-tight`
+  - "Review pending guests" → `text-xs leading-tight`
+- Keep one-word buttons at `text-sm` ("Copy", "Share", "Approve", etc.)
+
+### Link Sharing Interface
+**Copy vs Share distinction:**
+- **"Copy" button**: Only copies to clipboard (no Web Share API)
+  - Button text: "Copy" (not "Link")
+  - Action: Direct clipboard copy with fallback for mobile Safari
+- **"Share" button**: Triggers native share sheet
+  - Uses Web Share API if available
+  - Falls back to copy if not available
+- **Link input field**:
+  - Clicking the input field itself should copy the link (acts as secondary copy button)
+  - Add `cursor-pointer hover:bg-gray-200` to indicate clickability
+
+**Copy feedback animation:**
+- When link is copied, link text should **completely disappear** (`opacity-0`)
+- "Copied!" message should appear **centered** in the input field
+- Use `transition-opacity` for smooth fade
+- Auto-dismiss after 2 seconds
+- Position: `absolute inset-0 flex items-center justify-center`
+
+### Capacity Meter Label Positioning
+**"Pending" label collision avoidance:**
+- Calculate pending section center position: `((spotsUsed + (pendingGuests / 2)) / capacity) * 100`
+- **Hide "Pending" label** if it would overlap with edge labels:
+  - Too close to "Confirmed"/"Approved": `< 30%`
+  - Too close to "Spots available"/"Available": `> 65%`
+- When hidden, the pending section visual remains but label is removed
+- Prevents visual clutter and overlapping text
+
+### Capacity Request Page Simplifications
+**Minimal, focused interface:**
+- **Capacity meter**: Show only the meter with embedded numbers, no redundant text lines
+  - Format: Black bar with white number, gray background with black number
+  - Labels below: "Approved" on left, "Available" on right
+- **Request input**: Number input with +/- buttons
+  - Number input border: `rounded-full` (pill-shaped, not `rounded-xl`)
+- **Comments field**:
+  - Placeholder text: just "Comments" (not "Explain why you need...")
+  - No separate label needed
+- **Remove**: "Request Preview" section entirely (unnecessary)
+
+### Dashboard Copy & Messaging
+**Promoter Dashboard:**
+- Header subtitle: "Invite friends to an upcoming night" (not "Invite some friends to come to a night")
+- Keep messaging concise and action-oriented
+
+### Form Input Field Styling
+**Pill-shaped inputs for inline controls:**
+- Number inputs in inline controls (like capacity requests): `rounded-full`
+- Standard form inputs: `rounded-xl`
+- Readonly/display inputs: `rounded-full` with `bg-gray-100`
+
+### Modal Overlay Specifications
+**Consistent overlay design for all modals:**
+- **Background**: `bg-gray-600 bg-opacity-30` (30% opacity gray)
+- **Never use**: Black overlays (`bg-black`) or higher opacity backgrounds
+- **Applies to**: All modal dialogs, popups, detail cards, and edit forms
+- **Z-index**: Nested modals should increment z-index appropriately
+  - Primary modals: `z-50`
+  - Secondary modals (on top of primary): `z-[60]`
+- **Transition animations**:
+  - Fade out/in: `0.4s ease-in-out`
+  - Opacity keyframes: `0% → 1`, `50% → 0`, `100% → 1`
+  - Apply to modal content, not overlay
+
+**Examples:**
+- DJ detail modal: Gray overlay
+- Edit DJ details popup: Gray overlay (layered on top)
+- Guest attendance history: Gray overlay
+- Ban confirmation: Gray overlay
+
+**DESIGN STANDARD**: This gray overlay creates visual consistency and reduces eye strain while maintaining clear focus on the modal content. All future modals must follow this specification.
 
 ---
 

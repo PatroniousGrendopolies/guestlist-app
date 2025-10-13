@@ -10,6 +10,7 @@ interface Event {
   date: string;
   dayOfWeek: string;
   venue: string;
+  djs: string[];
   capacity: number;
   spotsUsed: number;
   pendingGuests: number;
@@ -52,7 +53,7 @@ export default function PromoterDashboardPage() {
           
           mockEvents.push({
             id: `event_${i}`,
-            name: i === 0 ? 'Saturday Night Sessions' : 
+            name: i === 0 ? 'Saturday Night Sessions' :
                   i === 3 ? 'Midweek Vibes' :
                   i === 5 ? 'Summer Nights' :
                   i === 6 ? 'Underground Sessions' :
@@ -61,6 +62,11 @@ export default function PromoterDashboardPage() {
             date: `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`,
             dayOfWeek: dayNames[eventDate.getDay()],
             venue: 'Datcha',
+            djs: i === 0 ? ['DJ Marcus', 'MC Groove'] :
+                 i === 3 ? ['DJ Luna'] :
+                 i === 5 ? ['DJ Shadow', 'MC Flow'] :
+                 i === 6 ? ['DJ Beats'] :
+                 ['DJ Electric'],
             capacity: 50, // Manager-configurable capacity
             spotsUsed: i === 0 ? 0 : Math.floor(Math.random() * 35) + 5,
             pendingGuests: i === 0 ? 8 : Math.floor(Math.random() * 8),
@@ -74,6 +80,30 @@ export default function PromoterDashboardPage() {
       setIsLoading(false);
     }, 1000);
   }, [router]);
+
+  const handleCopyLink = async (event: Event) => {
+    const shareUrl = `https://nightlist.app/guest/signup?event=${event.id}&promoter=alex`;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      setShareEventId(event.id);
+      setTimeout(() => setShareEventId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   const handleShareEvent = async (event: Event) => {
     const shareUrl = `https://nightlist.app/guest/signup?event=${event.id}&promoter=alex`;
@@ -94,26 +124,8 @@ export default function PromoterDashboardPage() {
       }
     }
 
-    // Fallback to clipboard
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(shareUrl);
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = shareUrl;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      }
-      
-      setShareEventId(event.id);
-      setTimeout(() => setShareEventId(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+    // Fallback to copy if share not available
+    handleCopyLink(event);
   };
 
   const handleLogout = () => {
@@ -141,7 +153,7 @@ export default function PromoterDashboardPage() {
           <div>
             <p className="text-sm text-gray-600 mb-2">Nightlist</p>
             <h1 className="text-3xl font-light tracking-tight mb-1">Hey {promoterName}!</h1>
-            <p className="text-gray-600">Invite some friends to come to a night</p>
+            <p className="text-gray-600">Invite friends to an upcoming night</p>
           </div>
           <button
             onClick={handleLogout}
@@ -168,10 +180,17 @@ export default function PromoterDashboardPage() {
                   key={event.id}
                   className="bg-white border border-gray-200 rounded-xl p-6"
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-1">
                     <h3 className="text-lg">{event.name}</h3>
                     <p className="text-xs text-gray-600">{event.date}</p>
                   </div>
+
+                  {event.djs.length > 0 && (
+                    <p className="text-sm text-gray-500 mb-4">
+                      With {event.djs.join(', ')}
+                    </p>
+                  )}
+
                   <div className="mb-4">
                     
                     {/* Capacity Meter */}
@@ -228,17 +247,17 @@ export default function PromoterDashboardPage() {
                         
                         <div className="flex justify-between mt-2 relative">
                           <span className="text-xs text-gray-500">Confirmed</span>
-                          
-                          {/* Pending label below the meter (normal position) */}
+
+                          {/* Pending label below the meter (normal position) - hide if too close to edges */}
                           {event.pendingGuests > 0 && (() => {
                             const pendingCenterPosition = ((event.spotsUsed + (event.pendingGuests / 2)) / event.capacity) * 100;
-                            const wouldOverlapConfirmed = pendingCenterPosition < 25;
-                            const wouldOverlapSpots = pendingCenterPosition > 70;
-                            
+                            const wouldOverlapConfirmed = pendingCenterPosition < 30;
+                            const wouldOverlapSpots = pendingCenterPosition > 65;
+
                             return (!wouldOverlapConfirmed && !wouldOverlapSpots) ? (
-                              <span 
+                              <span
                                 className="absolute text-xs text-gray-500"
-                                style={{ 
+                                style={{
                                   left: `${pendingCenterPosition}%`,
                                   transform: 'translateX(-50%)'
                                 }}
@@ -247,7 +266,7 @@ export default function PromoterDashboardPage() {
                               </span>
                             ) : null;
                           })()}
-                          
+
                           <span className="text-xs text-gray-500">Spots available</span>
                         </div>
                       </div>
@@ -263,15 +282,23 @@ export default function PromoterDashboardPage() {
                           type="text"
                           value={`https://nightlist.app/guest/signup?event=${event.id}&promoter=alex`}
                           readOnly
-                          className="w-full bg-gray-100 rounded-full px-4 py-2 text-xs font-mono pr-4"
+                          onClick={() => handleCopyLink(event)}
+                          className={`w-full bg-gray-100 rounded-full px-4 py-2 text-xs font-mono pr-4 cursor-pointer hover:bg-gray-200 transition-opacity ${
+                            shareEventId === event.id ? 'opacity-0' : 'opacity-100'
+                          }`}
                         />
+                        {shareEventId === event.id && (
+                          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-600 pointer-events-none">
+                            Copied!
+                          </div>
+                        )}
                         <div className="absolute right-1 top-1 bottom-1 w-8 bg-gradient-to-l from-gray-100 via-gray-100/90 to-transparent rounded-r-full pointer-events-none"></div>
                       </div>
                       <button
-                        onClick={() => handleShareEvent(event)}
+                        onClick={() => handleCopyLink(event)}
                         className="px-3 py-1.5 bg-white text-black border border-black rounded-full hover:bg-gray-50 transition-colors text-xs"
                       >
-                        {shareEventId === event.id ? 'Copied!' : 'Link'}
+                        Copy
                       </button>
                       <button
                         onClick={async () => {
@@ -303,21 +330,21 @@ export default function PromoterDashboardPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => router.push(`/promoter/events/${event.id}/capacity`)}
-                      className="flex-1 bg-white text-black border border-gray-300 py-2 rounded-full text-sm hover:bg-gray-50 transition-colors"
+                      className="flex-1 bg-white text-black border border-gray-300 py-2 rounded-full text-xs hover:bg-gray-50 transition-colors leading-tight"
                     >
                       Request additional spots
                     </button>
-                    
+
                     <button
                       onClick={() => router.push(`/promoter/events/${event.id}/manage`)}
-                      className={`flex-1 py-2 rounded-full text-sm transition-colors ${
+                      className={`flex-1 py-2 rounded-full text-xs transition-colors leading-tight ${
                         event.pendingGuests > 0
                           ? 'bg-gray-400 text-white hover:bg-gray-500'
                           : 'bg-gray-800 text-white hover:bg-gray-900'
                       }`}
                     >
-                      {event.pendingGuests > 0 
-                        ? 'Review pending guests' 
+                      {event.pendingGuests > 0
+                        ? 'Review pending guests'
                         : 'Review guestlist'}
                     </button>
                   </div>

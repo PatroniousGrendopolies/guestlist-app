@@ -92,6 +92,30 @@ export default function StaffDashboardPage() {
     router.push('/');
   };
 
+  const handleCopyLink = async (event: Event) => {
+    const shareUrl = `https://nightlist.app/guest/signup?event=${event.id}&staff=alex`;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      setShareEventId(event.id);
+      setTimeout(() => setShareEventId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const handleShareEvent = async (event: Event) => {
     const shareUrl = `https://nightlist.app/guest/signup?event=${event.id}&staff=alex`;
     const shareData = {
@@ -100,52 +124,19 @@ export default function StaffDashboardPage() {
       url: shareUrl
     };
 
-    // Force try Web Share API first on mobile devices
     if (navigator.share) {
       try {
-        console.log('Attempting Web Share API...');
         await navigator.share(shareData);
-        console.log('Share completed successfully');
         return;
       } catch (error) {
-        console.error('Web Share API failed:', error);
-        if (error instanceof Error && error.name === 'AbortError') {
-          console.log('User cancelled the share');
+        if ((error as Error).name === 'AbortError') {
           return;
         }
-        // Continue to fallback on other errors
       }
     }
 
-    // Fallback to clipboard only
-    console.log('Falling back to clipboard');
-    try {
-      await copyToClipboard(shareUrl);
-      setShareEventId(event.id);
-      setTimeout(() => setShareEventId(null), 2000);
-    } catch (clipboardError) {
-      console.error('Clipboard fallback failed:', clipboardError);
-    }
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        // Fallback for mobile Safari
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      }
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+    // Fallback to copy if share not available
+    handleCopyLink(event);
   };
 
   const handleCapacityRequest = async (eventId: string) => {
@@ -215,7 +206,7 @@ export default function StaffDashboardPage() {
                       With {event.djs.join(', ')}
                     </p>
                   )}
-                  
+
                   {/* Capacity Meter */}
                   <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
@@ -223,7 +214,7 @@ export default function StaffDashboardPage() {
                     </div>
                     <div className="relative">
                       <div className="bg-gray-200 rounded-full h-4 relative">
-                        <div 
+                        <div
                           className="bg-black h-4 rounded-full transition-all duration-300"
                           style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
                         ></div>
@@ -236,18 +227,48 @@ export default function StaffDashboardPage() {
                       </div>
                     </div>
                   </div>
-                  
+
+                  {/* Share Invite Link */}
+                  <div className="mb-6">
+                    <p className="text-sm text-gray-600 mb-2">Share invite link:</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={`https://nightlist.app/guest/signup?event=${event.id}&staff=alex`}
+                          readOnly
+                          onClick={() => handleCopyLink(event)}
+                          className={`w-full bg-gray-100 rounded-full px-4 py-2 text-xs font-mono pr-4 cursor-pointer hover:bg-gray-200 transition-opacity ${
+                            shareEventId === event.id ? 'opacity-0' : 'opacity-100'
+                          }`}
+                        />
+                        {shareEventId === event.id && (
+                          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-600 pointer-events-none">
+                            Copied!
+                          </div>
+                        )}
+                        <div className="absolute right-1 top-1 bottom-1 w-8 bg-gradient-to-l from-gray-100 via-gray-100/90 to-transparent rounded-r-full pointer-events-none"></div>
+                      </div>
+                      <button
+                        onClick={() => handleCopyLink(event)}
+                        className="px-3 py-1.5 bg-white text-black border border-black rounded-full hover:bg-gray-50 transition-colors text-xs"
+                      >
+                        Copy
+                      </button>
+                      <button
+                        onClick={() => handleShareEvent(event)}
+                        className="px-3 py-1.5 bg-black text-white rounded-full hover:bg-gray-900 transition-colors text-xs"
+                      >
+                        Share
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Action Buttons */}
                   <div className="flex gap-3 mb-4">
                     <button
-                      onClick={() => handleShareEvent(event)}
-                      className="flex-1 bg-black text-white py-2 rounded-full text-sm hover:bg-gray-900 transition-colors"
-                    >
-                      {shareEventId === event.id ? 'Link Copied!' : 'Share Invite'}
-                    </button>
-                    <button
                       onClick={() => router.push(`/staff/events/${event.id}/manage`)}
-                      className="flex-1 bg-gray-100 text-black py-2 rounded-full text-sm hover:bg-gray-200 transition-colors"
+                      className="flex-1 bg-gray-800 text-white py-2 rounded-full text-xs hover:bg-gray-900 transition-colors leading-tight"
                     >
                       Review Lists
                     </button>
@@ -326,7 +347,7 @@ export default function StaffDashboardPage() {
                       With {event.djs.join(', ')}
                     </p>
                   )}
-                  
+
                   {/* Capacity Meter */}
                   <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
@@ -334,7 +355,7 @@ export default function StaffDashboardPage() {
                     </div>
                     <div className="relative">
                       <div className="bg-gray-200 rounded-full h-4 relative">
-                        <div 
+                        <div
                           className="bg-black h-4 rounded-full transition-all duration-300"
                           style={{ width: `${(event.spotsUsed / event.totalSpots) * 100}%` }}
                         ></div>
@@ -347,18 +368,48 @@ export default function StaffDashboardPage() {
                       </div>
                     </div>
                   </div>
-                  
+
+                  {/* Share Invite Link */}
+                  <div className="mb-6">
+                    <p className="text-sm text-gray-600 mb-2">Share invite link:</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={`https://nightlist.app/guest/signup?event=${event.id}&staff=alex`}
+                          readOnly
+                          onClick={() => handleCopyLink(event)}
+                          className={`w-full bg-gray-100 rounded-full px-4 py-2 text-xs font-mono pr-4 cursor-pointer hover:bg-gray-200 transition-opacity ${
+                            shareEventId === event.id ? 'opacity-0' : 'opacity-100'
+                          }`}
+                        />
+                        {shareEventId === event.id && (
+                          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-600 pointer-events-none">
+                            Copied!
+                          </div>
+                        )}
+                        <div className="absolute right-1 top-1 bottom-1 w-8 bg-gradient-to-l from-gray-100 via-gray-100/90 to-transparent rounded-r-full pointer-events-none"></div>
+                      </div>
+                      <button
+                        onClick={() => handleCopyLink(event)}
+                        className="px-3 py-1.5 bg-white text-black border border-black rounded-full hover:bg-gray-50 transition-colors text-xs"
+                      >
+                        Copy
+                      </button>
+                      <button
+                        onClick={() => handleShareEvent(event)}
+                        className="px-3 py-1.5 bg-black text-white rounded-full hover:bg-gray-900 transition-colors text-xs"
+                      >
+                        Share
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Action Buttons */}
                   <div className="flex gap-3 mb-4">
                     <button
-                      onClick={() => handleShareEvent(event)}
-                      className="flex-1 bg-black text-white py-2 rounded-full text-sm hover:bg-gray-900 transition-colors"
-                    >
-                      {shareEventId === event.id ? 'Link Copied!' : 'Share Invite'}
-                    </button>
-                    <button
                       onClick={() => router.push(`/staff/events/${event.id}/manage`)}
-                      className="flex-1 bg-gray-100 text-black py-2 rounded-full text-sm hover:bg-gray-200 transition-colors"
+                      className="flex-1 bg-gray-800 text-white py-2 rounded-full text-xs hover:bg-gray-900 transition-colors leading-tight"
                     >
                       Review Lists
                     </button>

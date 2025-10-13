@@ -134,34 +134,24 @@ export default function PromoterCapacityRequestPage() {
         {/* Current Status */}
         <div className="bg-gray-50 rounded-xl p-6 mb-6">
           <h2 className="text-lg mb-4">Current Event Status</h2>
-          
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Current capacity:</span>
-              <span>{eventInfo.currentCapacity} spots</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Spots used:</span>
-              <span>{eventInfo.spotsUsed} spots</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Available spots:</span>
-              <span>{eventInfo.currentCapacity - eventInfo.spotsUsed} spots</span>
-            </div>
-          </div>
 
-          <div className="mt-4">
-            <div className="relative">
-              <div className="bg-gray-200 rounded-full h-3 relative overflow-hidden">
-                <div 
-                  className="bg-black h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${(eventInfo.spotsUsed / eventInfo.currentCapacity) * 100}%` }}
-                ></div>
+          <div className="relative">
+            <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
+              <div
+                className="bg-black h-4 rounded-full transition-all duration-300 relative"
+                style={{ width: `${(eventInfo.spotsUsed / eventInfo.currentCapacity) * 100}%` }}
+              >
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-[10px]">
+                  {eventInfo.spotsUsed}
+                </span>
               </div>
-              <div className="flex justify-between mt-1 text-xs text-gray-500">
-                <span>Used</span>
-                <span>Capacity</span>
-              </div>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-black text-[10px]">
+                {eventInfo.currentCapacity}
+              </span>
+            </div>
+            <div className="flex justify-between mt-2">
+              <span className="text-xs text-gray-500">Approved</span>
+              <span className="text-xs text-gray-500">Available</span>
             </div>
           </div>
         </div>
@@ -187,7 +177,7 @@ export default function PromoterCapacityRequestPage() {
                 max="100"
                 value={requestedSpots}
                 onChange={(e) => setRequestedSpots(parseInt(e.target.value) || 1)}
-                className="w-20 text-center px-3 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors"
+                className="w-20 text-center px-3 py-2 border border-gray-200 rounded-full focus:border-black transition-colors"
               />
               <button
                 type="button"
@@ -201,33 +191,14 @@ export default function PromoterCapacityRequestPage() {
           </div>
 
           <div>
-            <label htmlFor="reason" className="block text-sm text-gray-600 mb-2">
-              Reason for request (optional)
-            </label>
             <textarea
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-black transition-colors resize-none"
-              placeholder="Explain why you need additional spots..."
+              placeholder="Comments"
             />
-          </div>
-
-          {/* Preview */}
-          <div className="bg-gray-50 rounded-xl p-4">
-            <h3 className="text-sm text-gray-600 mb-2">Request Preview:</h3>
-            <p className="text-sm">
-              You're requesting to increase the capacity from{' '}
-              <span className="font-medium">{eventInfo.currentCapacity}</span> to{' '}
-              <span className="font-medium">{eventInfo.currentCapacity + requestedSpots}</span> spots
-              for {eventInfo.name}.
-            </p>
-            {reason && (
-              <p className="text-sm text-gray-600 mt-2">
-                Reason: {reason}
-              </p>
-            )}
           </div>
 
           <div className="flex gap-3">
