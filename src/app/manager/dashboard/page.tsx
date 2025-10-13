@@ -88,6 +88,13 @@ export default function ManagerDashboardPage() {
   const [djSortColumn, setDjSortColumn] = useState<'name' | 'totalEvents' | 'avgAttendance' | 'lastPerformed'>('name');
   const [djSortDirection, setDjSortDirection] = useState<'asc' | 'desc'>('asc');
   const [showInviteDjModal, setShowInviteDjModal] = useState(false);
+  const [inviteDjForm, setInviteDjForm] = useState({
+    stageName: '',
+    givenName: '',
+    email: '',
+    phone: '',
+    upcomingGigDate: ''
+  });
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'guests' | 'users' | 'analytics'>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -574,6 +581,47 @@ export default function ManagerDashboardPage() {
 
     return djSortDirection === 'asc' ? comparison : -comparison;
   });
+
+  // Handle invite DJ form submission
+  const handleInviteDj = () => {
+    if (!inviteDjForm.stageName || !inviteDjForm.email) return;
+
+    const newDj: DJ = {
+      id: `dj_new_${Date.now()}`,
+      name: inviteDjForm.stageName,
+      email: inviteDjForm.email,
+      phone: inviteDjForm.phone,
+      totalEvents: 0,
+      avgAttendance: 0,
+      defaultCap: 50,
+      lastPerformed: '',
+      status: 'pending',
+      upcomingGigs: inviteDjForm.upcomingGigDate ? 1 : 0,
+      totalGuestsAdded: 0
+    };
+
+    setDjs([...djs, newDj]);
+    setShowInviteDjModal(false);
+    setInviteDjForm({
+      stageName: '',
+      givenName: '',
+      email: '',
+      phone: '',
+      upcomingGigDate: ''
+    });
+  };
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showInviteDjModal) {
+        setShowInviteDjModal(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showInviteDjModal]);
 
   if (isLoading) {
     return (
@@ -1128,6 +1176,107 @@ export default function ManagerDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Invite DJ Modal */}
+      {showInviteDjModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl mb-6">Invite New DJ</h2>
+
+            <div className="space-y-4">
+              {/* DJ/Stage Name - Required */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  DJ/Stage Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={inviteDjForm.stageName}
+                  onChange={(e) => setInviteDjForm({ ...inviteDjForm, stageName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="Enter DJ/Stage name"
+                />
+              </div>
+
+              {/* Given Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Given Name
+                </label>
+                <input
+                  type="text"
+                  value={inviteDjForm.givenName}
+                  onChange={(e) => setInviteDjForm({ ...inviteDjForm, givenName: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="Enter given name"
+                />
+              </div>
+
+              {/* Email - Required */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={inviteDjForm.email}
+                  onChange={(e) => setInviteDjForm({ ...inviteDjForm, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="Enter email address"
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={inviteDjForm.phone}
+                  onChange={(e) => setInviteDjForm({ ...inviteDjForm, phone: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="Enter phone number"
+                />
+              </div>
+
+              {/* Upcoming Gig Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Upcoming Gig Date
+                </label>
+                <input
+                  type="date"
+                  value={inviteDjForm.upcomingGigDate}
+                  onChange={(e) => setInviteDjForm({ ...inviteDjForm, upcomingGigDate: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowInviteDjModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleInviteDj}
+                disabled={!inviteDjForm.stageName || !inviteDjForm.email}
+                className={`flex-1 px-4 py-2 rounded-full transition-colors text-sm ${
+                  inviteDjForm.stageName && inviteDjForm.email
+                    ? 'bg-black text-white hover:bg-gray-900'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Send Invite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
