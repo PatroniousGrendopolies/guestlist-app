@@ -1392,9 +1392,6 @@ export default function ManagerDashboardPage() {
     return managerSortDirection === 'asc' ? comparison : -comparison;
   });
 
-  // Debug logging for managers data
-  console.log('Managers data:', managers, 'Sorted:', sortedManagers, 'Current userType:', userType);
-
   // Event History sorting handler
   const handleEventHistorySort = (column: 'date' | 'eventName' | 'attendance' | 'capacity' | 'revenue') => {
     if (eventHistorySortColumn === column) {
