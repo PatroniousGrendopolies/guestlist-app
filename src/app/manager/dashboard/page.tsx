@@ -195,6 +195,13 @@ export default function ManagerDashboardPage() {
     phone: '',
     role: '',
   });
+  const [inviteManagerForm, setInviteManagerForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
+  const [showInviteUserModal, setShowInviteUserModal] = useState(false);
+  const [inviteUserType, setInviteUserType] = useState<'dj' | 'staff' | 'promoter' | 'manager'>('dj');
   const [selectedDjId, setSelectedDjId] = useState<string | null>(null);
   const [djModalTab, setDjModalTab] = useState<'overview' | 'guests' | 'history'>('overview');
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
@@ -1520,7 +1527,9 @@ export default function ManagerDashboardPage() {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (showInviteDjModal) {
+        if (showInviteUserModal) {
+          setShowInviteUserModal(false);
+        } else if (showInviteDjModal) {
           setShowInviteDjModal(false);
         } else if (showInviteStaffModal) {
           setShowInviteStaffModal(false);
@@ -1543,6 +1552,7 @@ export default function ManagerDashboardPage() {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [
+    showInviteUserModal,
     showInviteDjModal,
     showInviteStaffModal,
     showInvitePromoterModal,
@@ -1585,7 +1595,11 @@ export default function ManagerDashboardPage() {
                 Create Event
               </button>
               <button
-                onClick={() => router.push('/manager/users')}
+                onClick={() => {
+                  setActiveTab('users');
+                  setInviteUserType('dj'); // Default to DJ
+                  setShowInviteUserModal(true);
+                }}
                 className="bg-gray-100 text-black px-6 py-2 rounded-full hover:bg-gray-200 transition-colors text-sm"
               >
                 Invite User
@@ -1957,13 +1971,16 @@ export default function ManagerDashboardPage() {
                         onClick={() => {
                           if (dayEvents.length > 0) {
                             router.push(`/manager/events/${dayEvents[0].id}`);
+                          } else {
+                            // Navigate to create event page with pre-selected date
+                            router.push(`/manager/events/create?date=${dateStr}`);
                           }
                         }}
-                        className={`min-h-[120px] p-3 rounded-xl border transition-colors flex flex-col ${
+                        className={`min-h-[120px] p-3 rounded-xl border transition-colors flex flex-col cursor-pointer ${
                           isToday
                             ? 'bg-white border-red-500/50 border-2'
                             : 'bg-white border-gray-100 hover:border-gray-300'
-                        } ${dayEvents.length > 0 ? 'cursor-pointer' : ''}`}
+                        }`}
                       >
                         <div
                           className={`text-sm mb-2 ${
@@ -4341,6 +4358,342 @@ export default function ManagerDashboardPage() {
                 disabled={!inviteStaffForm.name || !inviteStaffForm.email || !inviteStaffForm.role}
                 className={`flex-1 px-4 py-2 rounded-full transition-colors text-sm ${
                   inviteStaffForm.name && inviteStaffForm.email && inviteStaffForm.role
+                    ? 'bg-black text-white hover:bg-gray-900'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Send Invite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unified Invite User Modal */}
+      {showInviteUserModal && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            {/* User Type Selection Buttons */}
+            <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
+              <button
+                onClick={() => setInviteUserType('dj')}
+                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                  inviteUserType === 'dj'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                DJ
+              </button>
+              <button
+                onClick={() => setInviteUserType('staff')}
+                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                  inviteUserType === 'staff'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Staff
+              </button>
+              <button
+                onClick={() => setInviteUserType('promoter')}
+                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                  inviteUserType === 'promoter'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Promoter
+              </button>
+              <button
+                onClick={() => setInviteUserType('manager')}
+                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                  inviteUserType === 'manager'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Manager
+              </button>
+            </div>
+
+            {/* DJ Form */}
+            {inviteUserType === 'dj' && (
+              <>
+                <h2 className="text-2xl mb-6">Invite New DJ</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      DJ/Stage Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={inviteDjForm.stageName}
+                      onChange={e => setInviteDjForm({ ...inviteDjForm, stageName: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="Enter DJ/Stage name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Given Name</label>
+                    <input
+                      type="text"
+                      value={inviteDjForm.givenName}
+                      onChange={e => setInviteDjForm({ ...inviteDjForm, givenName: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="Enter given name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={inviteDjForm.email}
+                      onChange={e => setInviteDjForm({ ...inviteDjForm, email: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input
+                      type="tel"
+                      value={inviteDjForm.phone}
+                      onChange={e => setInviteDjForm({ ...inviteDjForm, phone: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Upcoming Gig Date
+                    </label>
+                    <input
+                      type="date"
+                      value={inviteDjForm.upcomingGigDate}
+                      onChange={e =>
+                        setInviteDjForm({ ...inviteDjForm, upcomingGigDate: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Staff Form */}
+            {inviteUserType === 'staff' && (
+              <>
+                <h2 className="text-2xl mb-6">Invite New Staff</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm mb-2">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter name"
+                      value={inviteStaffForm.name}
+                      onChange={e => setInviteStaffForm({ ...inviteStaffForm, name: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Enter email address"
+                      value={inviteStaffForm.email}
+                      onChange={e => setInviteStaffForm({ ...inviteStaffForm, email: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      placeholder="Enter phone number"
+                      value={inviteStaffForm.phone}
+                      onChange={e => setInviteStaffForm({ ...inviteStaffForm, phone: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">
+                      Role <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={inviteStaffForm.role}
+                      onChange={e => setInviteStaffForm({ ...inviteStaffForm, role: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    >
+                      <option value="">Select a role</option>
+                      <option value="Door Manager">Door Manager</option>
+                      <option value="Security">Security</option>
+                      <option value="VIP Host">VIP Host</option>
+                      <option value="Bar Manager">Bar Manager</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Promoter Form */}
+            {inviteUserType === 'promoter' && (
+              <>
+                <h2 className="text-2xl mb-6">Invite New Promoter</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm mb-2">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter name"
+                      value={invitePromoterForm.name}
+                      onChange={e =>
+                        setInvitePromoterForm({ ...invitePromoterForm, name: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Enter email address"
+                      value={invitePromoterForm.email}
+                      onChange={e =>
+                        setInvitePromoterForm({ ...invitePromoterForm, email: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      placeholder="Enter phone number"
+                      value={invitePromoterForm.phone}
+                      onChange={e =>
+                        setInvitePromoterForm({ ...invitePromoterForm, phone: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">Instagram</label>
+                    <input
+                      type="text"
+                      placeholder="@username"
+                      value={invitePromoterForm.instagram}
+                      onChange={e =>
+                        setInvitePromoterForm({ ...invitePromoterForm, instagram: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Manager Form */}
+            {inviteUserType === 'manager' && (
+              <>
+                <h2 className="text-2xl mb-6">Invite New Manager</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm mb-2">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter name"
+                      value={inviteManagerForm.name}
+                      onChange={e =>
+                        setInviteManagerForm({ ...inviteManagerForm, name: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Enter email address"
+                      value={inviteManagerForm.email}
+                      onChange={e =>
+                        setInviteManagerForm({ ...inviteManagerForm, email: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      placeholder="Enter phone number"
+                      value={inviteManagerForm.phone}
+                      onChange={e =>
+                        setInviteManagerForm({ ...inviteManagerForm, phone: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowInviteUserModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (inviteUserType === 'dj') {
+                    handleInviteDj();
+                  } else if (inviteUserType === 'staff') {
+                    // Call staff invite handler
+                  } else if (inviteUserType === 'promoter') {
+                    // Call promoter invite handler
+                  } else if (inviteUserType === 'manager') {
+                    // Call manager invite handler
+                  }
+                  setShowInviteUserModal(false);
+                }}
+                disabled={
+                  (inviteUserType === 'dj' && (!inviteDjForm.stageName || !inviteDjForm.email)) ||
+                  (inviteUserType === 'staff' &&
+                    (!inviteStaffForm.name || !inviteStaffForm.email || !inviteStaffForm.role)) ||
+                  (inviteUserType === 'promoter' &&
+                    (!invitePromoterForm.name || !invitePromoterForm.email)) ||
+                  (inviteUserType === 'manager' &&
+                    (!inviteManagerForm.name || !inviteManagerForm.email))
+                }
+                className={`flex-1 px-4 py-2 rounded-full transition-colors text-sm ${
+                  (inviteUserType === 'dj' && inviteDjForm.stageName && inviteDjForm.email) ||
+                  (inviteUserType === 'staff' &&
+                    inviteStaffForm.name &&
+                    inviteStaffForm.email &&
+                    inviteStaffForm.role) ||
+                  (inviteUserType === 'promoter' &&
+                    invitePromoterForm.name &&
+                    invitePromoterForm.email) ||
+                  (inviteUserType === 'manager' &&
+                    inviteManagerForm.name &&
+                    inviteManagerForm.email)
                     ? 'bg-black text-white hover:bg-gray-900'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
