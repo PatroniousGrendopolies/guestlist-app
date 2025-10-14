@@ -37,16 +37,9 @@ export default function CreateEventPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [draggedDJId, setDraggedDJId] = useState<string | null>(null);
   const router = useRouter();
-
-  // Mock dates that have existing events
-  const mockEventDates = [
-    '2025-10-15',
-    '2025-10-22',
-    '2025-11-08',
-    '2025-11-20',
-  ];
 
   useEffect(() => {
     // Check authentication
@@ -82,6 +75,46 @@ export default function CreateEventPage() {
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [showNewDJModal]);
+
+  // Keyboard navigation for DJ dropdown
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (searchTerm.trim() === '') return;
+
+      const filtered = existingDJs.filter(
+        dj =>
+          dj.stageName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          dj.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      if (filtered.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.min(prev + 1, filtered.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setHighlightedIndex(prev => Math.max(prev - 1, 0));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filtered.length) {
+          handleAddExistingDJ(filtered[highlightedIndex]);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setSearchTerm('');
+        setHighlightedIndex(0);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchTerm, existingDJs, highlightedIndex, selectedDJs, capacityDistribution, totalCapacity]);
+
+  // Reset highlighted index when search term changes
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchTerm]);
 
   const handleAddExistingDJ = (dj: DJ) => {
     if (!selectedDJs.find(selected => selected.id === dj.id)) {
@@ -173,6 +206,30 @@ export default function CreateEventPage() {
     }
   };
 
+  const handleDragStart = (djId: string) => {
+    setDraggedDJId(djId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (targetDJId: string) => {
+    if (!draggedDJId || draggedDJId === targetDJId) return;
+
+    const draggedIndex = selectedDJs.findIndex(dj => dj.id === draggedDJId);
+    const targetIndex = selectedDJs.findIndex(dj => dj.id === targetDJId);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const newDJs = [...selectedDJs];
+    const [draggedDJ] = newDJs.splice(draggedIndex, 1);
+    newDJs.splice(targetIndex, 0, draggedDJ);
+
+    setSelectedDJs(newDJs);
+    setDraggedDJId(null);
+  };
+
   const filteredDJs = existingDJs.filter(
     dj =>
       dj.stageName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -181,193 +238,41 @@ export default function CreateEventPage() {
 
   const totalAllocated = selectedDJs.reduce((sum, dj) => sum + (dj.capacity || 0), 0);
 
-  // Calendar helper functions
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    return { daysInMonth, startingDayOfWeek };
-  };
-
-  const generateCalendarDays = () => {
-    const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
-    const days = [];
-
-    // Add empty cells for days before month starts
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-
-    // Add actual days
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day);
-    }
-
-    return days;
-  };
-
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
-  };
-
-  const handleDateSelect = (day: number) => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const selectedDate = new Date(year, month, day);
-
-    // Check if date is in the past
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (selectedDate < today) {
-      return;
-    }
-
-    // Format as YYYY-MM-DD
-    const formattedDate = selectedDate.toISOString().split('T')[0];
-    setEventDate(formattedDate);
-  };
-
-  const isDateSelected = (day: number) => {
-    if (!eventDate) return false;
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const dateStr = new Date(year, month, day).toISOString().split('T')[0];
-    return dateStr === eventDate;
-  };
-
-  const hasEvent = (day: number) => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const dateStr = new Date(year, month, day).toISOString().split('T')[0];
-    return mockEventDates.includes(dateStr);
-  };
-
-  const isPastDate = (day: number) => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const date = new Date(year, month, day);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return date < today;
-  };
-
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
-        <div className="max-w-2xl mx-auto flex items-center gap-6">
-          <button
-            onClick={() => router.push('/manager/dashboard')}
-            className="text-gray-600 hover:text-black transition-colors"
-          >
-            ← Back
-          </button>
+        <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-light">Create Event</h1>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-6">
         <div className="space-y-8">
-          {/* Date Selection - Centered at top */}
-          <div className="mb-8">
-            {/* Calendar - Centered */}
-            <div className="w-full">
-              <div className="rounded-3xl py-3 w-full max-h-[320px]">
-                {/* Calendar Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <button
-                    onClick={handlePrevMonth}
-                    className="text-gray-600 hover:text-black transition-colors p-1"
-                    type="button"
-                  >
-                    ←
-                  </button>
-                  <h3 className="text-base font-medium">
-                    {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-                  </h3>
-                  <button
-                    onClick={handleNextMonth}
-                    className="text-gray-600 hover:text-black transition-colors p-1"
-                    type="button"
-                  >
-                    →
-                  </button>
-                </div>
-
-                {/* Days of week */}
-                <div className="grid grid-cols-7 gap-2 mb-1">
-                  {dayNames.map(day => (
-                    <div key={day} className="text-center text-[10px] text-gray-500 font-medium py-1">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Calendar days */}
-                <div className="grid grid-cols-7 gap-2">
-                  {generateCalendarDays().map((day, index) => {
-                    if (day === null) {
-                      return <div key={`empty-${index}`} className="aspect-square" />;
-                    }
-
-                    const isSelected = isDateSelected(day);
-                    const hasExistingEvent = hasEvent(day);
-                    const isPast = isPastDate(day);
-
-                    return (
-                      <button
-                        key={day}
-                        onClick={() => handleDateSelect(day)}
-                        disabled={isPast}
-                        type="button"
-                        className={`
-                          aspect-square rounded-full flex items-center justify-center text-sm
-                          transition-colors
-                          ${
-                            isSelected
-                              ? 'bg-black text-white font-medium'
-                              : hasExistingEvent
-                              ? 'bg-gray-300 text-gray-900 hover:bg-gray-400'
-                              : isPast
-                              ? 'text-gray-300 cursor-not-allowed'
-                              : 'hover:bg-gray-100 text-gray-900'
-                          }
-                        `}
-                      >
-                        {day}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+          {/* Event Title and Date */}
+          <div className="flex gap-6">
+            {/* Left: Event Title */}
+            <div className="flex-1">
+              <label className="block text-sm text-gray-700 mb-2">Event Title (optional)</label>
+              <input
+                type="text"
+                value={eventTitle}
+                onChange={e => setEventTitle(e.target.value)}
+                placeholder="e.g., Summer Kickoff Party"
+                className="w-full px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors"
+              />
             </div>
-          </div>
 
-          {/* Event Title */}
-          <div>
-            <label className="block text-sm text-gray-700 mb-2">Event Title (optional)</label>
-            <input
-              type="text"
-              value={eventTitle}
-              onChange={e => setEventTitle(e.target.value)}
-              placeholder="e.g., Summer Kickoff Party"
-              className="w-full px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors"
-            />
+            {/* Right: Date Selection */}
+            <div className="flex-1">
+              <label className="block text-sm text-gray-700 mb-2">Event Date</label>
+              <input
+                type="date"
+                value={eventDate}
+                onChange={e => setEventDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors"
+              />
+            </div>
           </div>
 
           {/* DJ Selection */}
@@ -383,7 +288,7 @@ export default function CreateEventPage() {
             </div>
 
             {/* Search existing DJs */}
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <input
                 type="text"
                 placeholder="Search existing DJs..."
@@ -391,45 +296,66 @@ export default function CreateEventPage() {
                 onChange={e => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors"
               />
-            </div>
 
-            {/* Existing DJs list - only show when searching */}
-            {searchTerm.trim() !== '' && (
-              <div className="grid gap-2 mb-6 max-h-60 overflow-y-auto">
-                {filteredDJs.map(dj => (
-                  <div
-                    key={dj.id}
-                    className="flex items-center justify-between p-3 border border-gray-200 rounded-3xl hover:bg-gray-50 transition-colors"
-                  >
-                    <div>
-                      <p className="font-medium">{dj.stageName}</p>
-                      <p className="text-sm text-gray-600">{dj.name}</p>
-                    </div>
-                    <button
-                      onClick={() => handleAddExistingDJ(dj)}
-                      disabled={selectedDJs.some(selected => selected.id === dj.id)}
-                      className="px-3 py-1 bg-black text-white rounded-full hover:bg-gray-900 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+              {/* Existing DJs list - dropdown style */}
+              {searchTerm.trim() !== '' && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
+                  {filteredDJs.map((dj, index) => (
+                    <div
+                      key={dj.id}
+                      className={`flex items-center justify-between p-3 border-b border-gray-100 last:border-b-0 transition-colors ${
+                        index === highlightedIndex ? 'bg-gray-100' : 'hover:bg-gray-50'
+                      }`}
                     >
-                      {selectedDJs.some(selected => selected.id === dj.id) ? 'Added' : 'Add'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <div>
+                        <p className="font-medium">{dj.stageName}</p>
+                        <p className="text-sm text-gray-600">{dj.name}</p>
+                      </div>
+                      <button
+                        onClick={() => handleAddExistingDJ(dj)}
+                        disabled={selectedDJs.some(selected => selected.id === dj.id)}
+                        className="px-3 py-1 bg-black text-white rounded-full hover:bg-gray-900 transition-colors text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      >
+                        {selectedDJs.some(selected => selected.id === dj.id) ? 'Added' : 'Add'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Selected DJs */}
             {selectedDJs.length > 0 && (
               <div>
                 <h3 className="text-lg mb-3">Selected DJs</h3>
                 <div className="space-y-3">
-                  {selectedDJs.map((dj, index) => (
+                  {selectedDJs.map(dj => (
                     <div
                       key={dj.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-3xl"
+                      draggable
+                      onDragStart={() => handleDragStart(dj.id)}
+                      onDragOver={handleDragOver}
+                      onDrop={() => handleDrop(dj.id)}
+                      className={`flex items-center justify-between p-4 bg-gray-50 rounded-3xl transition-opacity ${
+                        draggedDJId === dj.id ? 'opacity-50' : ''
+                      }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-400">#{index + 1}</span>
+                        <div className="flex items-center gap-3">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className="text-gray-400 cursor-move"
+                          >
+                            <circle cx="7" cy="5" r="1.5" />
+                            <circle cx="7" cy="10" r="1.5" />
+                            <circle cx="7" cy="15" r="1.5" />
+                            <circle cx="13" cy="5" r="1.5" />
+                            <circle cx="13" cy="10" r="1.5" />
+                            <circle cx="13" cy="15" r="1.5" />
+                          </svg>
                           <div>
                             <p className="font-medium">{dj.stageName}</p>
                             <p className="text-sm text-gray-600">{dj.name}</p>
@@ -449,7 +375,7 @@ export default function CreateEventPage() {
                               onChange={e =>
                                 handleCapacityChange(dj.id, parseInt(e.target.value) || 0)
                               }
-                              className="w-16 px-2 py-1 border border-gray-200 rounded text-sm"
+                              className="w-16 px-2 py-1 border border-gray-200 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                           </div>
                         )}
@@ -472,10 +398,11 @@ export default function CreateEventPage() {
           <div>
             <h2 className="text-lg mb-4">Capacity Settings</h2>
 
-            <div className="flex gap-6">
-              {/* Left side - Total Capacity Input */}
-              <div className="flex-1">
-                <div>
+            <div className="space-y-6">
+              {/* Capacity and Distribution Side by Side */}
+              <div className="flex gap-6">
+                {/* Left: Total Capacity Input */}
+                <div className="flex-1">
                   <label className="block text-sm text-gray-700 mb-2">Total Guestlist Capacity</label>
                   <input
                     type="number"
@@ -485,61 +412,67 @@ export default function CreateEventPage() {
                     className="px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors"
                   />
                 </div>
-              </div>
 
-              {/* Right side - Capacity Distribution Display */}
-              <div className="flex-1">
-                {selectedDJs.length > 0 && (
-                  <div className="p-4 bg-gray-50 rounded-3xl">
-                    <p className="text-sm text-gray-600">
-                      Total allocated: {totalAllocated} / {totalCapacity}
-                      {totalAllocated > totalCapacity && (
-                        <span className="text-red-600 ml-2">(Over capacity!)</span>
-                      )}
-                    </p>
+                {/* Right: Distribution Settings */}
+                <div className="flex-1">
+                  <label className="block text-sm text-gray-700 mb-2">Distribution</label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="distribution"
+                        checked={capacityDistribution === 'equal'}
+                        onChange={() => setCapacityDistribution('equal')}
+                        className="text-black"
+                      />
+                      <span className="text-sm">Share capacity equally</span>
+                    </label>
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="distribution"
+                        checked={capacityDistribution === 'individual'}
+                        onChange={() => setCapacityDistribution('individual')}
+                        className="text-black"
+                      />
+                      <span className="text-sm">Set individual limits</span>
+                    </label>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
 
-            {/* Distribution Settings - Below capacity fields */}
-            <div className="mt-4">
-              <label className="block text-sm text-gray-700 mb-3">Distribution</label>
-              <div className="space-y-2">
-                <label className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="distribution"
-                    checked={capacityDistribution === 'equal'}
-                    onChange={() => setCapacityDistribution('equal')}
-                    className="text-black"
-                  />
-                  <span className="text-sm">Share capacity equally</span>
-                </label>
-                <label className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="distribution"
-                    checked={capacityDistribution === 'individual'}
-                    onChange={() => setCapacityDistribution('individual')}
-                    className="text-black"
-                  />
-                  <span className="text-sm">Set individual limits</span>
-                </label>
-              </div>
+              {/* Capacity Allocation Display */}
+              {selectedDJs.length > 0 && (
+                <div className="p-4 bg-gray-50 rounded-3xl">
+                  <p className="text-sm text-gray-600">
+                    Total allocated: {totalAllocated} / {totalCapacity}
+                    {totalAllocated > totalCapacity && (
+                      <span className="text-red-600 ml-2">(Over capacity!)</span>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Create Button */}
-          <button
-            onClick={handleCreateEvent}
-            disabled={
-              !eventDate || selectedDJs.length === 0 || isLoading || totalAllocated > totalCapacity
-            }
-            className="w-full bg-black text-white py-3 rounded-full hover:bg-gray-900 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
-          >
-            {isLoading ? 'Creating Event...' : 'Create Event'}
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.push('/manager/dashboard')}
+              className="flex-1 bg-gray-100 text-black py-3 rounded-full hover:bg-gray-200 transition-colors text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreateEvent}
+              disabled={
+                !eventDate || selectedDJs.length === 0 || isLoading || totalAllocated > totalCapacity
+              }
+              className="flex-1 bg-black text-white py-3 rounded-full hover:bg-gray-900 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+            >
+              {isLoading ? 'Creating Event...' : 'Create Event'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -595,7 +528,9 @@ export default function CreateEventPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Instagram Handle (optional)</label>
+                <label className="block text-sm text-gray-700 mb-1">
+                  Instagram Handle (optional)
+                </label>
                 <input
                   type="text"
                   value={newDJ.instagram}
