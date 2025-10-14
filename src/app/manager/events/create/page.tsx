@@ -39,6 +39,8 @@ export default function CreateEventPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [draggedDJId, setDraggedDJId] = useState<string | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const router = useRouter();
 
   useEffect(() => {
@@ -115,6 +117,21 @@ export default function CreateEventPage() {
   useEffect(() => {
     setHighlightedIndex(0);
   }, [searchTerm]);
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    if (!showCalendar) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.calendar-container')) {
+        setShowCalendar(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCalendar]);
 
   const handleAddExistingDJ = (dj: DJ) => {
     if (!selectedDJs.find(selected => selected.id === dj.id)) {
@@ -223,11 +240,72 @@ export default function CreateEventPage() {
     if (draggedIndex === -1 || targetIndex === -1) return;
 
     const newDJs = [...selectedDJs];
-    const [draggedDJ] = newDJs.splice(draggedIndex, 1);
-    newDJs.splice(targetIndex, 0, draggedDJ);
+    // Swap positions
+    [newDJs[draggedIndex], newDJs[targetIndex]] = [newDJs[targetIndex], newDJs[draggedIndex]];
 
     setSelectedDJs(newDJs);
     setDraggedDJId(null);
+  };
+
+  // Calendar helper functions
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    return { daysInMonth, startingDayOfWeek };
+  };
+
+  const generateCalendarDays = () => {
+    const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
+    const days = [];
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(day);
+    }
+    return days;
+  };
+
+  const handleDateSelect = (day: number) => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const selectedDate = new Date(year, month, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) return;
+    const formattedDate = selectedDate.toISOString().split('T')[0];
+    setEventDate(formattedDate);
+    setShowCalendar(false);
+  };
+
+  const isDateSelected = (day: number) => {
+    if (!eventDate) return false;
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const dateStr = new Date(year, month, day).toISOString().split('T')[0];
+    return dateStr === eventDate;
+  };
+
+  const isPastDate = (day: number) => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const date = new Date(year, month, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
+  };
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const formatDisplayDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const filteredDJs = existingDJs.filter(
@@ -242,7 +320,7 @@ export default function CreateEventPage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl font-light">Create Event</h1>
         </div>
       </div>
@@ -264,14 +342,85 @@ export default function CreateEventPage() {
             </div>
 
             {/* Right: Date Selection */}
-            <div className="flex-1">
+            <div className="flex-1 relative calendar-container">
               <label className="block text-sm text-gray-700 mb-2">Event Date</label>
               <input
-                type="date"
-                value={eventDate}
-                onChange={e => setEventDate(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors"
+                type="text"
+                value={formatDisplayDate(eventDate)}
+                onClick={() => setShowCalendar(!showCalendar)}
+                readOnly
+                placeholder="Select date"
+                className="w-full px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors cursor-pointer"
               />
+
+              {/* Custom Calendar Dropdown */}
+              {showCalendar && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-20">
+                  {/* Calendar Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                      className="text-gray-600 hover:text-black transition-colors p-1"
+                      type="button"
+                    >
+                      ←
+                    </button>
+                    <h3 className="text-base font-medium">
+                      {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                    </h3>
+                    <button
+                      onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                      className="text-gray-600 hover:text-black transition-colors p-1"
+                      type="button"
+                    >
+                      →
+                    </button>
+                  </div>
+
+                  {/* Days of week */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {dayNames.map(day => (
+                      <div key={day} className="text-center text-xs text-gray-500 font-medium py-1">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Calendar days */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {generateCalendarDays().map((day, index) => {
+                      if (day === null) {
+                        return <div key={`empty-${index}`} className="aspect-square" />;
+                      }
+
+                      const isSelected = isDateSelected(day);
+                      const isPast = isPastDate(day);
+
+                      return (
+                        <button
+                          key={day}
+                          onClick={() => handleDateSelect(day)}
+                          disabled={isPast}
+                          type="button"
+                          className={`
+                            aspect-square rounded-full flex items-center justify-center text-sm
+                            transition-colors
+                            ${
+                              isSelected
+                                ? 'bg-black text-white font-medium'
+                                : isPast
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'hover:bg-gray-100 text-gray-900'
+                            }
+                          `}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -281,9 +430,9 @@ export default function CreateEventPage() {
               <h2 className="text-lg">DJ Selection</h2>
               <button
                 onClick={() => setShowNewDJModal(true)}
-                className="bg-gray-100 text-black px-4 py-2 rounded-full hover:bg-gray-200 transition-colors text-sm"
+                className="bg-gray-300 text-black px-6 py-3 rounded-full hover:bg-gray-400 transition-colors"
               >
-                Add New DJ
+                Invite New DJ
               </button>
             </div>
 
@@ -366,16 +515,15 @@ export default function CreateEventPage() {
                       <div className="flex items-center gap-3">
                         {capacityDistribution === 'individual' && (
                           <div className="flex items-center gap-2">
-                            <label className="text-sm text-gray-600">Capacity:</label>
+                            <label className="text-sm text-gray-600">Allotted Capacity:</label>
                             <input
                               type="number"
                               min="0"
-                              max={totalCapacity}
                               value={dj.capacity || 0}
                               onChange={e =>
                                 handleCapacityChange(dj.id, parseInt(e.target.value) || 0)
                               }
-                              className="w-16 px-2 py-1 border border-gray-200 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-16 px-3 py-1 bg-white border border-gray-200 rounded-full text-sm text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                           </div>
                         )}
@@ -409,7 +557,7 @@ export default function CreateEventPage() {
                     min="1"
                     value={totalCapacity}
                     onChange={e => setTotalCapacity(parseInt(e.target.value) || 75)}
-                    className="px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors"
+                    className="px-4 py-2 border border-gray-200 rounded-3xl focus:border-black transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
 
@@ -423,7 +571,7 @@ export default function CreateEventPage() {
                         name="distribution"
                         checked={capacityDistribution === 'equal'}
                         onChange={() => setCapacityDistribution('equal')}
-                        className="text-black"
+                        className="accent-black"
                       />
                       <span className="text-sm">Share capacity equally</span>
                     </label>
@@ -433,25 +581,13 @@ export default function CreateEventPage() {
                         name="distribution"
                         checked={capacityDistribution === 'individual'}
                         onChange={() => setCapacityDistribution('individual')}
-                        className="text-black"
+                        className="accent-black"
                       />
                       <span className="text-sm">Set individual limits</span>
                     </label>
                   </div>
                 </div>
               </div>
-
-              {/* Capacity Allocation Display */}
-              {selectedDJs.length > 0 && (
-                <div className="p-4 bg-gray-50 rounded-3xl">
-                  <p className="text-sm text-gray-600">
-                    Total allocated: {totalAllocated} / {totalCapacity}
-                    {totalAllocated > totalCapacity && (
-                      <span className="text-red-600 ml-2">(Over capacity!)</span>
-                    )}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
@@ -466,7 +602,10 @@ export default function CreateEventPage() {
             <button
               onClick={handleCreateEvent}
               disabled={
-                !eventDate || selectedDJs.length === 0 || isLoading || totalAllocated > totalCapacity
+                !eventDate ||
+                selectedDJs.length === 0 ||
+                isLoading ||
+                (capacityDistribution === 'equal' && totalAllocated > totalCapacity)
               }
               className="flex-1 bg-black text-white py-3 rounded-full hover:bg-gray-900 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
             >
@@ -478,13 +617,13 @@ export default function CreateEventPage() {
 
       {/* New DJ Modal */}
       {showNewDJModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-6 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6 z-50">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm">
             <h3 className="text-lg mb-4">Add New DJ</h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Stage Name *</label>
+                <label className="block text-sm text-gray-700 mb-1">DJ Name *</label>
                 <input
                   type="text"
                   value={newDJ.stageName}
