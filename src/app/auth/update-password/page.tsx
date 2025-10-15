@@ -3,7 +3,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function UpdatePasswordPage() {
     }
 
     startTransition(async () => {
-      // Use the single Supabase client instance
+      const supabase = createClient();
       // Supabase client automatically handles the session from the recovery token in the URL.
       const { error } = await supabase.auth.updateUser({ password });
 
@@ -52,9 +52,7 @@ export default function UpdatePasswordPage() {
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Update Password</h1>
-        <p className="text-center text-gray-600 mb-6">
-          Enter your new password below.
-        </p>
+        <p className="text-center text-gray-600 mb-6">Enter your new password below.</p>
         <form onSubmit={handleUpdatePassword} className="space-y-6">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
@@ -65,13 +63,16 @@ export default function UpdatePasswordPage() {
               name="password"
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               required
             />
           </div>
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Confirm New Password
             </label>
             <input
@@ -79,7 +80,7 @@ export default function UpdatePasswordPage() {
               name="confirmPassword"
               id="confirmPassword"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={e => setConfirmPassword(e.target.value)}
               className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               required
             />
@@ -93,10 +94,14 @@ export default function UpdatePasswordPage() {
           </button>
         </form>
         {message && (
-          <div className={`mt-6 p-4 rounded-md text-sm font-medium border ${
-            messageType === 'success' ? 'bg-green-50 border-green-300 text-green-700' :
-            'bg-red-50 border-red-300 text-red-700'
-          }`} role="alert">
+          <div
+            className={`mt-6 p-4 rounded-md text-sm font-medium border ${
+              messageType === 'success'
+                ? 'bg-green-50 border-green-300 text-green-700'
+                : 'bg-red-50 border-red-300 text-red-700'
+            }`}
+            role="alert"
+          >
             {message}
           </div>
         )}

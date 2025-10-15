@@ -1,4 +1,4 @@
-import { supabase as supabaseClient } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import * as bcrypt from 'bcryptjs';
 
 export interface GuestAuthData {
@@ -16,7 +16,7 @@ export interface GuestSession {
 }
 
 export class GuestAuthService {
-  private supabase = supabaseClient;
+  private supabase = createClient();
 
   /**
    * Register a new guest with email and password
@@ -371,13 +371,12 @@ export class GuestAuthService {
     instagram?: string
   ): Promise<boolean> {
     try {
-      const { data: ban } = await this.supabase
-        .rpc('is_guest_banned', {
-          p_guest_id: guestId,
-          p_email: email,
-          p_phone: phone,
-          p_instagram: instagram,
-        });
+      const { data: ban } = await this.supabase.rpc('is_guest_banned', {
+        p_guest_id: guestId,
+        p_email: email,
+        p_phone: phone,
+        p_instagram: instagram,
+      });
 
       return ban || false;
     } catch (error) {
@@ -387,8 +386,9 @@ export class GuestAuthService {
   }
 
   private generateResetToken(): string {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
+    return (
+      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    );
   }
 
   private async sendVerificationEmail(email: string, guestId: string): Promise<void> {

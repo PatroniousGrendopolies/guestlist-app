@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function TestDBPage() {
   const [result, setResult] = useState('');
@@ -12,6 +12,7 @@ export default function TestDBPage() {
     setResult('Testing...');
 
     try {
+      const supabase = createClient();
       // Test direct insert into guests table
       const { data, error } = await supabase
         .from('guests')
@@ -41,16 +42,18 @@ export default function TestDBPage() {
     setResult('Checking tables...');
 
     try {
-      // Test if guests table exists
-      const { data, error } = await supabase
+      const supabase = createClient();
+      // Test if guests table exists by selecting with count
+      const { count, error } = await supabase
         .from('guests')
-        .select('count(*)')
-        .limit(1);
+        .select('*', { count: 'exact', head: true });
 
       if (error) {
-        setResult(`Table check error: ${error.message}\nDetails: ${JSON.stringify(error, null, 2)}`);
+        setResult(
+          `Table check error: ${error.message}\nDetails: ${JSON.stringify(error, null, 2)}`
+        );
       } else {
-        setResult(`Guests table exists! Data: ${JSON.stringify(data, null, 2)}`);
+        setResult(`✅ Guests table exists!\nCurrent guest count: ${count || 0}`);
       }
     } catch (err) {
       setResult(`Exception: ${err}`);
@@ -63,20 +66,12 @@ export default function TestDBPage() {
     <div className="min-h-screen p-xl">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-xl">Database Test Page</h1>
-        
+
         <div className="flex gap-md mb-xl">
-          <button
-            onClick={testTableExists}
-            disabled={isLoading}
-            className="btn btn-secondary"
-          >
+          <button onClick={testTableExists} disabled={isLoading} className="btn btn-secondary">
             Test Table Exists
           </button>
-          <button
-            onClick={testGuestInsert}
-            disabled={isLoading}
-            className="btn btn-primary"
-          >
+          <button onClick={testGuestInsert} disabled={isLoading} className="btn btn-primary">
             Test Guest Insert
           </button>
         </div>

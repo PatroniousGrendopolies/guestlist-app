@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import { UserRole } from '@/types/enums';
 import Link from 'next/link';
 
@@ -35,9 +35,12 @@ export default function EventsPage() {
   useEffect(() => {
     const fetchUserAndEvents = async () => {
       try {
+        const supabase = createClient();
         // Check authentication and role
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
         if (!authUser) {
           router.push('/auth/login');
           return;
@@ -75,7 +78,8 @@ export default function EventsPage() {
         // Fetch events with venue information
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
-          .select(`
+          .select(
+            `
             id,
             name,
             date,
@@ -87,7 +91,8 @@ export default function EventsPage() {
             venues:venue_id (
               name
             )
-          `)
+          `
+          )
           .order('date', { ascending: true });
 
         if (eventsError) {
@@ -108,6 +113,7 @@ export default function EventsPage() {
   }, [router]);
 
   const handleSignOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/auth/login');
   };
@@ -129,7 +135,7 @@ export default function EventsPage() {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -159,9 +165,7 @@ export default function EventsPage() {
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Events Management</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500">
-              {user.email}
-            </span>
+            <span className="text-sm text-gray-500">{user.email}</span>
             <button
               onClick={handleSignOut}
               className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
@@ -182,8 +186,18 @@ export default function EventsPage() {
                 href="/dashboard/events/create"
                 className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                <svg className="-ml-0.5 mr-1.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  className="-ml-0.5 mr-1.5 h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Create Event
               </Link>
@@ -192,8 +206,18 @@ export default function EventsPage() {
             {/* Events List */}
             {events.length === 0 ? (
               <div className="text-center py-12">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-6 0h6M8 7h8v12a1 1 0 01-1 1H9a1 1 0 01-1-1V7z" />
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-6 0h6M8 7h8v12a1 1 0 01-1 1H9a1 1 0 01-1-1V7z"
+                  />
                 </svg>
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No events</h3>
                 <p className="mt-1 text-sm text-gray-500">Get started by creating a new event.</p>
@@ -202,8 +226,18 @@ export default function EventsPage() {
                     href="/dashboard/events/create"
                     className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
                   >
-                    <svg className="-ml-0.5 mr-1.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <svg
+                      className="-ml-0.5 mr-1.5 h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                     Create Event
                   </Link>
@@ -211,19 +245,15 @@ export default function EventsPage() {
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {events.map((event) => (
+                {events.map(event => (
                   <div
                     key={event.id}
                     className="relative rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-lg font-medium text-gray-900 truncate">
-                          {event.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {formatDate(event.date)}
-                        </p>
+                        <h3 className="text-lg font-medium text-gray-900 truncate">{event.name}</h3>
+                        <p className="text-sm text-gray-500 mt-1">{formatDate(event.date)}</p>
                         <p className="text-sm text-gray-500">
                           {event.venue?.name || 'Unknown Venue'}
                         </p>
@@ -231,11 +261,13 @@ export default function EventsPage() {
                           Capacity: {event.max_total_capacity}
                         </p>
                       </div>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(event.status)}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(event.status)}`}
+                      >
                         {event.status}
                       </span>
                     </div>
-                    
+
                     <div className="mt-4 flex space-x-3">
                       <Link
                         href={`/dashboard/events/${event.id}`}

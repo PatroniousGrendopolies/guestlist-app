@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function RegisterPage() {
     setSuccessMessage(null);
 
     try {
-      // Use the single Supabase client instance
+      const supabase = createClient();
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -58,18 +58,14 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
-          Create an Account
-        </h1>
+        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">Create an Account</h1>
 
         {successMessage && (
           <div className="mb-4 rounded-md bg-green-50 p-4 text-sm text-green-700">
             {successMessage}
           </div>
         )}
-        {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">{error}</div>
-        )}
+        {error && <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -82,7 +78,7 @@ export default function RegisterPage() {
               type="text"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
               placeholder="John Doe"
             />
@@ -98,7 +94,7 @@ export default function RegisterPage() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
               placeholder="your@email.com"
             />
@@ -114,7 +110,7 @@ export default function RegisterPage() {
               type="password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
             />
           </div>
@@ -125,7 +121,7 @@ export default function RegisterPage() {
               name="consent"
               type="checkbox"
               checked={consent}
-              onChange={(e) => setConsent(e.target.checked)}
+              onChange={e => setConsent(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
             <label htmlFor="consent" className="ml-2 block text-sm text-gray-900">

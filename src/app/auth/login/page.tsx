@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function StaffLoginPage() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export default function StaffLoginPage() {
     setError('');
 
     try {
+      const supabase = createClient();
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -44,9 +45,7 @@ export default function StaffLoginPage() {
         {/* Header */}
         <div className="text-center mb-4xl">
           <h1 className="text-3xl font-light mb-lg">Staff Portal</h1>
-          <p className="text-lg text-gray-600">
-            Sign in to access the management dashboard
-          </p>
+          <p className="text-lg text-gray-600">Sign in to access the management dashboard</p>
         </div>
 
         {/* Login Card */}
@@ -71,7 +70,7 @@ export default function StaffLoginPage() {
                   className="input"
                   placeholder="your@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   autoComplete="email"
                 />
@@ -88,18 +87,14 @@ export default function StaffLoginPage() {
                   className="input"
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
                 />
               </div>
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn btn-primary btn-lg"
-              >
+              <button type="submit" disabled={isLoading} className="btn btn-primary btn-lg">
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
@@ -109,14 +104,12 @@ export default function StaffLoginPage() {
         {/* Bottom Links */}
         <div className="text-center mt-3xl space-y-md">
           <p className="text-sm text-gray-500">
-            Are you a guest? 
+            Are you a guest?
             <a href="/guest/auth" className="ml-1 text-black hover:underline">
               Join the guest list
             </a>
           </p>
-          <p className="text-sm text-gray-400">
-            Contact your manager if you need access
-          </p>
+          <p className="text-sm text-gray-400">Contact your manager if you need access</p>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GuestAuthService, GuestSession } from '@/lib/auth/guest-auth';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import { useToast, ToastProvider } from '@/components/ui/ToastProvider';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { SafeStorage } from '@/lib/utils/safeStorage';
@@ -34,7 +34,15 @@ function GuestDashboardContent() {
         }
 
         const guestSession = JSON.parse(sessionData);
-        
+
+        // For development: Use session data directly since backend is not fully implemented
+        // TODO: Re-enable backend validation when database is ready
+        setGuest(guestSession);
+
+        // Mock plus-one count for development
+        setPlusOneCount(2);
+
+        /* Production code - enable when backend is ready:
         // Validate session and fetch latest guest data
         const currentGuest = await guestAuth.getGuestSession(guestSession.guestId);
         if (!currentGuest) {
@@ -45,16 +53,16 @@ function GuestDashboardContent() {
         }
 
         setGuest(currentGuest);
-        
+
         // Load guest's plus-one count from database
         await loadGuestData(currentGuest.guestId);
-        
-        // Check if Web Share API is supported
-        setShareSupported(typeof navigator !== 'undefined' && 'share' in navigator);
-        
+
         // Load friends list
         await loadFriendsList(currentGuest.guestId);
-        
+        */
+
+        // Check if Web Share API is supported
+        setShareSupported(typeof navigator !== 'undefined' && 'share' in navigator);
       } catch (err) {
         console.error('Session initialization error:', err);
         setError('Failed to load dashboard data');
@@ -82,6 +90,7 @@ function GuestDashboardContent() {
 
   const loadGuestData = async (guestId: string) => {
     try {
+      const supabase = createClient();
       // Load guest's plus-one settings from database
       const { data: guestData, error: guestError } = await supabase
         .from('guests')
@@ -103,6 +112,7 @@ function GuestDashboardContent() {
 
   const loadFriendsList = async (guestId: string) => {
     try {
+      const supabase = createClient();
       const { data, error } = await supabase
         .from('guests')
         .select('id, first_name, last_name, email, phone, created_at')
@@ -129,11 +139,17 @@ function GuestDashboardContent() {
 
   const handleUpdatePlusOne = async (change: number) => {
     if (!guest) return;
-    
+
     const newCount = Math.max(0, Math.min(10, plusOneCount + change));
-    const previousCount = plusOneCount;
     setPlusOneCount(newCount);
-    
+
+    // For development: Just update local state since backend is not fully implemented
+    // TODO: Re-enable database updates when backend is ready
+    showToast(`Plus-one count updated to ${newCount}`, 'success');
+
+    /* Production code - enable when backend is ready:
+    const previousCount = plusOneCount;
+
     // Update in database immediately (auto-save)
     try {
       const { error } = await supabase
@@ -155,15 +171,16 @@ function GuestDashboardContent() {
       // Revert on error
       setPlusOneCount(previousCount);
     }
+    */
   };
 
   const handleShare = async () => {
     if (!guest) return;
-    
+
     const shareData = {
       title: 'Join me at Summer Vibes!',
       text: `Hey! I'm on the guest list for DJ Shadow & MC Solar this Saturday. Want to come with me? Use my link to get on the list:`,
-      url: `https://guestlist.app/join/test?inviter=${guest.guestId}`
+      url: `https://guestlist.app/join/test?inviter=${guest.guestId}`,
     };
 
     try {
@@ -187,9 +204,11 @@ function GuestDashboardContent() {
 
   const handleCopyLink = async () => {
     if (!guest) return;
-    
+
     try {
-      await navigator.clipboard.writeText(`https://guestlist.app/join/test?inviter=${guest.guestId}`);
+      await navigator.clipboard.writeText(
+        `https://guestlist.app/join/test?inviter=${guest.guestId}`
+      );
       setCopied(true);
       showToast('Link copied to clipboard!', 'success');
       setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
@@ -236,7 +255,6 @@ function GuestDashboardContent() {
       {/* Main Content */}
       <main className="container-sm py-4xl">
         <div className="flex flex-col gap-3xl">
-          
           {/* Tonight's Event Card */}
           <div className="card">
             <div className="card-header">
@@ -248,23 +266,21 @@ function GuestDashboardContent() {
                 <div>
                   <h3 className="mb-sm">Summer Vibes</h3>
                   <p className="text-sm text-gray-600">
-                    Join us for an unforgettable night of music and dancing. 
-                    Dress code: Smart casual.
+                    Join us for an unforgettable night of music and dancing. Dress code: Smart
+                    casual.
                   </p>
                 </div>
-                
+
                 {/* QR Code Section */}
                 <div className="text-center p-xl bg-gray-50 rounded-lg">
                   <div className="w-32 h-32 mx-auto mb-lg rounded-lg overflow-hidden">
-                    <img 
+                    <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=GUEST-${guest?.guestId || 'DEMO'}-EVENT-SUMMER-VIBES-2025`}
                       alt="QR Code for entry"
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <p className="text-sm text-gray-600">
-                    Show this QR code at the door for entry
-                  </p>
+                  <p className="text-sm text-gray-600">Show this QR code at the door for entry</p>
                 </div>
               </div>
             </div>
@@ -340,9 +356,11 @@ function GuestDashboardContent() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl">Friends Coming Tonight</h2>
-                    <p className="text-sm text-gray-500 mt-xs">{friendsList.length} friends on your list</p>
+                    <p className="text-sm text-gray-500 mt-xs">
+                      {friendsList.length} friends on your list
+                    </p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => guest && loadFriendsList(guest.guestId)}
                     className="bg-gray-100 text-black rounded-full py-2 px-4 text-sm hover:bg-gray-200 transition-colors"
                   >
@@ -352,10 +370,15 @@ function GuestDashboardContent() {
               </div>
               <div className="card-body">
                 <div className="space-y-md">
-                  {friendsList.map((friend) => (
-                    <div key={friend.id} className="flex items-center justify-between p-md bg-gray-50 rounded-lg">
+                  {friendsList.map(friend => (
+                    <div
+                      key={friend.id}
+                      className="flex items-center justify-between p-md bg-gray-50 rounded-lg"
+                    >
                       <div>
-                        <p className="">{friend.first_name} {friend.last_name}</p>
+                        <p className="">
+                          {friend.first_name} {friend.last_name}
+                        </p>
                         <p className="text-sm text-gray-600">{friend.phone}</p>
                       </div>
                       <div className="text-sm text-gray-500">
@@ -408,7 +431,6 @@ function GuestDashboardContent() {
               </div>
             </div>
           </div>
-
         </div>
       </main>
     </div>

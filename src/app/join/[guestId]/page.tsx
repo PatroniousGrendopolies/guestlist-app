@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 interface InviterInfo {
   name: string;
@@ -14,23 +14,24 @@ export default function JoinGuestListPage() {
   const params = useParams();
   const router = useRouter();
   const guestId = params.guestId as string;
-  
+
   const [inviterInfo, setInviterInfo] = useState<InviterInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     phone: '',
-    email: ''
+    email: '',
   });
 
   useEffect(() => {
     const fetchInviterInfo = async () => {
       try {
+        const supabase = createClient();
         // Get inviter information
         const { data: guest, error } = await supabase
           .from('guests')
@@ -47,7 +48,7 @@ export default function JoinGuestListPage() {
         setInviterInfo({
           name: `${guest.first_name} ${guest.last_name}`,
           email: guest.email,
-          availableSpots: 2 // TODO: Get actual available spots from database
+          availableSpots: 2, // TODO: Get actual available spots from database
         });
       } catch (err) {
         setError('Failed to load invitation');
@@ -70,12 +71,12 @@ export default function JoinGuestListPage() {
       // TODO: Add the friend to the guest list
       // For now, just simulate success
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       console.log('Adding friend to guest list:', {
         inviterGuestId: guestId,
-        friendInfo: formData
+        friendInfo: formData,
       });
-      
+
       setSuccess(true);
     } catch (err) {
       setError('Failed to join guest list. Please try again.');
@@ -113,20 +114,22 @@ export default function JoinGuestListPage() {
               <p className="text-gray-600 mb-xl">
                 You've been added to {inviterInfo?.name}'s guest list for Summer Vibes.
               </p>
-              
+
               {/* QR Code placeholder */}
               <div className="w-32 h-32 bg-black mx-auto mb-lg rounded-lg flex items-center justify-center">
                 <span className="text-white text-xs">QR CODE</span>
               </div>
-              
+
               <p className="text-sm text-gray-600 mb-xl">
                 Show this QR code (or your friend's) at the door for entry.
               </p>
-              
+
               <div className="space-y-md">
                 <div className="text-sm text-gray-600">
-                  DJ Shadow & MC Solar<br />
-                  Saturday, June 24, 2025<br />
+                  DJ Shadow & MC Solar
+                  <br />
+                  Saturday, June 24, 2025
+                  <br />
                   10:00 PM
                 </div>
               </div>
@@ -175,7 +178,7 @@ export default function JoinGuestListPage() {
                     className="input"
                     placeholder="First"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                     required
                   />
                 </div>
@@ -189,7 +192,7 @@ export default function JoinGuestListPage() {
                     className="input"
                     placeholder="Last"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    onChange={e => setFormData({ ...formData, lastName: e.target.value })}
                     required
                   />
                 </div>
@@ -205,7 +208,7 @@ export default function JoinGuestListPage() {
                   className="input"
                   placeholder="+1 (555) 123-4567"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   required
                 />
               </div>
@@ -220,7 +223,7 @@ export default function JoinGuestListPage() {
                   className="input"
                   placeholder="your@email.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
               </div>

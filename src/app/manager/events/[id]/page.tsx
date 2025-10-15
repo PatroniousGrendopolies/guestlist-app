@@ -4,6 +4,53 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { SafeStorage } from '@/lib/utils/safeStorage';
 
+interface GuestListAPI {
+  id: string;
+  name: string;
+  list_type: 'dj_list' | 'staff_list' | 'vip_list' | 'promoter_list';
+  creator: {
+    first_name: string;
+    last_name: string;
+  };
+}
+
+interface GuestListEntryAPI {
+  id: string;
+  guest_list_id: string;
+  status: 'pending' | 'approved' | 'denied';
+  plus_ones_requested: number;
+  created_at: string;
+  checked_in_at?: string;
+  guest: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    instagram_handle?: string;
+  };
+}
+
+interface DJAssignmentAPI {
+  dj: {
+    first_name: string;
+    last_name: string;
+    stage_name?: string;
+  };
+}
+
+interface EventAPI {
+  id: string;
+  name: string;
+  date: string;
+  day_of_week: string;
+  max_total_capacity: number;
+  venue?: {
+    name: string;
+  };
+  guest_lists?: GuestListAPI[];
+  dj_assignments?: DJAssignmentAPI[];
+}
+
 interface GuestOnList {
   id: string;
   name: string;
@@ -16,6 +63,7 @@ interface GuestOnList {
   status: 'pending' | 'approved' | 'denied' | 'checked_in';
   submittedAt: string;
   checkedInAt?: string;
+  guest_list_id: string;
 }
 
 interface EventDetails {
@@ -41,7 +89,9 @@ export default function EventDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [event, setEvent] = useState<EventDetails | null>(null);
   const [guests, setGuests] = useState<GuestOnList[]>([]);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'denied' | 'checked_in'>('all');
+  const [filterStatus, setFilterStatus] = useState<
+    'all' | 'pending' | 'approved' | 'denied' | 'checked_in'
+  >('all');
   const [filterAddedBy, setFilterAddedBy] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGuests, setSelectedGuests] = useState<Set<string>>(new Set());
@@ -52,7 +102,20 @@ export default function EventDetailsPage() {
   const formatSubmittedDate = (dateString: string) => {
     const date = new Date(dateString);
     const days = ['Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
 
     const dayName = days[date.getDay()];
     const monthName = months[date.getMonth()];
@@ -76,128 +139,219 @@ export default function EventDetailsPage() {
       return;
     }
 
-    // Mock event data
-    setTimeout(() => {
-      const mockEvent: EventDetails = {
-        id: eventId,
-        name: 'Saturday Night Sessions',
-        date: 'Sat Oct 12, 2025',
-        dayOfWeek: 'Saturday',
-        djNames: 'DJ Marcus & Sarah Deep',
-        venue: 'Datcha Nightclub',
-        totalCapacity: 100,
-        approvedGuests: 68,
-        pendingGuests: 12,
-        deniedGuests: 5,
-        checkedInGuests: 42,
-        status: 'upcoming'
-      };
+    const loadEventData = async () => {
+      try {
+        // Fetch event data
+        const eventResponse = await fetch(`/api/events/${eventId}`);
+        if (!eventResponse.ok) {
+          console.error('Failed to fetch event');
+          setIsLoading(false);
+          return;
+        }
 
-      const mockGuests: GuestOnList[] = [
-        {
-          id: 'g1',
-          name: 'Sarah Martinez',
-          email: 'sarah.m@email.com',
-          phone: '+1 (555) 123-4567',
-          instagram: '@sarahmartinez',
-          plusOnes: 2,
-          addedBy: 'DJ Shadow',
-          addedByRole: 'dj',
-          status: 'approved',
-          submittedAt: '2025-10-10T14:30:00',
-          checkedInAt: '2025-10-12T22:15:00'
-        },
-        {
-          id: 'g2',
-          name: 'James Chen',
-          email: 'jchen@email.com',
-          phone: '+1 (555) 987-6543',
-          plusOnes: 1,
-          addedBy: 'Promoter - Marcus',
-          addedByRole: 'promoter',
-          status: 'approved',
-          submittedAt: '2025-10-11T09:15:00'
-        },
-        {
-          id: 'g3',
-          name: 'Emily Rodriguez',
-          email: 'emily.r@email.com',
-          phone: '+1 (555) 456-7890',
-          instagram: '@emilyrodriguez',
-          plusOnes: 3,
-          addedBy: 'Staff - Alex',
-          addedByRole: 'staff',
-          status: 'pending',
-          submittedAt: '2025-10-11T16:45:00'
-        },
-        {
-          id: 'g4',
-          name: 'Michael Brown',
-          email: 'mbrown@email.com',
-          phone: '+1 (555) 234-5678',
-          plusOnes: 0,
-          addedBy: 'DJ Luna',
-          addedByRole: 'dj',
-          status: 'denied',
-          submittedAt: '2025-10-11T11:20:00'
-        },
-        {
-          id: 'g5',
-          name: 'Jessica Taylor',
-          email: 'jtaylor@email.com',
-          phone: '+1 (555) 345-6789',
-          instagram: '@jesstaylor',
-          plusOnes: 1,
-          addedBy: 'DJ Shadow',
-          addedByRole: 'dj',
-          status: 'approved',
-          submittedAt: '2025-10-10T18:00:00',
-          checkedInAt: '2025-10-12T21:45:00'
-        },
-        {
-          id: 'g6',
-          name: 'David Kim',
-          email: 'dkim@email.com',
-          phone: '+1 (555) 567-8901',
-          plusOnes: 2,
-          addedBy: 'Promoter - Marcus',
-          addedByRole: 'promoter',
-          status: 'pending',
-          submittedAt: '2025-10-11T20:15:00'
-        },
-        {
-          id: 'g7',
-          name: 'Lisa Anderson',
-          email: 'landerson@email.com',
-          phone: '+1 (555) 678-9012',
-          plusOnes: 0,
-          addedBy: 'Staff - Alex',
-          addedByRole: 'staff',
-          status: 'approved',
-          submittedAt: '2025-10-10T12:30:00'
-        },
-      ];
+        const { event: eventData }: { event: EventAPI } = await eventResponse.json();
 
-      setEvent(mockEvent);
-      setGuests(mockGuests);
-      setIsLoading(false);
-    }, 800);
+        // Fetch all guest list entries for this event
+        const allEntries: GuestOnList[] = [];
+        if (eventData.guest_lists && eventData.guest_lists.length > 0) {
+          await Promise.all(
+            eventData.guest_lists.map(async (guestList: GuestListAPI) => {
+              try {
+                const entriesResponse = await fetch(
+                  `/api/guest-lists/${guestList.id}/entries`
+                );
+                if (entriesResponse.ok) {
+                  const { entries }: { entries: GuestListEntryAPI[] } = await entriesResponse.json();
+
+                  // Map database entries to UI format
+                  const mappedEntries = entries.map((entry: GuestListEntryAPI) => {
+                    // Map list_type to role
+                    let role: 'dj' | 'promoter' | 'staff' | 'manager' = 'staff';
+                    if (guestList.list_type === 'dj_list') role = 'dj';
+                    else if (guestList.list_type === 'promoter_list') role = 'promoter';
+                    else if (guestList.list_type === 'staff_list') role = 'staff';
+                    else if (guestList.list_type === 'vip_list') role = 'manager';
+
+                    // Determine status - checked_in takes priority
+                    let status: 'pending' | 'approved' | 'denied' | 'checked_in' = entry.status;
+                    if (entry.checked_in_at) {
+                      status = 'checked_in';
+                    }
+
+                    return {
+                      id: entry.id,
+                      name: `${entry.guest.first_name} ${entry.guest.last_name}`,
+                      email: entry.guest.email || '',
+                      phone: entry.guest.phone || '',
+                      instagram: entry.guest.instagram_handle,
+                      plusOnes: entry.plus_ones_requested || 0,
+                      addedBy: guestList.creator
+                        ? `${guestList.creator.first_name} ${guestList.creator.last_name}`
+                        : 'Unknown',
+                      addedByRole: role,
+                      status,
+                      submittedAt: entry.created_at,
+                      checkedInAt: entry.checked_in_at,
+                      guest_list_id: guestList.id,
+                    };
+                  });
+
+                  allEntries.push(...mappedEntries);
+                }
+              } catch (error) {
+                console.error(`Failed to fetch entries for guest list ${guestList.id}:`, error);
+              }
+            })
+          );
+        }
+
+        // Format event date
+        const eventDate = new Date(eventData.date);
+        const days = ['Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'];
+        const months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        const formattedDate = `${days[eventDate.getDay()]} ${months[eventDate.getMonth()]} ${eventDate.getDate()}, ${eventDate.getFullYear()}`;
+
+        // Format DJ names
+        const djNames = eventData.dj_assignments
+          ?.map((assignment: DJAssignmentAPI) => {
+            const dj = assignment.dj;
+            return dj.stage_name || `${dj.first_name} ${dj.last_name}`;
+          })
+          .join(' & ');
+
+        // Calculate counts from entries
+        const approvedGuests = allEntries.filter(
+          e => e.status === 'approved' || e.status === 'checked_in'
+        ).length;
+        const pendingGuests = allEntries.filter(e => e.status === 'pending').length;
+        const deniedGuests = allEntries.filter(e => e.status === 'denied').length;
+        const checkedInGuests = allEntries.filter(e => e.status === 'checked_in').length;
+
+        // Determine event status
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const eventDateOnly = new Date(eventData.date);
+        eventDateOnly.setHours(0, 0, 0, 0);
+
+        let status: 'upcoming' | 'today' | 'past' = 'upcoming';
+        if (eventDateOnly < today) {
+          status = 'past';
+        } else if (eventDateOnly.getTime() === today.getTime()) {
+          status = 'today';
+        }
+
+        const mappedEvent: EventDetails = {
+          id: eventData.id,
+          name: eventData.name,
+          date: formattedDate,
+          dayOfWeek: eventData.day_of_week,
+          djNames: djNames || 'No DJs assigned',
+          venue: eventData.venue?.name || 'Unknown venue',
+          totalCapacity: eventData.max_total_capacity,
+          approvedGuests,
+          pendingGuests,
+          deniedGuests,
+          checkedInGuests,
+          status,
+        };
+
+        setEvent(mappedEvent);
+        setGuests(allEntries);
+      } catch (error) {
+        console.error('Error loading event data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEventData();
   }, [router, eventId]);
 
-  const handleApprove = (guestIds: string[]) => {
-    setGuests(guests.map(g =>
-      guestIds.includes(g.id) ? { ...g, status: 'approved' as const } : g
-    ));
-    setSelectedGuests(new Set());
-    // In real app: API call to approve guests
+  const handleApprove = async (guestIds: string[]) => {
+    try {
+      // Group guest IDs by their guest_list_id
+      const guestsByList = new Map<string, string[]>();
+      guestIds.forEach(guestId => {
+        const guest = guests.find(g => g.id === guestId);
+        if (guest) {
+          const listEntries = guestsByList.get(guest.guest_list_id) || [];
+          listEntries.push(guestId);
+          guestsByList.set(guest.guest_list_id, listEntries);
+        }
+      });
+
+      // Call approve API for each guest list
+      await Promise.all(
+        Array.from(guestsByList.entries()).map(async ([listId, entryIds]) => {
+          const response = await fetch(`/api/guest-lists/${listId}/approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ entry_ids: entryIds }),
+          });
+
+          if (!response.ok) {
+            console.error(`Failed to approve guests for list ${listId}`);
+          }
+        })
+      );
+
+      // Update local state
+      setGuests(
+        guests.map(g => (guestIds.includes(g.id) ? { ...g, status: 'approved' as const } : g))
+      );
+      setSelectedGuests(new Set());
+    } catch (error) {
+      console.error('Error approving guests:', error);
+    }
   };
 
-  const handleDeny = (guestIds: string[]) => {
-    setGuests(guests.map(g =>
-      guestIds.includes(g.id) ? { ...g, status: 'denied' as const } : g
-    ));
-    setSelectedGuests(new Set());
-    // In real app: API call to deny guests
+  const handleDeny = async (guestIds: string[]) => {
+    try {
+      // Group guest IDs by their guest_list_id
+      const guestsByList = new Map<string, string[]>();
+      guestIds.forEach(guestId => {
+        const guest = guests.find(g => g.id === guestId);
+        if (guest) {
+          const listEntries = guestsByList.get(guest.guest_list_id) || [];
+          listEntries.push(guestId);
+          guestsByList.set(guest.guest_list_id, listEntries);
+        }
+      });
+
+      // Call deny API for each guest list
+      await Promise.all(
+        Array.from(guestsByList.entries()).map(async ([listId, entryIds]) => {
+          const response = await fetch(`/api/guest-lists/${listId}/deny`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ entry_ids: entryIds }),
+          });
+
+          if (!response.ok) {
+            console.error(`Failed to deny guests for list ${listId}`);
+          }
+        })
+      );
+
+      // Update local state
+      setGuests(guests.map(g => (guestIds.includes(g.id) ? { ...g, status: 'denied' as const } : g)));
+      setSelectedGuests(new Set());
+    } catch (error) {
+      console.error('Error denying guests:', error);
+    }
   };
 
   const handleSelectGuest = (guestId: string, checked: boolean) => {
@@ -212,7 +366,10 @@ export default function EventDetailsPage() {
 
   const handleSendMessage = () => {
     const selectedGuestsList = guests.filter(g => selectedGuests.has(g.id));
-    console.log('Sending message to:', selectedGuestsList.map(g => g.phone));
+    console.log(
+      'Sending message to:',
+      selectedGuestsList.map(g => g.phone)
+    );
     console.log('Message:', messageText);
     // In real app: API call to send SMS
     setShowMessageModal(false);
@@ -280,7 +437,12 @@ export default function EventDetailsPage() {
             className="text-gray-600 hover:text-black transition-colors mb-4 flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             Back to Dashboard
           </button>
@@ -292,9 +454,7 @@ export default function EventDetailsPage() {
               <p className="text-gray-500">{event.djNames}</p>
             </div>
             {event.status === 'today' && (
-              <span className="px-4 py-2 bg-black text-white rounded-full text-sm">
-                Today
-              </span>
+              <span className="px-4 py-2 bg-black text-white rounded-full text-sm">Today</span>
             )}
           </div>
 
@@ -310,8 +470,10 @@ export default function EventDetailsPage() {
               {/* Gray bar shows total (approved + pending) - click to show pending */}
               <div
                 className="absolute top-0 left-0 h-8 bg-gray-400 rounded-full transition-all duration-300 hover:bg-gray-500 z-[5]"
-                style={{ width: `${((event.approvedGuests + event.pendingGuests) / event.totalCapacity) * 100}%` }}
-                onClick={(e) => {
+                style={{
+                  width: `${((event.approvedGuests + event.pendingGuests) / event.totalCapacity) * 100}%`,
+                }}
+                onClick={e => {
                   e.stopPropagation();
                   setFilterStatus('pending');
                 }}
@@ -321,31 +483,33 @@ export default function EventDetailsPage() {
               <div
                 className="absolute top-0 left-0 h-8 bg-black rounded-full transition-all duration-300 hover:bg-gray-800 z-10"
                 style={{ width: `${(event.approvedGuests / event.totalCapacity) * 100}%` }}
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   setFilterStatus('approved');
                 }}
               ></div>
 
               {/* Approved number (white text on black) */}
-              {event.approvedGuests > 0 && (event.approvedGuests / event.totalCapacity) > 0.08 && (
+              {event.approvedGuests > 0 && event.approvedGuests / event.totalCapacity > 0.08 && (
                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-sm font-medium z-20 pointer-events-none">
                   {event.approvedGuests}
                 </span>
               )}
 
               {/* Pending number (white text on gray) - positioned on right side of gray bar */}
-              {event.pendingGuests > 0 && (event.pendingGuests / event.totalCapacity) > 0.08 && (
+              {event.pendingGuests > 0 && event.pendingGuests / event.totalCapacity > 0.08 && (
                 <span
                   className="absolute top-1/2 -translate-y-1/2 text-white text-sm font-medium z-20 pointer-events-none"
-                  style={{ left: `calc(${((event.approvedGuests + event.pendingGuests) / event.totalCapacity) * 100}% - 24px)` }}
+                  style={{
+                    left: `calc(${((event.approvedGuests + event.pendingGuests) / event.totalCapacity) * 100}% - 24px)`,
+                  }}
                 >
                   {event.pendingGuests}
                 </span>
               )}
 
               {/* Total capacity number (gray text on light gray background) */}
-              {((event.approvedGuests + event.pendingGuests) / event.totalCapacity) < 0.85 && (
+              {(event.approvedGuests + event.pendingGuests) / event.totalCapacity < 0.85 && (
                 <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-sm font-medium z-10 pointer-events-none">
                   {event.totalCapacity}
                 </span>
@@ -361,7 +525,9 @@ export default function EventDetailsPage() {
               {event.pendingGuests > 0 && (
                 <span
                   className="absolute text-xs text-gray-500"
-                  style={{ left: `calc(${((event.approvedGuests + event.pendingGuests) / event.totalCapacity) * 100}% - 24px)` }}
+                  style={{
+                    left: `calc(${((event.approvedGuests + event.pendingGuests) / event.totalCapacity) * 100}% - 24px)`,
+                  }}
                 >
                   Pending
                 </span>
@@ -382,7 +548,7 @@ export default function EventDetailsPage() {
             type="text"
             placeholder="Search guests..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="w-full px-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:border-black mb-4"
           />
 
@@ -511,20 +677,27 @@ export default function EventDetailsPage() {
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Guest</th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-600"></th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Contact</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Added By</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
+                    Added By
+                  </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Submitted</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
+                    Submitted
+                  </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredGuests.map((guest, index) => (
-                  <tr key={guest.id} className={`border-b border-gray-100 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                  <tr
+                    key={guest.id}
+                    className={`border-b border-gray-100 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                  >
                     <td className="py-3 px-4">
                       <input
                         type="checkbox"
                         checked={selectedGuests.has(guest.id)}
-                        onChange={(e) => handleSelectGuest(guest.id, e.target.checked)}
+                        onChange={e => handleSelectGuest(guest.id, e.target.checked)}
                         className="w-4 h-4 rounded border-gray-300 cursor-pointer"
                       />
                     </td>
@@ -532,7 +705,9 @@ export default function EventDetailsPage() {
                       <p className="text-sm font-medium">{guest.name}</p>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-sm">{guest.plusOnes > 0 ? `+${guest.plusOnes}` : '-'}</span>
+                      <span className="text-sm">
+                        {guest.plusOnes > 0 ? `+${guest.plusOnes}` : '-'}
+                      </span>
                     </td>
                     <td className="py-3 px-4">
                       <p className="text-sm text-gray-600">{guest.email}</p>
@@ -547,13 +722,19 @@ export default function EventDetailsPage() {
                     </td>
                     <td className="py-3 px-4">
                       <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        {guest.status === 'checked_in' ? 'Checked In' : guest.status.charAt(0).toUpperCase() + guest.status.slice(1)}
+                        {guest.status === 'checked_in'
+                          ? 'Checked In'
+                          : guest.status.charAt(0).toUpperCase() + guest.status.slice(1)}
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <p className="text-xs text-gray-500">{formatSubmittedDate(guest.submittedAt)}</p>
+                      <p className="text-xs text-gray-500">
+                        {formatSubmittedDate(guest.submittedAt)}
+                      </p>
                       {guest.checkedInAt && (
-                        <p className="text-xs text-gray-500">In: {formatSubmittedDate(guest.checkedInAt)}</p>
+                        <p className="text-xs text-gray-500">
+                          In: {formatSubmittedDate(guest.checkedInAt)}
+                        </p>
                       )}
                     </td>
                     <td className="py-3 px-4">
@@ -599,7 +780,7 @@ export default function EventDetailsPage() {
             </p>
             <textarea
               value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
+              onChange={e => setMessageText(e.target.value)}
               placeholder="Type your message here..."
               className="w-full h-32 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black resize-none mb-4"
             />

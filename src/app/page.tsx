@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function Home() {
   const router = useRouter();
@@ -12,7 +12,10 @@ export default function Home() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         router.push('/dashboard');
       } else {
@@ -24,7 +27,11 @@ export default function Home() {
   }, [router]);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen"><div>Loading...</div></div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div>Loading...</div>
+      </div>
+    );
   }
 
   return (

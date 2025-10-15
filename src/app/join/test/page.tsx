@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import { useToast, ToastProvider } from '@/components/ui/ToastProvider';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
@@ -13,15 +13,15 @@ function TestJoinContent() {
   const [success, setSuccess] = useState(false);
   const [inviterName, setInviterName] = useState<string>('Patrick Gregoire');
   const [error, setError] = useState<string>('');
-  
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     phone: '',
     email: '',
-    instagramHandle: ''
+    instagramHandle: '',
   });
-  
+
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   // Load inviter information on component mount
@@ -30,12 +30,13 @@ function TestJoinContent() {
       const inviterId = searchParams.get('inviter');
       if (inviterId) {
         try {
+          const supabase = createClient();
           const { data: inviter, error } = await supabase
             .from('guests')
             .select('first_name, last_name')
             .eq('id', inviterId)
             .single();
-          
+
           if (!error && inviter) {
             setInviterName(`${inviter.first_name} ${inviter.last_name}`);
           }
@@ -44,7 +45,7 @@ function TestJoinContent() {
         }
       }
     };
-    
+
     loadInviterInfo();
   }, [searchParams]);
 
@@ -55,62 +56,63 @@ function TestJoinContent() {
       showToast('Please enter your first name', 'error');
       return false;
     }
-    
+
     if (!formData.lastName.trim()) {
-      setError('Last name is required'); 
+      setError('Last name is required');
       showToast('Please enter your last name', 'error');
       return false;
     }
-    
+
     if (!formData.email.trim()) {
       setError('Email is required');
       showToast('Please enter your email', 'error');
       return false;
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email address');
       showToast('Please enter a valid email address', 'error');
       return false;
     }
-    
+
     if (!formData.phone.trim()) {
       setError('Phone number is required');
       showToast('Please enter your phone number', 'error');
       return false;
     }
-    
+
     if (!formData.instagramHandle.trim()) {
       setError('Instagram handle is required');
       showToast('Please enter your Instagram handle', 'error');
       return false;
     }
-    
+
     if (!privacyAccepted) {
       setError('You must accept the privacy policy to continue');
       showToast('Please accept the privacy policy', 'error');
       return false;
     }
-    
+
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     // Validate form
     if (!validateForm()) {
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
+      const supabase = createClient();
       // Get inviter ID from URL params
       const inviterId = searchParams.get('inviter');
-      
+
       if (!inviterId) {
         setError('Invalid invitation link');
         showToast('Invalid invitation link', 'error');
@@ -125,7 +127,8 @@ function TestJoinContent() {
         .eq('email', formData.email.trim())
         .single();
 
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 = no rows returned
         console.error('Error checking existing guest:', checkError);
         setError('Failed to validate email');
         showToast('Failed to validate email', 'error');
@@ -150,7 +153,7 @@ function TestJoinContent() {
           phone: formData.phone.trim(),
           instagram_handle: formData.instagramHandle.trim(),
           invited_by_guest_id: inviterId,
-          invitation_status: 'confirmed'
+          invitation_status: 'confirmed',
         })
         .select()
         .single();
@@ -183,24 +186,26 @@ function TestJoinContent() {
               <p className="text-gray-600 mb-xl">
                 You've been added to {inviterName}'s guest list for Summer Vibes.
               </p>
-              
+
               {/* QR Code */}
               <div className="w-32 h-32 mx-auto mb-lg rounded-lg overflow-hidden">
-                <img 
+                <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=FRIEND-${formData.firstName}-${formData.lastName}-SUMMER-VIBES-2025`}
                   alt="QR Code for entry"
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <p className="text-sm text-gray-600 mb-xl">
                 Show this QR code (or your friend's) at the door for entry.
               </p>
-              
+
               <div className="space-y-md">
                 <div className="text-sm text-gray-600">
-                  DJ Shadow & MC Solar<br />
-                  Saturday, June 24, 2025<br />
+                  DJ Shadow & MC Solar
+                  <br />
+                  Saturday, June 24, 2025
+                  <br />
                   10:00 PM
                 </div>
               </div>
@@ -250,7 +255,7 @@ function TestJoinContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="First"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                     required
                   />
                 </div>
@@ -264,7 +269,7 @@ function TestJoinContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="Last"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    onChange={e => setFormData({ ...formData, lastName: e.target.value })}
                     required
                   />
                 </div>
@@ -280,7 +285,7 @@ function TestJoinContent() {
                   className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                   placeholder="+1 (555) 123-4567"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   required
                 />
               </div>
@@ -295,7 +300,7 @@ function TestJoinContent() {
                   className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                   placeholder="your@email.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
               </div>
@@ -310,7 +315,7 @@ function TestJoinContent() {
                   className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                   placeholder="@yourusername"
                   value={formData.instagramHandle}
-                  onChange={(e) => {
+                  onChange={e => {
                     let value = e.target.value;
                     // Always ensure @ symbol is at the beginning if there's any text
                     if (value.length > 0 && !value.startsWith('@')) {
@@ -328,12 +333,16 @@ function TestJoinContent() {
                   <input
                     type="checkbox"
                     checked={privacyAccepted}
-                    onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                    onChange={e => setPrivacyAccepted(e.target.checked)}
                     className="mt-1"
                     required
                   />
                   <span className="text-sm text-gray-600">
-                    I agree to the <a href="/privacy" className="text-black underline" target="_blank">privacy policy</a> and consent to receive event updates via text and email.
+                    I agree to the{' '}
+                    <a href="/privacy" className="text-black underline" target="_blank">
+                      privacy policy
+                    </a>{' '}
+                    and consent to receive event updates via text and email.
                   </span>
                 </label>
               </div>
@@ -348,7 +357,6 @@ function TestJoinContent() {
             </form>
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -358,11 +366,13 @@ export default function TestJoinPage() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <Suspense fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-lg">Loading...</div>
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-lg">Loading...</div>
+            </div>
+          }
+        >
           <TestJoinContent />
         </Suspense>
       </ToastProvider>

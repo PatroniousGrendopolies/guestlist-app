@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 import { UserRole } from '@/types/enums';
 import Link from 'next/link';
 
@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const handleSignOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/auth/login');
   };
@@ -27,8 +28,12 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-        
+        const supabase = createClient();
+        const {
+          data: { user: authUser },
+          error: authError,
+        } = await supabase.auth.getUser();
+
         if (!authUser) {
           router.push('/auth/login');
           return;
@@ -36,13 +41,13 @@ export default function DashboardPage() {
 
         // TEMPORARY WORKAROUND: Force manager role for patgoire@gmail.com
         let profile = null;
-        
+
         if (authUser.email === 'patgoire@gmail.com') {
           profile = {
             role: 'MANAGER',
             first_name: 'Patrick',
             last_name: 'Gregoire',
-            email: 'patgoire@gmail.com'
+            email: 'patgoire@gmail.com',
           };
         } else {
           // Try to fetch from database for other users
@@ -64,10 +69,12 @@ export default function DashboardPage() {
         const appUser: User = {
           id: authUser.id,
           email: authUser.email!,
-          name: profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || authUser.email! : authUser.email!,
+          name: profile
+            ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || authUser.email!
+            : authUser.email!,
           role: userRole,
         };
-        
+
         setUser(appUser);
         setIsLoading(false);
       } catch (error) {
@@ -92,11 +99,14 @@ export default function DashboardPage() {
   }
 
   const role = user.role || UserRole.GUEST;
-  
+
   // Role-specific content
   const roleContent: Record<UserRole, React.ReactNode> = {
     [UserRole.OWNER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl"
+        style={{ gap: 'var(--space-xl)' }}
+      >
         <DashboardCard
           title="Venue Settings"
           description="Configure venue details and defaults"
@@ -130,7 +140,10 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.MANAGER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl"
+        style={{ gap: 'var(--space-xl)' }}
+      >
         <DashboardCard
           title="Staff Management"
           description="Manage doorpersons, promoters, and DJs"
@@ -164,7 +177,10 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.ASSISTANT_MANAGER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl"
+        style={{ gap: 'var(--space-xl)' }}
+      >
         <DashboardCard
           title="Guest Lists"
           description="Review and approve lists"
@@ -213,7 +229,10 @@ export default function DashboardPage() {
       </div>
     ),
     [UserRole.PROMOTER]: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl" style={{ gap: 'var(--space-xl)' }}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl"
+        style={{ gap: 'var(--space-xl)' }}
+      >
         <DashboardCard
           title="My Guest Lists"
           description="Create and manage your lists"
@@ -290,16 +309,22 @@ export default function DashboardPage() {
     ),
     [UserRole.GUEST]: (
       <div className="text-center" style={{ padding: 'var(--space-6xl) 0' }}>
-        <h2 className="text-2xl font-light" style={{ 
-          color: 'var(--color-black)', 
-          marginBottom: 'var(--space-lg)' 
-        }}>
+        <h2
+          className="text-2xl font-light"
+          style={{
+            color: 'var(--color-black)',
+            marginBottom: 'var(--space-lg)',
+          }}
+        >
           Welcome, Guest
         </h2>
-        <p className="text-lg" style={{ 
-          color: 'var(--color-gray-600)', 
-          marginBottom: 'var(--space-2xl)' 
-        }}>
+        <p
+          className="text-lg"
+          style={{
+            color: 'var(--color-gray-600)',
+            marginBottom: 'var(--space-2xl)',
+          }}
+        >
           You should not be seeing this page.
         </p>
         <a href="/guest/auth" className="btn btn-primary">
@@ -313,61 +338,80 @@ export default function DashboardPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--color-white)' }}>
       {/* Header */}
       <header style={{ borderBottom: '1px solid var(--color-gray-200)' }}>
-        <div className="container flex items-center justify-between" style={{ padding: 'var(--space-xl)' }}>
+        <div
+          className="container flex items-center justify-between"
+          style={{ padding: 'var(--space-xl)' }}
+        >
           <div className="flex items-center gap-3xl">
-            <h1 className="text-2xl font-light" style={{ color: 'var(--color-black)' }}>Nightlist</h1>
+            <h1 className="text-2xl font-light" style={{ color: 'var(--color-black)' }}>
+              Nightlist
+            </h1>
             <nav className="hidden md:flex items-center gap-xl">
-              <Link 
-                href="/dashboard" 
-                className="text-sm nav-link" 
-                style={{ 
-                  color: 'var(--color-gray-600)', 
+              <Link
+                href="/dashboard"
+                className="text-sm nav-link"
+                style={{
+                  color: 'var(--color-gray-600)',
                   transition: 'color var(--transition-normal)',
-                  textDecoration: 'none'
+                  textDecoration: 'none',
                 }}
-                onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
-                onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+                onMouseEnter={e => ((e.target as HTMLElement).style.color = 'var(--color-black)')}
+                onMouseLeave={e =>
+                  ((e.target as HTMLElement).style.color = 'var(--color-gray-600)')
+                }
               >
                 Dashboard
               </Link>
               {(role === UserRole.MANAGER || role === UserRole.OWNER) && (
                 <>
-                  <Link 
-                    href="/dashboard/events" 
-                    className="text-sm nav-link" 
-                    style={{ 
-                      color: 'var(--color-gray-600)', 
+                  <Link
+                    href="/dashboard/events"
+                    className="text-sm nav-link"
+                    style={{
+                      color: 'var(--color-gray-600)',
                       transition: 'color var(--transition-normal)',
-                      textDecoration: 'none'
+                      textDecoration: 'none',
                     }}
-                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
-                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+                    onMouseEnter={e =>
+                      ((e.target as HTMLElement).style.color = 'var(--color-black)')
+                    }
+                    onMouseLeave={e =>
+                      ((e.target as HTMLElement).style.color = 'var(--color-gray-600)')
+                    }
                   >
                     Events
                   </Link>
-                  <Link 
-                    href="/dashboard/staff" 
-                    className="text-sm nav-link" 
-                    style={{ 
-                      color: 'var(--color-gray-600)', 
+                  <Link
+                    href="/dashboard/staff"
+                    className="text-sm nav-link"
+                    style={{
+                      color: 'var(--color-gray-600)',
                       transition: 'color var(--transition-normal)',
-                      textDecoration: 'none'
+                      textDecoration: 'none',
                     }}
-                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
-                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+                    onMouseEnter={e =>
+                      ((e.target as HTMLElement).style.color = 'var(--color-black)')
+                    }
+                    onMouseLeave={e =>
+                      ((e.target as HTMLElement).style.color = 'var(--color-gray-600)')
+                    }
                   >
                     Staff
                   </Link>
-                  <Link 
-                    href="/dashboard/analytics" 
-                    className="text-sm nav-link" 
-                    style={{ 
-                      color: 'var(--color-gray-600)', 
+                  <Link
+                    href="/dashboard/analytics"
+                    className="text-sm nav-link"
+                    style={{
+                      color: 'var(--color-gray-600)',
                       transition: 'color var(--transition-normal)',
-                      textDecoration: 'none'
+                      textDecoration: 'none',
                     }}
-                    onMouseEnter={(e) => (e.target as HTMLElement).style.color = 'var(--color-black)'}
-                    onMouseLeave={(e) => (e.target as HTMLElement).style.color = 'var(--color-gray-600)'}
+                    onMouseEnter={e =>
+                      ((e.target as HTMLElement).style.color = 'var(--color-black)')
+                    }
+                    onMouseLeave={e =>
+                      ((e.target as HTMLElement).style.color = 'var(--color-gray-600)')
+                    }
                   >
                     Analytics
                   </Link>
@@ -377,13 +421,14 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-xl">
             <div className="text-right">
-              <p className="text-sm font-medium" style={{ color: 'var(--color-black)' }}>{user.name}</p>
-              <p className="text-xs" style={{ color: 'var(--color-gray-500)' }}>{role}</p>
+              <p className="text-sm font-medium" style={{ color: 'var(--color-black)' }}>
+                {user.name}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--color-gray-500)' }}>
+                {role}
+              </p>
             </div>
-            <button
-              onClick={handleSignOut}
-              className="btn btn-ghost btn-sm"
-            >
+            <button onClick={handleSignOut} className="btn btn-ghost btn-sm">
               Sign Out
             </button>
           </div>
@@ -394,10 +439,13 @@ export default function DashboardPage() {
       <main className="container" style={{ padding: 'var(--space-4xl) var(--space-xl)' }}>
         {/* Welcome Section */}
         <div style={{ marginBottom: 'var(--space-4xl)' }}>
-          <h2 className="text-3xl font-light" style={{ 
-            color: 'var(--color-black)', 
-            marginBottom: 'var(--space-lg)' 
-          }}>
+          <h2
+            className="text-3xl font-light"
+            style={{
+              color: 'var(--color-black)',
+              marginBottom: 'var(--space-lg)',
+            }}
+          >
             {getGreeting()}, {user.name.split(' ')[0] || user.email.split('@')[0]}
           </h2>
           <p className="text-lg" style={{ color: 'var(--color-gray-600)' }}>
@@ -425,21 +473,24 @@ function DashboardCard({
   primary?: boolean;
 }) {
   return (
-    <Link 
-      href={link} 
-      className={`card group ${primary ? 'border-2' : ''}`} 
+    <Link
+      href={link}
+      className={`card group ${primary ? 'border-2' : ''}`}
       style={{
         ...(primary && { borderColor: 'var(--color-black)' }),
-        textDecoration: 'none'
+        textDecoration: 'none',
       }}
     >
       <div className="card-body">
         <div>
-          <h3 className="text-lg font-medium" style={{ 
-            color: 'var(--color-black)', 
-            marginBottom: 'var(--space-sm)',
-            transition: 'color var(--transition-normal)'
-          }}>
+          <h3
+            className="text-lg font-medium"
+            style={{
+              color: 'var(--color-black)',
+              marginBottom: 'var(--space-sm)',
+              transition: 'color var(--transition-normal)',
+            }}
+          >
             {title}
           </h3>
           <p className="text-sm" style={{ color: 'var(--color-gray-600)' }}>
@@ -462,12 +513,12 @@ function getGreeting() {
 function getRoleDescription(role: UserRole): string {
   const descriptions: Record<UserRole, string> = {
     [UserRole.OWNER]: 'You have full access to all system features and settings.',
-    [UserRole.MANAGER]: 'Manage your venue\'s staff, events, and analytics.',
+    [UserRole.MANAGER]: "Manage your venue's staff, events, and analytics.",
     [UserRole.ASSISTANT_MANAGER]: 'Assist with daily operations and guest list management.',
     [UserRole.DOORPERSON]: 'Check in guests and manage door operations.',
-    [UserRole.PROMOTER]: 'Build and manage your guest lists for tonight\'s event.',
+    [UserRole.PROMOTER]: "Build and manage your guest lists for tonight's event.",
     [UserRole.DJ]: 'Manage your guest lists and view your upcoming performances.',
-    [UserRole.STAFF]: 'Invite your friends to tonight\'s event.',
+    [UserRole.STAFF]: "Invite your friends to tonight's event.",
     [UserRole.VIP]: 'Welcome to your VIP portal.',
     [UserRole.GUEST]: 'Welcome to the guest portal.',
   };

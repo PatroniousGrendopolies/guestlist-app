@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -21,8 +21,8 @@ export default function ForgotPasswordPage() {
     }
 
     startTransition(async () => {
-      // Use the single Supabase client instance
-      
+      const supabase = createClient();
+
       // The redirect URL should point to your update password page
       const redirectTo = `${window.location.origin}/auth/update-password`;
 
@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
               name="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="you@example.com"
               required
@@ -75,10 +75,14 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
         {message && (
-          <div className={`mt-6 p-4 rounded-md text-sm font-medium border ${
-            messageType === 'success' ? 'bg-green-50 border-green-300 text-green-700' :
-            'bg-red-50 border-red-300 text-red-700'
-          }`} role="alert">
+          <div
+            className={`mt-6 p-4 rounded-md text-sm font-medium border ${
+              messageType === 'success'
+                ? 'bg-green-50 border-green-300 text-green-700'
+                : 'bg-red-50 border-red-300 text-red-700'
+            }`}
+            role="alert"
+          >
             {message}
           </div>
         )}
