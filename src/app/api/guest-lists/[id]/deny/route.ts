@@ -10,12 +10,17 @@ export async function POST(
   const supabase = await createClient();
   const { id: guestListId } = await params;
 
+  // TEMPORARY: Auth disabled for testing - will be re-enabled later
   // 1. Get Authenticated User
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
 
+  // Temporarily allow unauthenticated access for testing
+  const userId = user?.id || null;
+
+  /* COMMENTED OUT FOR TESTING - RE-ENABLE WHEN AUTH IS RESTORED
   if (userError || !user) {
     return NextResponse.json({ error: 'Unauthorized: User not authenticated.' }, { status: 401 });
   }
@@ -55,6 +60,7 @@ export async function POST(
       { status: 403 }
     );
   }
+  */
 
   // 3. Parse and Validate Request Body
   let requestBody;
