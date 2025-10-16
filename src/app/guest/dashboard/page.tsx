@@ -35,14 +35,6 @@ function GuestDashboardContent() {
 
         const guestSession = JSON.parse(sessionData);
 
-        // For development: Use session data directly since backend is not fully implemented
-        // TODO: Re-enable backend validation when database is ready
-        setGuest(guestSession);
-
-        // Mock plus-one count for development
-        setPlusOneCount(2);
-
-        /* Production code - enable when backend is ready:
         // Validate session and fetch latest guest data
         const currentGuest = await guestAuth.getGuestSession(guestSession.guestId);
         if (!currentGuest) {
@@ -59,7 +51,6 @@ function GuestDashboardContent() {
 
         // Load friends list
         await loadFriendsList(currentGuest.guestId);
-        */
 
         // Check if Web Share API is supported
         setShareSupported(typeof navigator !== 'undefined' && 'share' in navigator);
@@ -141,17 +132,12 @@ function GuestDashboardContent() {
     if (!guest) return;
 
     const newCount = Math.max(0, Math.min(10, plusOneCount + change));
-    setPlusOneCount(newCount);
-
-    // For development: Just update local state since backend is not fully implemented
-    // TODO: Re-enable database updates when backend is ready
-    showToast(`Plus-one count updated to ${newCount}`, 'success');
-
-    /* Production code - enable when backend is ready:
     const previousCount = plusOneCount;
+    setPlusOneCount(newCount);
 
     // Update in database immediately (auto-save)
     try {
+      const supabase = createClient();
       const { error } = await supabase
         .from('guests')
         .update({ plus_one_count: newCount })
@@ -171,7 +157,6 @@ function GuestDashboardContent() {
       // Revert on error
       setPlusOneCount(previousCount);
     }
-    */
   };
 
   const handleShare = async () => {

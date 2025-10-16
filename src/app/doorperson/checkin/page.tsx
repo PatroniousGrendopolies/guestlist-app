@@ -50,8 +50,24 @@ function CheckInContent() {
     setIsLoading(true);
 
     try {
-      // Simulate API call to check in guest
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call API to check in guest
+      const response = await fetch(`/api/guest-list-entries/${guest.id}/checkin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plus_ones: plusOnes,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Check-in failed');
+      }
+
+      const data = await response.json();
+      console.log('Check-in successful:', data);
 
       // Update guest status
       setGuest({ ...guest, checked_in: true, plus_ones: plusOnes });
@@ -59,6 +75,11 @@ function CheckInContent() {
       setTotalCheckedIn(prev => prev + 1 + plusOnes);
     } catch (error) {
       console.error('Check-in failed:', error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Failed to check in guest. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }

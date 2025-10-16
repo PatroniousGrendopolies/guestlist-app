@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
     const pastEvents: any[] = [];
 
     guestListsWithStats.forEach(guestList => {
-      const event = guestList.events;
+      const event = Array.isArray(guestList.events) ? guestList.events[0] : guestList.events;
       if (!event) return;
 
       const eventDate = new Date(event.date);

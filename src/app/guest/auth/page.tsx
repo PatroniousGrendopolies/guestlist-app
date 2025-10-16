@@ -91,24 +91,6 @@ function GuestAuthContent() {
     }
 
     try {
-      // For development: Use mock authentication since backend is not fully implemented
-      // TODO: Replace with actual backend authentication when ready
-      const mockGuest = {
-        guestId: 'guest_demo_123',
-        email: formData.email.trim(),
-        name: 'Demo Guest',
-        verified: true,
-      };
-
-      setSuccess('Login successful! Redirecting...');
-      showToast('Login successful!', 'success');
-
-      // Use SafeStorage instead of sessionStorage
-      SafeStorage.setItem('guestSession', JSON.stringify(mockGuest));
-
-      setTimeout(() => router.push('/guest/dashboard'), 1000);
-
-      /* Production code - enable when backend is ready:
       const { guest, error } = await guestAuth.loginWithEmail(
         formData.email.trim(),
         formData.password
@@ -126,7 +108,6 @@ function GuestAuthContent() {
 
         setTimeout(() => router.push('/guest/dashboard'), 1000);
       }
-      */
     } catch (err) {
       const errorMessage = 'Login failed. Please try again.';
       setError(errorMessage);
