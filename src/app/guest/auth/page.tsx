@@ -2,12 +2,9 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { GuestAuthService } from '@/lib/auth/guest-auth';
 import { useToast, ToastProvider } from '@/components/ui/ToastProvider';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { SafeStorage } from '@/lib/utils/safeStorage';
-
-const guestAuth = new GuestAuthService();
 
 function GuestAuthContent() {
   const router = useRouter();
@@ -91,20 +88,28 @@ function GuestAuthContent() {
     }
 
     try {
-      const { guest, error } = await guestAuth.loginWithEmail(
-        formData.email.trim(),
-        formData.password
-      );
+      const response = await fetch('/api/auth/guest/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password,
+        }),
+      });
 
-      if (error) {
-        setError(error);
-        showToast(error, 'error');
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Login failed');
+        showToast(data.error || 'Login failed', 'error');
       } else {
         setSuccess('Login successful! Redirecting...');
         showToast('Login successful!', 'success');
 
-        // Use SafeStorage instead of sessionStorage
-        SafeStorage.setItem('guestSession', JSON.stringify(guest));
+        // Save session to localStorage
+        SafeStorage.setItem('guestSession', JSON.stringify(data.guest));
 
         setTimeout(() => router.push('/guest/dashboard'), 1000);
       }
@@ -172,26 +177,32 @@ function GuestAuthContent() {
     const lastName = formData.lastName.trim();
 
     try {
-      const { guest, error } = await guestAuth.registerWithEmail(
-        formData.email.trim(),
-        formData.password,
-        {
+      const response = await fetch('/api/auth/guest/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password,
           firstName: firstName,
           lastName: lastName,
-          phone: formData.phone.trim() || undefined,
+          phone: formData.phone.trim() || null,
           instagramHandle: formData.instagramHandle.trim(),
-        }
-      );
+        }),
+      });
 
-      if (error) {
-        setError(error);
-        showToast(error, 'error');
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Signup failed');
+        showToast(data.error || 'Signup failed', 'error');
       } else {
         setSuccess('Account created! Redirecting to your dashboard...');
         showToast('Account created successfully!', 'success');
 
-        // Auto-login after successful signup (email verification disabled for now)
-        SafeStorage.setItem('guestSession', JSON.stringify(guest));
+        // Auto-login after successful signup
+        SafeStorage.setItem('guestSession', JSON.stringify(data.guest));
 
         setTimeout(() => router.push('/guest/dashboard'), 1000);
       }
