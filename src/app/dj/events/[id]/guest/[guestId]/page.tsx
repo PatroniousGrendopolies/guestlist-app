@@ -26,6 +26,7 @@ interface EventInfo {
 export default function DJGuestDetailPage() {
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null);
   const [guest, setGuest] = useState<Guest | null>(null);
+  const [guestListId, setGuestListId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
   const [isDenying, setIsDenying] = useState(false);
@@ -33,136 +34,162 @@ export default function DJGuestDetailPage() {
   const params = useParams();
 
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = localStorage.getItem('dj_authenticated');
-    if (!isAuthenticated) {
-      router.push('/dj/login');
-      return;
-    }
-
-    // Mock data - in real app, fetch from API using params.id and params.guestId
-    setTimeout(() => {
-      setEventInfo({
-        id: params.id as string,
-        name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025',
-      });
-
-      // Mock guest data based on guestId
-      const mockGuests: Record<string, Guest> = {
-        '1': {
-          id: '1',
-          name: 'Sarah Johnson',
-          email: 'sarah@example.com',
-          phone: '+1 (555) 123-4567',
-          instagram: '@sarahj',
-          plusOnes: 2,
-          status: 'pending',
-          checkedIn: false,
-          submittedAt: '2 hours ago',
-        },
-        '2': {
-          id: '2',
-          name: 'Mike Chen',
-          email: 'mike@example.com',
-          phone: '+1 (555) 234-5678',
-          plusOnes: 1,
-          status: 'pending',
-          checkedIn: false,
-          submittedAt: '4 hours ago',
-        },
-        '3': {
-          id: '3',
-          name: 'Alex Rivera',
-          email: 'alex@example.com',
-          phone: '+1 (555) 345-6789',
-          instagram: '@alexr',
-          plusOnes: 0,
-          status: 'approved',
-          checkedIn: true,
-          submittedAt: '1 day ago',
-          checkInTime: '9:45 PM',
-        },
-        '4': {
-          id: '4',
-          name: 'Jamie Smith',
-          email: 'jamie@example.com',
-          phone: '+1 (555) 456-7890',
-          plusOnes: 3,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '1 day ago',
-        },
-      };
-
-      // Check for updated guest status from management page
-      const storedGuests = localStorage.getItem('event_guests');
-      let foundGuest = mockGuests[params.guestId as string];
-
-      if (storedGuests && foundGuest) {
-        const guestUpdates = JSON.parse(storedGuests);
-        const guestUpdate = guestUpdates[params.guestId as string];
-        if (guestUpdate) {
-          foundGuest = { ...foundGuest, ...guestUpdate };
-        }
+    const loadGuestData = async () => {
+      // Check authentication
+      const isAuthenticated = localStorage.getItem('dj_authenticated');
+      if (!isAuthenticated) {
+        router.push('/dj/login');
+        return;
       }
 
-      setGuest(foundGuest || null);
-      setIsLoading(false);
-    }, 1000);
+      try {
+        // Fetch guest entry data
+        const entryResponse = await fetch(`/api/guest-list-entries/${params.guestId}`);
+        if (!entryResponse.ok) {
+          setGuest(null);
+          setIsLoading(false);
+          return;
+        }
+
+        const entryData = await entryResponse.json();
+        const entry = entryData.entry;
+
+        // Fetch event data
+        const eventResponse = await fetch(`/api/events/${params.id}`);
+        if (!eventResponse.ok) {
+          setGuest(null);
+          setIsLoading(false);
+          return;
+        }
+
+        const eventDataResponse = await eventResponse.json();
+        const event = eventDataResponse.event;
+
+        // Format event date
+        const eventDate = new Date(event.date);
+        const formattedDate = eventDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        });
+
+        setEventInfo({
+          id: event.id,
+          name: event.name,
+          date: formattedDate,
+        });
+
+        // Helper function to format submission time
+        const formatSubmittedTime = (timestamp: string): string => {
+          const now = new Date();
+          const submitted = new Date(timestamp);
+          const diffMs = now.getTime() - submitted.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMins / 60);
+          const diffDays = Math.floor(diffHours / 24);
+
+          if (diffMins < 1) return 'just now';
+          if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+          if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+          return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        };
+
+        // Format check-in time if available
+        let checkInTime: string | undefined;
+        if (entry.checked_in_at) {
+          const checkedInDate = new Date(entry.checked_in_at);
+          checkInTime = checkedInDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+          });
+        }
+
+        // Map entry to Guest interface
+        const mappedGuest: Guest = {
+          id: entry.id,
+          name: entry.guest ? `${entry.guest.first_name} ${entry.guest.last_name}` : 'Unknown Guest',
+          email: entry.guest?.email || '',
+          phone: entry.guest?.phone || '',
+          instagram: entry.guest?.instagram_handle,
+          plusOnes: entry.plus_ones_requested || 0,
+          status: entry.status,
+          checkedIn: entry.checked_in_at != null,
+          submittedAt: formatSubmittedTime(entry.created_at),
+          checkInTime,
+        };
+
+        setGuest(mappedGuest);
+        setGuestListId(entry.guest_list.id);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to load guest data:', error);
+        setGuest(null);
+        setIsLoading(false);
+      }
+    };
+
+    loadGuestData();
   }, [router, params.id, params.guestId]);
 
   const handleApproveGuest = async () => {
-    if (!guest) return;
+    if (!guest || !guestListId) return;
 
     setIsApproving(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Call approve API
+      const response = await fetch(`/api/guest-lists/${guestListId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entry_ids: [guest.id] }),
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to approve guest');
+      }
+
+      // Update local state
       setGuest(prev => {
         if (!prev) return null;
-        const updatedGuest = { ...prev, status: 'approved' as const };
-
-        // Save to localStorage for sync with management page
-        const storedGuests = localStorage.getItem('event_guests');
-        const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
-        guestUpdates[prev.id] = { status: 'approved' };
-        localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
-
-        return updatedGuest;
+        return { ...prev, status: 'approved' as const };
       });
     } catch (error) {
       console.error('Failed to approve guest:', error);
+      alert(error instanceof Error ? error.message : 'Failed to approve guest. Please try again.');
     } finally {
       setIsApproving(false);
     }
   };
 
   const handleDenyGuest = async () => {
-    if (!guest) return;
+    if (!guest || !guestListId) return;
 
     setIsDenying(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Call deny API
+      const response = await fetch(`/api/guest-lists/${guestListId}/deny`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entry_ids: [guest.id] }),
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to deny guest');
+      }
+
+      // Update local state
       setGuest(prev => {
         if (!prev) return null;
-        const updatedGuest = { ...prev, status: 'denied' as const };
-
-        // Save to localStorage for sync with management page
-        const storedGuests = localStorage.getItem('event_guests');
-        const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
-        guestUpdates[prev.id] = { status: 'denied' };
-        localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
-
-        return updatedGuest;
+        return { ...prev, status: 'denied' as const };
       });
     } catch (error) {
       console.error('Failed to deny guest:', error);
+      alert(error instanceof Error ? error.message : 'Failed to deny guest. Please try again.');
     } finally {
       setIsDenying(false);
     }

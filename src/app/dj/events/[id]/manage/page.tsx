@@ -170,7 +170,7 @@ export default function DJEventManagePage() {
     };
 
     loadEventData();
-  }, [router, params.id, showToast]);
+  }, [router, params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleApproveGuest = async (guestId: string) => {
     if (!eventInfo || !guestListId) {
