@@ -239,1014 +239,90 @@ export default function ManagerDashboardPage() {
     setManagerName(name);
     setManagerRole(role);
 
-    // Mock data - Generate events for current month and next month
-    setTimeout(() => {
-      const today = new Date();
-      const mockEvents: Event[] = [];
-      const mockAlerts: Alert[] = [];
+    // Fetch real data from API
+    const fetchData = async () => {
+      try {
+        // Fetch events from API
+        const eventsResponse = await fetch('/api/events');
+        if (!eventsResponse.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const eventsData = await eventsResponse.json();
 
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-      const djOptions = [
-        'DJ Marcus & Sarah Deep',
-        'Techno Collective',
-        'DJ Shadow & MC Solar',
-        'Underground Sessions',
-        'House Masters',
-        'Vinyl Vince',
-        'Bass Queen',
-        'Techno Tom',
-      ];
+        // Transform API events to match dashboard Event interface
+        const transformedEvents: Event[] = eventsData.events.map((apiEvent: any) => {
+          const eventDate = new Date(apiEvent.date);
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-      const eventNameOptions = [
-        'Saturday Night Sessions',
-        'Techno Warehouse',
-        'Deep House Vibes',
-        'Underground Collective',
-        'House Party',
-        'Vinyl Sessions',
-        'Bass Night',
-        'Warehouse Party',
-      ];
+          // Determine if event is today, upcoming, or past
+          const eventDateOnly = new Date(eventDate);
+          eventDateOnly.setHours(0, 0, 0, 0);
 
-      // Generate events for 60 days to cover current and next month
-      for (let i = -15; i < 45; i++) {
-        const eventDate = new Date(today);
-        eventDate.setDate(today.getDate() + i);
+          let status: 'today' | 'upcoming' | 'past' = 'upcoming';
+          if (eventDateOnly.getTime() === today.getTime()) {
+            status = 'today';
+          } else if (eventDateOnly < today) {
+            status = 'past';
+          }
 
-        // Add events for Friday and Saturday nights, plus some weekday events
-        const dayOfWeek = eventDate.getDay();
-        const isFriday = dayOfWeek === 5;
-        const isSaturday = dayOfWeek === 6;
-        const isThursday = dayOfWeek === 4;
-        const randomWeekday = Math.random() > 0.8;
-
-        if (isFriday || isSaturday || isThursday || randomWeekday) {
-          const totalGuests = Math.floor(Math.random() * 40) + 60; // 60-100 capacity
-          const approvedGuests = Math.floor(Math.random() * 40) + 30; // 30-70 approved
-          const pendingGuests = Math.floor(Math.random() * 15); // 0-15 pending
-          const approvalRatio = (approvedGuests / totalGuests) * 100;
-
-          const event: Event = {
-            id: `event_${i}`,
+          return {
+            id: apiEvent.id,
             date: `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`,
             dayOfWeek: dayNames[eventDate.getDay()],
-            djNames: djOptions[Math.floor(Math.random() * djOptions.length)],
-            eventName: eventNameOptions[Math.floor(Math.random() * eventNameOptions.length)],
-            approvalRatio,
-            totalGuests,
-            approvedGuests,
-            pendingGuests,
-            status: i === 0 ? 'today' : i > 0 ? 'upcoming' : 'past',
+            djNames: 'TBD', // Placeholder until DJ data is connected
+            eventName: apiEvent.name,
+            approvalRatio: 0, // Placeholder - will calculate from guest lists
+            totalGuests: 0, // Placeholder - will fetch from capacity endpoint
+            approvedGuests: 0,
+            pendingGuests: 0,
+            status,
           };
-
-          mockEvents.push(event);
-
-          // Generate alerts based on conditions
-          if (i === 1 && approvalRatio < 65) {
-            mockAlerts.push({
-              id: `alert_${i}`,
-              type: 'warning',
-              message: `Tomorrow's event only ${Math.round(approvalRatio)}% approved`,
-              action: 'Review Event',
-              actionUrl: `/manager/events/${event.id}`,
-            });
-          }
-
-          if (i === 3) {
-            mockAlerts.push({
-              id: 'dj_missing',
-              type: 'error',
-              message: "DJ Marcus hasn't accepted invite for Saturday",
-              action: 'Send Reminder',
-              actionUrl: `/manager/users/djs`,
-            });
-          }
-        }
-      }
-
-      // Generate mock capacity requests
-      const mockCapacityRequests: CapacityRequest[] = [
-        {
-          id: 'cap_req_1',
-          requesterName: 'DJ Marcus',
-          requesterRole: 'dj',
-          eventName: 'Saturday Night Sessions',
-          eventDate: '2025-10-18',
-          spotsRequested: 10,
-          currentCapacity: 75,
-          reason: 'Special guests coming from out of town',
-        },
-        {
-          id: 'cap_req_2',
-          requesterName: 'Sarah (Staff)',
-          requesterRole: 'staff',
-          eventName: 'Deep House Vibes',
-          eventDate: '2025-10-20',
-          spotsRequested: 5,
-          currentCapacity: 60,
-          reason: 'VIP table reservation',
-        },
-      ];
-
-      // Add capacity request alerts - individual if 5 or fewer, grouped if more
-      if (mockCapacityRequests.length <= 5) {
-        mockCapacityRequests.forEach(req => {
-          mockAlerts.push({
-            id: `capacity_${req.id}`,
-            type: 'capacity',
-            message: `${req.requesterName} requests ${req.spotsRequested} additional spots for ${req.eventName}`,
-            capacityRequestId: req.id,
-          });
         });
-      } else {
-        mockAlerts.push({
-          id: 'capacity_requests',
-          type: 'info',
-          message: `${mockCapacityRequests.length} capacity increase requests pending`,
-          action: 'Review Requests',
-          actionUrl: '/manager/capacity-requests',
+
+        // Sort events by date
+        transformedEvents.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          return dateB.getTime() - dateA.getTime();
         });
+
+        // For now, use empty arrays for other data types
+        // These will be populated from API in future iterations
+        const mockAlerts: Alert[] = [];
+        const mockGuests: Guest[] = [];
+        const mockDJs: DJ[] = [];
+        const mockStaff: Staff[] = [];
+        const mockPromoters: Promoter[] = [];
+        const mockManagers: any[] = [];
+
+        // Set state with real events and placeholder data for others
+        setEvents(transformedEvents);
+        setAlerts(mockAlerts);
+        setGuests(mockGuests);
+        setDjs(mockDJs);
+        setStaff(mockStaff);
+        setPromoters(mockPromoters);
+        setManagers(mockManagers);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // On error, show empty state
+        setEvents([]);
+        setAlerts([]);
+        setGuests([]);
+        setDjs([]);
+        setStaff([]);
+        setPromoters([]);
+        setManagers([]);
+        setIsLoading(false);
       }
+    };
 
-      // Generate mock guests
-      const mockGuests: Guest[] = [
-        {
-          id: 'guest_1',
-          name: 'Sarah Johnson',
-          email: 'sarah.j@email.com',
-          phone: '+1 555-0101',
-          instagram: '@sarahjay',
-          totalAttendance: 12,
-          lastAttended: '2025-10-06',
-          addedBy: ['DJ Marcus', 'Staff Sarah'],
-          status: 'active',
-        },
-        {
-          id: 'guest_2',
-          name: 'Mike Chen',
-          email: 'mike.chen@email.com',
-          phone: '+1 555-0102',
-          totalAttendance: 8,
-          lastAttended: '2025-10-01',
-          addedBy: ['DJ Shadow'],
-          status: 'active',
-        },
-        {
-          id: 'guest_3',
-          name: 'Emma Wilson',
-          email: 'emma.w@email.com',
-          phone: '+1 555-0103',
-          instagram: '@emmawilson',
-          totalAttendance: 15,
-          lastAttended: '2025-10-08',
-          addedBy: ['DJ Marcus', 'DJ Shadow', 'Staff Tom'],
-          status: 'active',
-        },
-        {
-          id: 'guest_4',
-          name: 'James Rodriguez',
-          email: 'j.rodriguez@email.com',
-          phone: '+1 555-0104',
-          totalAttendance: 5,
-          lastAttended: '2025-09-28',
-          addedBy: ['Staff Sarah'],
-          status: 'active',
-        },
-        {
-          id: 'guest_5',
-          name: 'Lisa Park',
-          email: 'lisa.park@email.com',
-          phone: '+1 555-0105',
-          instagram: '@lisaparks',
-          totalAttendance: 20,
-          lastAttended: '2025-10-10',
-          addedBy: ['DJ Marcus', 'Promoter Alex'],
-          status: 'active',
-        },
-        {
-          id: 'guest_6',
-          name: 'David Kim',
-          email: 'david.k@email.com',
-          phone: '+1 555-0106',
-          totalAttendance: 3,
-          lastAttended: '2025-09-15',
-          addedBy: ['DJ Shadow'],
-          status: 'banned',
-        },
-        {
-          id: 'guest_7',
-          name: 'Rachel Green',
-          email: 'rachel.g@email.com',
-          phone: '+1 555-0107',
-          instagram: '@rachelgreen',
-          totalAttendance: 18,
-          lastAttended: '2025-10-09',
-          addedBy: ['DJ Marcus', 'Staff Tom'],
-          status: 'active',
-        },
-        {
-          id: 'guest_8',
-          name: 'Tom Anderson',
-          email: 'tom.a@email.com',
-          phone: '+1 555-0108',
-          totalAttendance: 7,
-          lastAttended: '2025-10-02',
-          addedBy: ['Staff Sarah'],
-          status: 'active',
-        },
-        {
-          id: 'guest_9',
-          name: 'Nina Patel',
-          email: 'nina.p@email.com',
-          phone: '+1 555-0109',
-          instagram: '@ninapatel',
-          totalAttendance: 11,
-          lastAttended: '2025-10-07',
-          addedBy: ['DJ Marcus', 'Promoter Alex'],
-          status: 'active',
-        },
-        {
-          id: 'guest_10',
-          name: 'Alex Turner',
-          email: 'alex.t@email.com',
-          phone: '+1 555-0110',
-          totalAttendance: 6,
-          lastAttended: '2025-09-25',
-          addedBy: ['DJ Shadow'],
-          status: 'active',
-        },
-        {
-          id: 'guest_11',
-          name: 'Sophie Martinez',
-          email: 'sophie.m@email.com',
-          phone: '+1 555-0111',
-          instagram: '@sophiem',
-          totalAttendance: 14,
-          lastAttended: '2025-10-11',
-          addedBy: ['DJ Marcus', 'Staff Tom', 'Staff Sarah'],
-          status: 'active',
-        },
-        {
-          id: 'guest_12',
-          name: 'Chris Brown',
-          email: 'chris.b@email.com',
-          phone: '+1 555-0112',
-          totalAttendance: 4,
-          lastAttended: '2025-09-20',
-          addedBy: ['Promoter Alex'],
-          status: 'active',
-        },
-        {
-          id: 'guest_13',
-          name: 'Maya Singh',
-          email: 'maya.s@email.com',
-          phone: '+1 555-0113',
-          instagram: '@mayasingh',
-          totalAttendance: 9,
-          lastAttended: '2025-10-05',
-          addedBy: ['DJ Marcus'],
-          status: 'active',
-        },
-        {
-          id: 'guest_14',
-          name: 'Jordan Lee',
-          email: 'jordan.l@email.com',
-          phone: '+1 555-0114',
-          totalAttendance: 16,
-          lastAttended: '2025-10-12',
-          addedBy: ['DJ Shadow', 'Staff Tom'],
-          status: 'active',
-        },
-        {
-          id: 'guest_15',
-          name: 'Olivia White',
-          email: 'olivia.w@email.com',
-          phone: '+1 555-0115',
-          instagram: '@oliviawhite',
-          totalAttendance: 10,
-          lastAttended: '2025-10-04',
-          addedBy: ['DJ Marcus', 'Promoter Alex'],
-          status: 'active',
-        },
-      ];
-
-      // Generate mock DJs
-      const mockDJs: DJ[] = [
-        {
-          id: 'dj_1',
-          name: 'DJ Marcus',
-          email: 'marcus@email.com',
-          phone: '+1 555-1001',
-          instagram: '@djmarcus',
-          totalEvents: 45,
-          avgAttendance: 68,
-          paidAttendance: 52,
-          avgRevenue: 3200,
-          defaultCap: 75,
-          lastPerformed: '2025-10-06',
-          status: 'active',
-          upcomingGigs: 3,
-          totalGuestsAdded: 156,
-        },
-        {
-          id: 'dj_2',
-          name: 'DJ Shadow',
-          email: 'shadow@email.com',
-          phone: '+1 555-1002',
-          instagram: '@djshadow',
-          totalEvents: 38,
-          avgAttendance: 55,
-          paidAttendance: 38,
-          avgRevenue: 2800,
-          defaultCap: 60,
-          lastPerformed: '2025-10-01',
-          status: 'active',
-          upcomingGigs: 2,
-          totalGuestsAdded: 98,
-        },
-        {
-          id: 'dj_3',
-          name: 'Sarah Deep',
-          email: 'sarah.deep@email.com',
-          phone: '+1 555-1003',
-          instagram: '@sarahdeep',
-          totalEvents: 52,
-          avgAttendance: 72,
-          paidAttendance: 58,
-          avgRevenue: 3800,
-          defaultCap: 80,
-          lastPerformed: '2025-10-10',
-          status: 'active',
-          upcomingGigs: 4,
-          totalGuestsAdded: 203,
-        },
-        {
-          id: 'dj_4',
-          name: 'MC Groove',
-          email: 'mcgroove@email.com',
-          phone: '+1 555-1004',
-          totalEvents: 0,
-          avgAttendance: 0,
-          paidAttendance: 0,
-          avgRevenue: 0,
-          defaultCap: 50,
-          lastPerformed: '',
-          status: 'pending',
-          upcomingGigs: 1,
-          totalGuestsAdded: 0,
-        },
-        {
-          id: 'dj_5',
-          name: 'Techno Tom',
-          email: 'techno.tom@email.com',
-          phone: '+1 555-1005',
-          instagram: '@technotom',
-          totalEvents: 28,
-          avgAttendance: 48,
-          paidAttendance: 32,
-          avgRevenue: 2400,
-          defaultCap: 55,
-          lastPerformed: '2025-09-22',
-          status: 'active',
-          upcomingGigs: 1,
-          totalGuestsAdded: 72,
-        },
-        {
-          id: 'dj_6',
-          name: 'Vinyl Vince',
-          email: 'vinyl.v@email.com',
-          phone: '+1 555-1006',
-          instagram: '@vinylvince',
-          totalEvents: 61,
-          avgAttendance: 82,
-          paidAttendance: 68,
-          avgRevenue: 4500,
-          defaultCap: 90,
-          lastPerformed: '2025-10-08',
-          status: 'active',
-          upcomingGigs: 5,
-          totalGuestsAdded: 287,
-        },
-        {
-          id: 'dj_7',
-          name: 'Bass Queen',
-          email: 'bassqueen@email.com',
-          phone: '+1 555-1007',
-          instagram: '@bassqueen',
-          totalEvents: 19,
-          avgAttendance: 41,
-          paidAttendance: 28,
-          avgRevenue: 1800,
-          defaultCap: 45,
-          lastPerformed: '2025-09-15',
-          status: 'active',
-          upcomingGigs: 0,
-          totalGuestsAdded: 53,
-        },
-        {
-          id: 'dj_8',
-          name: 'House Master',
-          email: 'housemaster@email.com',
-          phone: '+1 555-1008',
-          instagram: '@housemaster',
-          totalEvents: 34,
-          avgAttendance: 61,
-          paidAttendance: 45,
-          avgRevenue: 3100,
-          defaultCap: 70,
-          lastPerformed: '2025-10-03',
-          status: 'active',
-          upcomingGigs: 2,
-          totalGuestsAdded: 142,
-        },
-      ];
-
-      // Generate mock Staff
-      const mockStaff: Staff[] = [
-        {
-          id: 'staff_1',
-          name: 'Sarah Mitchell',
-          email: 'sarah.mitchell@nightclub.com',
-          phone: '+1 555-2001',
-          instagram: '@sarahmitchell',
-          role: 'Door Manager',
-          totalEventsWorked: 42,
-          totalGuestsAdded: 156,
-          avgGuestsPerEvent: 3.7,
-          lastWorked: '2025-10-11',
-          status: 'active',
-          upcomingShifts: 3,
-        },
-        {
-          id: 'staff_2',
-          name: 'Tom Bradley',
-          email: 'tom.bradley@nightclub.com',
-          phone: '+1 555-2002',
-          instagram: '@tombradley',
-          role: 'Door Manager',
-          totalEventsWorked: 38,
-          totalGuestsAdded: 124,
-          avgGuestsPerEvent: 3.3,
-          lastWorked: '2025-10-10',
-          status: 'active',
-          upcomingShifts: 2,
-        },
-        {
-          id: 'staff_3',
-          name: 'Alex Chen',
-          email: 'alex.chen@nightclub.com',
-          phone: '+1 555-2003',
-          instagram: '@alexchen',
-          role: 'Bar Manager',
-          totalEventsWorked: 28,
-          totalGuestsAdded: 89,
-          avgGuestsPerEvent: 3.2,
-          lastWorked: '2025-10-09',
-          status: 'active',
-          upcomingShifts: 4,
-        },
-        {
-          id: 'staff_4',
-          name: 'Jamie Rodriguez',
-          email: 'jamie.r@nightclub.com',
-          phone: '+1 555-2004',
-          instagram: '@jamierodriguez',
-          role: 'Security',
-          totalEventsWorked: 52,
-          totalGuestsAdded: 45,
-          avgGuestsPerEvent: 0.9,
-          lastWorked: '2025-10-12',
-          status: 'active',
-          upcomingShifts: 5,
-        },
-        {
-          id: 'staff_5',
-          name: 'Morgan Lee',
-          email: 'morgan.lee@nightclub.com',
-          phone: '+1 555-2005',
-          instagram: '@morganlee',
-          role: 'VIP Host',
-          totalEventsWorked: 31,
-          totalGuestsAdded: 198,
-          avgGuestsPerEvent: 6.4,
-          lastWorked: '2025-10-08',
-          status: 'active',
-          upcomingShifts: 2,
-        },
-        {
-          id: 'staff_6',
-          name: 'David Park',
-          email: 'david.park@nightclub.com',
-          phone: '+1 555-2006',
-          instagram: '@davidpark',
-          role: 'Security',
-          totalEventsWorked: 47,
-          totalGuestsAdded: 38,
-          avgGuestsPerEvent: 0.8,
-          lastWorked: '2025-10-11',
-          status: 'active',
-          upcomingShifts: 4,
-        },
-        {
-          id: 'staff_7',
-          name: 'Rachel Foster',
-          email: 'rachel.foster@nightclub.com',
-          phone: '+1 555-2007',
-          instagram: '@rachelfoster',
-          role: 'VIP Host',
-          totalEventsWorked: 25,
-          totalGuestsAdded: 175,
-          avgGuestsPerEvent: 7.0,
-          lastWorked: '2025-10-12',
-          status: 'active',
-          upcomingShifts: 3,
-        },
-        {
-          id: 'staff_8',
-          name: 'Marcus Johnson',
-          email: 'marcus.j@nightclub.com',
-          phone: '+1 555-2008',
-          instagram: '@marcusjohnson',
-          role: 'Bar Manager',
-          totalEventsWorked: 35,
-          totalGuestsAdded: 112,
-          avgGuestsPerEvent: 3.2,
-          lastWorked: '2025-10-10',
-          status: 'active',
-          upcomingShifts: 2,
-        },
-        {
-          id: 'staff_9',
-          name: 'Elena Vasquez',
-          email: 'elena.v@nightclub.com',
-          phone: '+1 555-2009',
-          instagram: '@elenavasquez',
-          role: 'Door Manager',
-          totalEventsWorked: 44,
-          totalGuestsAdded: 167,
-          avgGuestsPerEvent: 3.8,
-          lastWorked: '2025-10-09',
-          status: 'active',
-          upcomingShifts: 3,
-        },
-        {
-          id: 'staff_10',
-          name: "Kevin O'Brien",
-          email: 'kevin.obrien@nightclub.com',
-          phone: '+1 555-2010',
-          instagram: '@kevinobrien',
-          role: 'Security',
-          totalEventsWorked: 55,
-          totalGuestsAdded: 42,
-          avgGuestsPerEvent: 0.8,
-          lastWorked: '2025-10-12',
-          status: 'active',
-          upcomingShifts: 5,
-        },
-        {
-          id: 'staff_11',
-          name: 'Sophia Turner',
-          email: 'sophia.turner@nightclub.com',
-          phone: '+1 555-2011',
-          instagram: '@sophiaturner',
-          role: 'VIP Host',
-          totalEventsWorked: 29,
-          totalGuestsAdded: 189,
-          avgGuestsPerEvent: 6.5,
-          lastWorked: '2025-10-11',
-          status: 'active',
-          upcomingShifts: 2,
-        },
-        {
-          id: 'staff_12',
-          name: 'Andre Williams',
-          email: 'andre.w@nightclub.com',
-          phone: '+1 555-2012',
-          instagram: '@andrewilliams',
-          role: 'Door Manager',
-          totalEventsWorked: 33,
-          totalGuestsAdded: 128,
-          avgGuestsPerEvent: 3.9,
-          lastWorked: '2025-10-08',
-          status: 'active',
-          upcomingShifts: 3,
-        },
-        {
-          id: 'staff_13',
-          name: 'Lisa Thompson',
-          email: 'lisa.thompson@nightclub.com',
-          phone: '+1 555-2013',
-          instagram: '@lisathompson',
-          role: 'Bar Manager',
-          totalEventsWorked: 22,
-          totalGuestsAdded: 71,
-          avgGuestsPerEvent: 3.2,
-          lastWorked: '2025-10-07',
-          status: 'active',
-          upcomingShifts: 2,
-        },
-        {
-          id: 'staff_14',
-          name: 'Carlos Mendez',
-          email: 'carlos.mendez@nightclub.com',
-          phone: '+1 555-2014',
-          instagram: '@carlosmendez',
-          role: 'Security',
-          totalEventsWorked: 49,
-          totalGuestsAdded: 39,
-          avgGuestsPerEvent: 0.8,
-          lastWorked: '2025-10-10',
-          status: 'active',
-          upcomingShifts: 4,
-        },
-        {
-          id: 'staff_15',
-          name: 'Jessica Kim',
-          email: 'jessica.kim@nightclub.com',
-          phone: '+1 555-2015',
-          instagram: '@jessicakim',
-          role: 'VIP Host',
-          totalEventsWorked: 27,
-          totalGuestsAdded: 182,
-          avgGuestsPerEvent: 6.7,
-          lastWorked: '2025-10-09',
-          status: 'active',
-          upcomingShifts: 3,
-        },
-        {
-          id: 'staff_16',
-          name: 'Ryan Hughes',
-          email: 'ryan.hughes@nightclub.com',
-          phone: '+1 555-2016',
-          instagram: '@ryanhughes',
-          role: 'Door Manager',
-          totalEventsWorked: 19,
-          totalGuestsAdded: 78,
-          avgGuestsPerEvent: 4.1,
-          lastWorked: '2025-10-06',
-          status: 'active',
-          upcomingShifts: 2,
-        },
-        {
-          id: 'staff_17',
-          name: 'Nina Patel',
-          email: 'nina.patel@nightclub.com',
-          phone: '+1 555-2017',
-          instagram: '@ninapatel',
-          role: 'Bar Manager',
-          totalEventsWorked: 31,
-          totalGuestsAdded: 97,
-          avgGuestsPerEvent: 3.1,
-          lastWorked: '2025-10-11',
-          status: 'active',
-          upcomingShifts: 3,
-        },
-        {
-          id: 'staff_18',
-          name: 'Derek Stone',
-          email: 'derek.stone@nightclub.com',
-          phone: '+1 555-2018',
-          instagram: '@derekstone',
-          role: 'Security',
-          totalEventsWorked: 41,
-          totalGuestsAdded: 33,
-          avgGuestsPerEvent: 0.8,
-          lastWorked: '2025-10-12',
-          status: 'active',
-          upcomingShifts: 4,
-        },
-        {
-          id: 'staff_19',
-          name: 'Amanda Cruz',
-          email: 'amanda.cruz@nightclub.com',
-          phone: '+1 555-2019',
-          instagram: '@amandacruz',
-          role: 'VIP Host',
-          totalEventsWorked: 24,
-          totalGuestsAdded: 165,
-          avgGuestsPerEvent: 6.9,
-          lastWorked: '2025-10-10',
-          status: 'active',
-          upcomingShifts: 2,
-        },
-        {
-          id: 'staff_20',
-          name: 'Casey Wilson',
-          email: 'casey.w@nightclub.com',
-          phone: '+1 555-2020',
-          instagram: '@caseywilson',
-          role: 'Door Manager',
-          totalEventsWorked: 0,
-          totalGuestsAdded: 0,
-          avgGuestsPerEvent: 0,
-          lastWorked: '',
-          status: 'pending',
-          upcomingShifts: 1,
-        },
-      ];
-
-      // Generate mock Promoters
-      const mockPromoters: Promoter[] = [
-        {
-          id: 'promoter_1',
-          name: 'Alex Martinez',
-          email: 'alex.martinez@promo.com',
-          phone: '+1 555-3001',
-          instagram: '@alexpromotions',
-          totalEvents: 28,
-          totalGuestsAdded: 892,
-          avgAttendance: 42,
-          paidAttendance: 35,
-          conversionRate: 83,
-          avgRevenue: 2100,
-          lastPerformed: '2025-10-11',
-          defaultCap: 50,
-        },
-        {
-          id: 'promoter_2',
-          name: 'Taylor Swift Events',
-          email: 'taylor@nightevents.com',
-          phone: '+1 555-3002',
-          instagram: '@taylorpromo',
-          totalEvents: 35,
-          totalGuestsAdded: 1245,
-          avgAttendance: 48,
-          paidAttendance: 41,
-          conversionRate: 85,
-          avgRevenue: 2450,
-          lastPerformed: '2025-10-12',
-          defaultCap: 60,
-        },
-        {
-          id: 'promoter_3',
-          name: 'Jordan Blake',
-          email: 'jordan.blake@nightlife.com',
-          phone: '+1 555-3003',
-          instagram: '@jordanblake',
-          totalEvents: 22,
-          totalGuestsAdded: 756,
-          avgAttendance: 38,
-          paidAttendance: 30,
-          conversionRate: 79,
-          avgRevenue: 1800,
-          lastPerformed: '2025-10-09',
-          defaultCap: 45,
-        },
-        {
-          id: 'promoter_4',
-          name: 'Sam Rivera',
-          email: 'sam.rivera@vipnights.com',
-          phone: '+1 555-3004',
-          instagram: '@samriveravip',
-          totalEvents: 41,
-          totalGuestsAdded: 1580,
-          avgAttendance: 52,
-          paidAttendance: 45,
-          conversionRate: 87,
-          avgRevenue: 2700,
-          lastPerformed: '2025-10-10',
-          defaultCap: 65,
-        },
-        {
-          id: 'promoter_5',
-          name: 'Chris Anderson',
-          email: 'chris.a@nightclub.com',
-          phone: '+1 555-3005',
-          instagram: '@chrisanderson',
-          totalEvents: 19,
-          totalGuestsAdded: 634,
-          avgAttendance: 35,
-          paidAttendance: 28,
-          conversionRate: 80,
-          avgRevenue: 1650,
-          lastPerformed: '2025-10-08',
-          defaultCap: 40,
-        },
-        {
-          id: 'promoter_6',
-          name: 'Morgan Chen',
-          email: 'morgan.chen@cityevents.com',
-          phone: '+1 555-3006',
-          instagram: '@morganchen',
-          totalEvents: 33,
-          totalGuestsAdded: 1098,
-          avgAttendance: 45,
-          paidAttendance: 38,
-          conversionRate: 84,
-          avgRevenue: 2250,
-          lastPerformed: '2025-10-11',
-          defaultCap: 55,
-        },
-        {
-          id: 'promoter_7',
-          name: 'Riley Foster',
-          email: 'riley.foster@promo.com',
-          phone: '+1 555-3007',
-          instagram: '@rileyfoster',
-          totalEvents: 25,
-          totalGuestsAdded: 823,
-          avgAttendance: 40,
-          paidAttendance: 33,
-          conversionRate: 83,
-          avgRevenue: 1950,
-          lastPerformed: '2025-10-07',
-          defaultCap: 48,
-        },
-        {
-          id: 'promoter_8',
-          name: 'Casey Thompson',
-          email: 'casey.t@events.com',
-          phone: '+1 555-3008',
-          instagram: '@caseythompson',
-          totalEvents: 37,
-          totalGuestsAdded: 1334,
-          avgAttendance: 49,
-          paidAttendance: 42,
-          conversionRate: 86,
-          avgRevenue: 2400,
-          lastPerformed: '2025-10-12',
-          defaultCap: 58,
-        },
-        {
-          id: 'promoter_9',
-          name: 'Drew Miller',
-          email: 'drew.miller@nightlife.com',
-          phone: '+1 555-3009',
-          instagram: '@drewmiller',
-          totalEvents: 16,
-          totalGuestsAdded: 512,
-          avgAttendance: 32,
-          paidAttendance: 26,
-          conversionRate: 81,
-          avgRevenue: 1550,
-          lastPerformed: '2025-10-06',
-          defaultCap: 38,
-        },
-        {
-          id: 'promoter_10',
-          name: 'Quinn Davis',
-          email: 'quinn.davis@vipevents.com',
-          phone: '+1 555-3010',
-          instagram: '@quinndavis',
-          totalEvents: 44,
-          totalGuestsAdded: 1678,
-          avgAttendance: 54,
-          paidAttendance: 47,
-          conversionRate: 87,
-          avgRevenue: 2850,
-          lastPerformed: '2025-10-11',
-          defaultCap: 68,
-        },
-      ];
-
-      // Generate mock Managers
-      const mockManagers: Manager[] = [
-        {
-          id: 'manager_1',
-          name: 'Sarah Johnson',
-          email: 'sarah.johnson@venue.com',
-          phone: '+1 555-4001',
-          instagram: '@sarahjohnson',
-          eventsCreated: 45,
-          avgRevenue: 3200,
-          avgConversion: 67,
-          avgTotalGuests: 120,
-          avgPaidGuests: 85,
-          lastActive: '2025-10-12',
-          status: 'active',
-          team: 'Operations',
-        },
-        {
-          id: 'manager_2',
-          name: 'Marcus Chen',
-          email: 'marcus.chen@venue.com',
-          phone: '+1 555-4002',
-          instagram: '@marcuschen',
-          eventsCreated: 38,
-          avgRevenue: 2800,
-          avgConversion: 72,
-          avgTotalGuests: 95,
-          avgPaidGuests: 68,
-          lastActive: '2025-10-11',
-          status: 'active',
-          team: 'Nightlife',
-        },
-        {
-          id: 'manager_3',
-          name: 'Jessica Rodriguez',
-          email: 'jessica.r@venue.com',
-          phone: '+1 555-4003',
-          instagram: '@jessicar',
-          eventsCreated: 52,
-          avgRevenue: 4100,
-          avgConversion: 58,
-          avgTotalGuests: 150,
-          avgPaidGuests: 110,
-          lastActive: '2025-10-13',
-          status: 'active',
-          team: 'Events',
-        },
-        {
-          id: 'manager_4',
-          name: 'David Kim',
-          email: 'david.kim@venue.com',
-          phone: '+1 555-4004',
-          instagram: '@davidkim',
-          eventsCreated: 31,
-          avgRevenue: 2500,
-          avgConversion: 64,
-          avgTotalGuests: 88,
-          avgPaidGuests: 56,
-          lastActive: '2025-10-10',
-          status: 'active',
-          team: 'Marketing',
-        },
-        {
-          id: 'manager_5',
-          name: 'Emily Watson',
-          email: 'emily.watson@venue.com',
-          phone: '+1 555-4005',
-          instagram: '@emilywatson',
-          eventsCreated: 28,
-          avgRevenue: 2200,
-          avgConversion: 70,
-          avgTotalGuests: 78,
-          avgPaidGuests: 55,
-          lastActive: '2025-10-09',
-          status: 'active',
-          team: 'Operations',
-        },
-        {
-          id: 'manager_6',
-          name: 'Robert Taylor',
-          email: 'robert.taylor@venue.com',
-          phone: '+1 555-4006',
-          instagram: '@roberttaylor',
-          eventsCreated: 42,
-          avgRevenue: 3600,
-          avgConversion: 75,
-          avgTotalGuests: 135,
-          avgPaidGuests: 101,
-          lastActive: '2025-10-12',
-          status: 'active',
-          team: 'Nightlife',
-        },
-        {
-          id: 'manager_7',
-          name: 'Amanda Brooks',
-          email: 'amanda.brooks@venue.com',
-          phone: '+1 555-4007',
-          instagram: '@amandabrooks',
-          eventsCreated: 15,
-          avgRevenue: 1800,
-          avgConversion: 62,
-          avgTotalGuests: 65,
-          avgPaidGuests: 40,
-          lastActive: '2025-10-08',
-          status: 'pending',
-          team: 'Events',
-        },
-        {
-          id: 'manager_8',
-          name: 'Michael Anderson',
-          email: 'michael.a@venue.com',
-          phone: '+1 555-4008',
-          instagram: '@michaelanderson',
-          eventsCreated: 48,
-          avgRevenue: 3800,
-          avgConversion: 69,
-          avgTotalGuests: 142,
-          avgPaidGuests: 98,
-          lastActive: '2025-10-11',
-          status: 'active',
-          team: 'Operations',
-        },
-      ];
-
-      setEvents(mockEvents);
-      setAlerts(mockAlerts);
-      setGuests(mockGuests);
-      setDjs(mockDJs);
-      setStaff(mockStaff);
-      setPromoters(mockPromoters);
-      setManagers(mockManagers);
-      setIsLoading(false);
-    }, 1000);
+    fetchData();
   }, [router]);
 
   const handleLogout = () => {
@@ -4377,7 +3453,7 @@ export default function ManagerDashboardPage() {
             <div className="flex gap-2 mb-6 border-b border-gray-200 pb-4">
               <button
                 onClick={() => setInviteUserType('dj')}
-                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                className={`flex-1 py-2 px-4 text-sm rounded-full transition-colors ${
                   inviteUserType === 'dj'
                     ? 'bg-black text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -4387,7 +3463,7 @@ export default function ManagerDashboardPage() {
               </button>
               <button
                 onClick={() => setInviteUserType('staff')}
-                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                className={`flex-1 py-2 px-4 text-sm rounded-full transition-colors ${
                   inviteUserType === 'staff'
                     ? 'bg-black text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -4397,7 +3473,7 @@ export default function ManagerDashboardPage() {
               </button>
               <button
                 onClick={() => setInviteUserType('promoter')}
-                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                className={`flex-1 py-2 px-4 text-sm rounded-full transition-colors ${
                   inviteUserType === 'promoter'
                     ? 'bg-black text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -4407,7 +3483,7 @@ export default function ManagerDashboardPage() {
               </button>
               <button
                 onClick={() => setInviteUserType('manager')}
-                className={`flex-1 py-2 px-4 text-sm rounded-lg transition-colors ${
+                className={`flex-1 py-2 px-4 text-sm rounded-full transition-colors ${
                   inviteUserType === 'manager'
                     ? 'bg-black text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
