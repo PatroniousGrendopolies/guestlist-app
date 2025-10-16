@@ -71,3 +71,18 @@
 - Supabase for PostgreSQL database
 - API routes follow pattern: `/src/app/api/...`
 - All pages map snake_case DB fields to camelCase in frontend
+
+## Available MCP Tools
+- **Playwright MCP**: Installed for automated browser testing
+  - Use for testing user flows, screenshots, and UI validation
+  - Example: `mcp__playwright__*` tools
+
+- **Netlify**: Deployment platform (not Vercel)
+  - Vercel config files were removed
+  - Deploy via git push or Netlify CLI
+
+## Environment Variables (Netlify)
+Required environment variables in Netlify dashboard:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (if needed for server operations)
