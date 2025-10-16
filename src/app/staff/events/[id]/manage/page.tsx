@@ -33,146 +33,92 @@ export default function StaffEventManagePage() {
   const [personFilter, setPersonFilter] = useState<string>('all');
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setEventInfo({
-        id: params.id as string,
-        name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025',
-      });
+    // Fetch real data from API
+    const fetchData = async () => {
+      try {
+        const eventId = params.id as string;
+        const response = await fetch(`/api/events/${eventId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch event');
+        }
 
-      // Mock staff member's own guests (auto-approved since staff don't need approval)
-      setMyGuests([
-        {
-          id: '1',
-          name: 'Sarah Johnson',
-          instagram: '@sarahj',
-          plusOnes: 2,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '2 hours ago',
-          addedBy: 'Alex',
-          addedByType: 'staff',
-        },
-        {
-          id: '2',
-          name: 'Mike Chen',
-          plusOnes: 1,
-          status: 'approved',
-          checkedIn: true,
-          submittedAt: '4 hours ago',
-          addedBy: 'Alex',
-          addedByType: 'staff',
-        },
-        {
-          id: '3',
-          name: 'Emma Wilson',
-          instagram: '@emmaw',
-          plusOnes: 0,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '1 day ago',
-          addedBy: 'Alex',
-          addedByType: 'staff',
-        },
-      ]);
+        const data = await response.json();
+        const event = data.event;
 
-      // Mock full event guest list (including other staff, DJs, promoters)
-      setAllGuests([
-        // Staff guests (including own)
-        {
-          id: '1',
-          name: 'Sarah Johnson',
-          instagram: '@sarahj',
-          plusOnes: 2,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '2 hours ago',
-          addedBy: 'Alex',
-          addedByType: 'staff',
-        },
-        {
-          id: '2',
-          name: 'Mike Chen',
-          plusOnes: 1,
-          status: 'approved',
-          checkedIn: true,
-          submittedAt: '4 hours ago',
-          addedBy: 'Alex',
-          addedByType: 'staff',
-        },
-        {
-          id: '3',
-          name: 'Emma Wilson',
-          instagram: '@emmaw',
-          plusOnes: 0,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '1 day ago',
-          addedBy: 'Alex',
-          addedByType: 'staff',
-        },
-        // Other staff guests
-        {
-          id: '4',
-          name: 'Lisa Rodriguez',
-          instagram: '@lisar',
-          plusOnes: 1,
-          status: 'approved',
-          checkedIn: true,
-          submittedAt: '3 hours ago',
-          addedBy: 'Jordan',
-          addedByType: 'staff',
-        },
-        // DJ guests
-        {
-          id: '5',
-          name: 'Marcus Torres',
-          instagram: '@marcust',
-          plusOnes: 3,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '1 hour ago',
-          addedBy: 'DJ Marcus',
-          addedByType: 'dj',
-        },
-        {
-          id: '6',
-          name: 'Isabella Garcia',
-          plusOnes: 2,
-          status: 'pending',
-          checkedIn: false,
-          submittedAt: '30 minutes ago',
-          addedBy: 'DJ Marcus',
-          addedByType: 'dj',
-        },
-        {
-          id: '7',
-          name: 'Oliver Kim',
-          instagram: '@oliverk',
-          plusOnes: 1,
-          status: 'approved',
-          checkedIn: true,
-          submittedAt: '5 hours ago',
-          addedBy: 'MC Groove',
-          addedByType: 'dj',
-        },
-        // Promoter guests
-        {
-          id: '8',
-          name: 'Sophia Lee',
-          instagram: '@sophial',
-          plusOnes: 4,
-          status: 'approved',
-          checkedIn: false,
-          submittedAt: '6 hours ago',
-          addedBy: 'Taylor',
-          addedByType: 'promoter',
-        },
-      ]);
+        setEventInfo({
+          id: event.id,
+          name: event.name,
+          date: new Date(event.date).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        });
 
-      setIsLoading(false);
-    }, 1000);
+        // Fetch entries from all guest lists
+        const allEntriesPromises = (event.guest_lists || []).map(async (guestList: any) => {
+          const entriesResponse = await fetch(`/api/guest-lists/${guestList.id}/entries`);
+          if (!entriesResponse.ok) return [];
+          const entriesData = await entriesResponse.json();
+          return (entriesData.entries || []).map((entry: any) => ({
+            ...entry,
+            listType: guestList.list_type,
+            listName: guestList.name,
+          }));
+        });
+
+        const allEntriesArrays = await Promise.all(allEntriesPromises);
+        const allEntries = allEntriesArrays.flat();
+
+        // Map entries to Guest format
+        const mapEntryToGuest = (entry: any): Guest => {
+          const guest = entry.guest || {};
+          const addedByUser = entry.created_by_user_id;
+
+          // Determine who added this guest and what type
+          let addedByType: 'dj' | 'staff' | 'promoter' = 'staff';
+          let addedByName = 'Unknown';
+
+          if (entry.listType === 'dj_list') {
+            addedByType = 'dj';
+            addedByName = entry.listName || 'DJ';
+          } else if (entry.listType === 'staff_list') {
+            addedByType = 'staff';
+            addedByName = 'Alex'; // This would come from user data
+          } else if (entry.listType === 'promoter_list') {
+            addedByType = 'promoter';
+            addedByName = entry.listName || 'Promoter';
+          }
+
+          return {
+            id: entry.id,
+            name: `${guest.first_name || ''} ${guest.last_name || ''}`.trim() || 'Unknown',
+            instagram: guest.instagram_handle,
+            plusOnes: entry.plus_ones_requested || 0,
+            status: entry.status,
+            checkedIn: !!entry.checked_in_at,
+            submittedAt: new Date(entry.created_at).toLocaleDateString(),
+            addedBy: addedByName,
+            addedByType,
+          };
+        };
+
+        const allGuestsMapped = allEntries.map(mapEntryToGuest);
+
+        // Filter for staff's own guests (from staff_list type)
+        const myGuestsMapped = allGuestsMapped.filter(g => g.addedByType === 'staff' && g.addedBy === 'Alex');
+
+        setMyGuests(myGuestsMapped);
+        setAllGuests(allGuestsMapped);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching event data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [params.id]);
 
   const handleUpdatePlusOnes = (guestId: string, newPlusOnes: number) => {

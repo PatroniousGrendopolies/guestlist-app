@@ -49,79 +49,104 @@ export default function PromoterEventManagePage() {
           return;
         }
 
-        // Mock data loading
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Fetch real data from API
+        const eventId = params.id as string;
+        const response = await fetch(`/api/events/${eventId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch event');
+        }
+
+        const data = await response.json();
+        const event = data.event;
+
+        // Find promoter's guest list to get capacity
+        const promoterGuestList = event.guest_lists?.find(
+          (gl: any) => gl.list_type === 'promoter_list'
+        );
+
+        const capacity = promoterGuestList?.max_entries || 50;
+
+        // Set event info
+        const eventDate = new Date(event.date);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthNames = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
 
         setEventInfo({
-          id: params.id as string,
-          name: 'Saturday Night Sessions',
-          date: 'Sat Jul 6',
-          venue: 'Datcha',
-          capacity: 50,
-          spotsUsed: 28,
+          id: event.id,
+          name: event.name,
+          date: formattedDate,
+          venue: event.venue?.name || 'Datcha',
+          capacity,
+          spotsUsed: 0, // Will be calculated from guests
         });
 
-        // Mock guest data - mix of promoter's guests and others
-        setAllGuests([
-          {
-            id: '1',
-            name: 'Sarah Johnson',
-            email: 'sarah@example.com',
-            phone: '+1 (555) 123-4567',
-            instagram: '@sarahj',
-            plusOnes: 2,
-            status: 'approved',
-            checkedIn: false,
-            submittedAt: '2 hours ago',
-            addedBy: 'Alex',
-          },
-          {
-            id: '2',
-            name: 'Mike Chen',
-            email: 'mike@example.com',
-            phone: '+1 (555) 234-5678',
-            plusOnes: 1,
-            status: 'pending',
-            checkedIn: false,
-            submittedAt: '4 hours ago',
-            addedBy: 'Alex',
-          },
-          {
-            id: '3',
-            name: 'Emma Wilson',
-            email: 'emma@example.com',
-            phone: '+1 (555) 345-6789',
-            instagram: '@emmaw',
-            plusOnes: 0,
-            status: 'approved',
-            checkedIn: true,
-            submittedAt: '1 day ago',
-            addedBy: 'DJ Marcus',
-          },
-          {
-            id: '4',
-            name: 'David Rodriguez',
-            email: 'david@example.com',
-            phone: '+1 (555) 456-7890',
-            plusOnes: 3,
-            status: 'pending',
-            checkedIn: false,
-            submittedAt: '6 hours ago',
-            addedBy: 'Staff John',
-          },
-          {
-            id: '5',
-            name: 'Lisa Park',
-            email: 'lisa@example.com',
-            phone: '+1 (555) 567-8901',
-            instagram: '@lisap',
-            plusOnes: 1,
-            status: 'approved',
-            checkedIn: false,
-            submittedAt: '8 hours ago',
-            addedBy: 'Alex',
-          },
-        ]);
+        // Fetch entries from all guest lists
+        const allEntriesPromises = (event.guest_lists || []).map(async (guestList: any) => {
+          const entriesResponse = await fetch(`/api/guest-lists/${guestList.id}/entries`);
+          if (!entriesResponse.ok) return [];
+          const entriesData = await entriesResponse.json();
+          return (entriesData.entries || []).map((entry: any) => ({
+            ...entry,
+            listType: guestList.list_type,
+            listName: guestList.name,
+          }));
+        });
+
+        const allEntriesArrays = await Promise.all(allEntriesPromises);
+        const allEntries = allEntriesArrays.flat();
+
+        // Map entries to Guest format
+        const mapEntryToGuest = (entry: any): Guest => {
+          const guest = entry.guest || {};
+
+          // Determine who added this guest
+          let addedByName = 'Unknown';
+          if (entry.listType === 'dj_list') {
+            addedByName = entry.listName || 'DJ';
+          } else if (entry.listType === 'staff_list') {
+            addedByName = 'Staff'; // This would come from user data
+          } else if (entry.listType === 'promoter_list') {
+            addedByName = 'Alex'; // This would come from user data
+          }
+
+          return {
+            id: entry.id,
+            name: `${guest.first_name || ''} ${guest.last_name || ''}`.trim() || 'Unknown',
+            email: guest.email || '',
+            phone: guest.phone || '',
+            instagram: guest.instagram_handle,
+            plusOnes: entry.plus_ones_requested || 0,
+            status: entry.status,
+            checkedIn: !!entry.checked_in_at,
+            submittedAt: new Date(entry.created_at).toLocaleDateString(),
+            addedBy: addedByName,
+          };
+        };
+
+        const allGuestsMapped = allEntries.map(mapEntryToGuest);
+        setAllGuests(allGuestsMapped);
+
+        // Calculate spots used
+        const approvedGuests = allGuestsMapped.filter(g => g.status === 'approved');
+        const totalSpotsUsed = approvedGuests.reduce((total, g) => total + 1 + g.plusOnes, 0);
+
+        setEventInfo(prev =>
+          prev ? { ...prev, spotsUsed: totalSpotsUsed } : null
+        );
 
         setIsLoading(false);
       } catch (error) {

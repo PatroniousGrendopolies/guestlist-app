@@ -37,72 +37,97 @@ export default function PromoterDashboardPage() {
     SafeStorage.getItem('promoter_email'); // Used for future API calls
     setPromoterName('Alex'); // This would come from API
 
-    // Mock data - 21 days of events
-    setTimeout(() => {
-      const today = new Date();
-      const mockEvents: Event[] = [];
-
-      for (let i = 0; i < 21; i++) {
-        const eventDate = new Date(today);
-        eventDate.setDate(today.getDate() + i);
-
-        // Only add events for certain days (not every day)
-        if (i % 3 === 0 || i % 5 === 0) {
-          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          const monthNames = [
-            'Jan',
-            'Feb',
-            'Mar',
-            'Apr',
-            'May',
-            'Jun',
-            'Jul',
-            'Aug',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Dec',
-          ];
-
-          mockEvents.push({
-            id: `event_${i}`,
-            name:
-              i === 0
-                ? 'Saturday Night Sessions'
-                : i === 3
-                  ? 'Midweek Vibes'
-                  : i === 5
-                    ? 'Summer Nights'
-                    : i === 6
-                      ? 'Underground Sessions'
-                      : i === 9
-                        ? 'Rooftop Party'
-                        : `Night ${i + 1}`,
-            date: `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`,
-            dayOfWeek: dayNames[eventDate.getDay()],
-            venue: 'Datcha',
-            djs:
-              i === 0
-                ? ['DJ Marcus', 'MC Groove']
-                : i === 3
-                  ? ['DJ Luna']
-                  : i === 5
-                    ? ['DJ Shadow', 'MC Flow']
-                    : i === 6
-                      ? ['DJ Beats']
-                      : ['DJ Electric'],
-            capacity: 50, // Manager-configurable capacity
-            spotsUsed: i === 0 ? 0 : Math.floor(Math.random() * 35) + 5,
-            pendingGuests: i === 0 ? 8 : Math.floor(Math.random() * 8),
-            checkedIn: Math.floor(Math.random() * 20),
-            status: 'upcoming',
-          });
+    // Fetch real data from API
+    const fetchData = async () => {
+      try {
+        const testEventId = 'a1416182-5a82-4219-8bf9-a514fa38d40c';
+        const response = await fetch(`/api/events/${testEventId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch event');
         }
-      }
 
-      setEvents(mockEvents);
-      setIsLoading(false);
-    }, 1000);
+        const data = await response.json();
+        const event = data.event;
+
+        // Find promoter's guest list
+        const promoterGuestList = event.guest_lists?.find(
+          (gl: any) => gl.list_type === 'promoter_list'
+        );
+
+        if (!promoterGuestList) {
+          setEvents([]);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch entries for promoter's guest list
+        const entriesResponse = await fetch(`/api/guest-lists/${promoterGuestList.id}/entries`);
+        if (!entriesResponse.ok) {
+          throw new Error('Failed to fetch entries');
+        }
+
+        const entriesData = await entriesResponse.json();
+        const entries = entriesData.entries || [];
+
+        // Calculate spots used and pending
+        const approvedEntries = entries.filter((entry: any) => entry.status === 'approved');
+        const pendingEntries = entries.filter((entry: any) => entry.status === 'pending');
+
+        const spotsUsed = approvedEntries.reduce(
+          (total: number, entry: any) => total + 1 + (entry.plus_ones_requested || 0),
+          0
+        );
+
+        const pendingGuests = pendingEntries.length;
+
+        // Format date
+        const eventDate = new Date(event.date);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthNames = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+
+        const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
+
+        // Get checked in count
+        const checkedInCount = entries.filter((entry: any) => entry.checked_in_at).length;
+
+        // For now, show only the one test event
+        setEvents([
+          {
+            id: event.id,
+            name: event.name,
+            date: formattedDate,
+            dayOfWeek: dayNames[eventDate.getDay()],
+            venue: event.venue?.name || 'Datcha',
+            djs: [], // DJs would come from event.djs if available
+            capacity: promoterGuestList.max_entries || 50,
+            spotsUsed,
+            pendingGuests,
+            checkedIn: checkedInCount,
+            status: 'upcoming' as const,
+          },
+        ]);
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching event data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [router]);
 
   const handleCopyLink = async (event: Event) => {

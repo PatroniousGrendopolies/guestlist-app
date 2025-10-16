@@ -26,65 +26,82 @@ export default function StaffDashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Simulate API call to get staff data
-    setTimeout(() => {
-      setStaffName('Alex');
+    // Fetch real data from API
+    const fetchData = async () => {
+      try {
+        // For testing: fetch specific event that has guest lists
+        // TODO: When auth is enabled, fetch all events where staff has a guest list
+        const testEventId = 'a1416182-5a82-4219-8bf9-a514fa38d40c';
 
-      // Mock next 7 days events
-      setNext7DaysEvents([
-        {
-          id: '1',
-          name: 'Saturday Night Sessions',
-          date: 'Sat Jul 6',
-          djs: ['DJ Marcus', 'MC Groove'],
-          spotsUsed: 3,
-          totalSpots: 5,
-          status: 'upcoming',
-        },
-        {
-          id: '2',
-          name: 'Summer Vibes',
-          date: 'Fri Jul 12',
-          djs: ['DJ Luna'],
-          spotsUsed: 5,
-          totalSpots: 5,
-          status: 'upcoming',
-        },
-        {
-          id: '3',
-          name: 'Weekend Warmup',
-          date: 'Sat Jul 13',
-          djs: ['DJ Beats', 'MC Flow'],
-          spotsUsed: 2,
-          totalSpots: 5,
-          status: 'upcoming',
-        },
-      ]);
+        const response = await fetch(`/api/events/${testEventId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch event');
+        }
 
-      // Mock additional future events (loaded when "View more" is clicked)
-      setAdditionalEvents([
-        {
-          id: '4',
-          name: 'Late Night Sessions',
-          date: 'Sat Jul 19',
-          djs: ['DJ Shadow'],
-          spotsUsed: 0,
-          totalSpots: 5,
-          status: 'upcoming',
-        },
-        {
-          id: '5',
-          name: 'Friday Night Fever',
-          date: 'Fri Jul 25',
-          djs: ['DJ Electric', 'MC Smooth'],
-          spotsUsed: 1,
-          totalSpots: 5,
-          status: 'upcoming',
-        },
-      ]);
+        const data = await response.json();
+        const event = data.event;
 
-      setIsLoading(false);
-    }, 1000);
+        // Find the staff guest list (staff_list type)
+        const staffGuestList = event.guest_lists?.find((gl: any) => gl.list_type === 'staff_list');
+
+        if (!staffGuestList) {
+          console.log('No staff guest list found for this event');
+          setNext7DaysEvents([]);
+          setAdditionalEvents([]);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch entries for this guest list
+        const entriesResponse = await fetch(`/api/guest-lists/${staffGuestList.id}/entries`);
+        let entries: any[] = [];
+        if (entriesResponse.ok) {
+          const entriesData = await entriesResponse.json();
+          entries = entriesData.entries || [];
+        }
+
+        // Calculate spots used (approved entries + their plus ones)
+        const approvedEntries = entries.filter((e: any) => e.status === 'approved');
+        const spotsUsed = approvedEntries.reduce(
+          (total: number, entry: any) => total + 1 + (entry.plus_ones_requested || 0),
+          0
+        );
+
+        // Get other DJ names from DJ guest lists
+        const djNames = event.guest_lists
+          ?.filter((gl: any) => gl.list_type === 'dj_list')
+          .map((gl: any) => gl.name) || [];
+
+        // Format date for display
+        const eventDate = new Date(event.date);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
+
+        const eventData: Event = {
+          id: event.id,
+          name: event.name,
+          date: formattedDate,
+          djs: djNames,
+          spotsUsed,
+          totalSpots: staffGuestList.max_capacity,
+          status: 'upcoming',
+        };
+
+        setStaffName('Alex'); // This would come from auth
+        setNext7DaysEvents([eventData]);
+        setAdditionalEvents([]);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching event data:', error);
+        // On error, show empty state
+        setNext7DaysEvents([]);
+        setAdditionalEvents([]);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleLogout = () => {
