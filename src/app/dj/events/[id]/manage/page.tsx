@@ -149,13 +149,13 @@ export default function DJEventManagePage() {
         // Map entries to Guest interface
         const mappedGuests: Guest[] = entries.map((entry: any) => ({
           id: entry.id,
-          name: entry.guest_name,
-          email: entry.guest_email || '',
-          phone: entry.guest_phone || '',
-          instagram: entry.guest_instagram,
-          plusOnes: entry.plus_ones || 0,
+          name: entry.guest ? `${entry.guest.first_name} ${entry.guest.last_name}` : 'Unknown Guest',
+          email: entry.guest?.email || '',
+          phone: entry.guest?.phone || '',
+          instagram: entry.guest?.instagram_handle,
+          plusOnes: entry.plus_ones_requested || 0,
           status: entry.status,
-          checkedIn: entry.checked_in || false,
+          checkedIn: entry.checked_in_at != null,
           submittedAt: formatSubmittedTime(entry.created_at),
         }));
 
