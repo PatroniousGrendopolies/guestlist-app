@@ -29,9 +29,25 @@ interface EventInfo {
   otherDJs?: string[];
 }
 
+// Helper function to format submission time
+const formatSubmittedTime = (timestamp: string): string => {
+  const now = new Date();
+  const submitted = new Date(timestamp);
+  const diffMs = now.getTime() - submitted.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+};
+
 export default function DJEventManagePage() {
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null);
   const [guests, setGuests] = useState<Guest[]>([]);
+  const [guestListId, setGuestListId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'denied'>('pending');
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,68 +91,75 @@ export default function DJEventManagePage() {
           return;
         }
 
-        // Mock data loading with potential failure simulation
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Simulate random API failure in development (5% chance)
-        if (process.env.NODE_ENV === 'development' && Math.random() < 0.05) {
-          throw new Error('Simulated API failure');
+        // Fetch event data from API
+        const eventResponse = await fetch(`/api/events/${params.id}`);
+        if (!eventResponse.ok) {
+          throw new Error('Failed to fetch event data');
         }
 
-        setEventInfo({
-          id: params.id as string,
-          name: 'Saturday Night Sessions',
-          date: 'Saturday, July 6, 2025',
-          totalCapacity: 75,
-          spotsUsed: 23,
-          otherDJs: ['DJ Marcus', 'MC Groove'],
+        const data = await eventResponse.json();
+        const event = data.event;
+
+        // Find the DJ's guest list
+        const djGuestList = event.guest_lists?.find((gl: any) => gl.list_type === 'dj_list');
+
+        if (!djGuestList) {
+          console.log('No DJ guest list found for this event');
+          setError('No guest list found for this event');
+          setIsLoading(false);
+          return;
+        }
+
+        // Format event date
+        const eventDate = new Date(event.date);
+        const formattedDate = eventDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
         });
 
-        setGuests([
-          {
-            id: '1',
-            name: 'Sarah Johnson',
-            email: 'sarah@example.com',
-            phone: '+1 (555) 123-4567',
-            instagram: '@sarahj',
-            plusOnes: 2,
-            status: 'pending',
-            checkedIn: false,
-            submittedAt: '2 hours ago',
-          },
-          {
-            id: '2',
-            name: 'Mike Chen',
-            email: 'mike@example.com',
-            phone: '+1 (555) 234-5678',
-            plusOnes: 1,
-            status: 'pending',
-            checkedIn: false,
-            submittedAt: '4 hours ago',
-          },
-          {
-            id: '3',
-            name: 'Alex Rivera',
-            email: 'alex@example.com',
-            phone: '+1 (555) 345-6789',
-            instagram: '@alexr',
-            plusOnes: 0,
-            status: 'approved',
-            checkedIn: true,
-            submittedAt: '1 day ago',
-          },
-          {
-            id: '4',
-            name: 'Jamie Smith',
-            email: 'jamie@example.com',
-            phone: '+1 (555) 456-7890',
-            plusOnes: 3,
-            status: 'approved',
-            checkedIn: false,
-            submittedAt: '1 day ago',
-          },
-        ]);
+        // Get other DJs from event
+        const otherDJs = event.dj_assignments
+          ?.filter((assignment: any) => assignment.dj.id !== 'current_dj_id') // TODO: filter by actual DJ ID
+          .map((assignment: any) => assignment.dj.stage_name || `${assignment.dj.first_name} ${assignment.dj.last_name}`)
+          .filter(Boolean);
 
+        setEventInfo({
+          id: event.id,
+          name: event.name,
+          date: formattedDate,
+          totalCapacity: djGuestList.max_capacity,
+          spotsUsed: djGuestList.current_capacity || 0,
+          otherDJs: otherDJs?.length > 0 ? otherDJs : undefined,
+        });
+
+        // Store guest list ID for approve/deny operations
+        setGuestListId(djGuestList.id);
+
+        // Fetch guest list entries
+        const entriesResponse = await fetch(`/api/guest-lists/${djGuestList.id}/entries`);
+        if (!entriesResponse.ok) {
+          throw new Error('Failed to fetch guest entries');
+        }
+
+        const entriesData = await entriesResponse.json();
+        const entries = entriesData.entries || [];
+
+        // Map entries to Guest interface
+        const mappedGuests: Guest[] = entries.map((entry: any) => ({
+          id: entry.id,
+          name: entry.guest_name,
+          email: entry.guest_email || '',
+          phone: entry.guest_phone || '',
+          instagram: entry.guest_instagram,
+          plusOnes: entry.plus_ones || 0,
+          status: entry.status,
+          checkedIn: entry.checked_in || false,
+          submittedAt: formatSubmittedTime(entry.created_at),
+        }));
+
+        setGuests(mappedGuests);
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to load event data:', error);
@@ -147,10 +170,10 @@ export default function DJEventManagePage() {
     };
 
     loadEventData();
-  }, [router, params.id]);
+  }, [router, params.id, showToast]);
 
   const handleApproveGuest = async (guestId: string) => {
-    if (!eventInfo) {
+    if (!eventInfo || !guestListId) {
       showToast('Event data not loaded', 'error');
       return;
     }
@@ -158,66 +181,26 @@ export default function DJEventManagePage() {
     setIsApproving(guestId);
 
     try {
-      // Check capacity before approving (atomic operation)
       const guest = guests.find(g => g.id === guestId);
       if (!guest) {
         throw new Error('Guest not found');
       }
 
-      // Calculate current capacity INCLUDING any guests currently being approved
-      const currentApproved = guests.filter(g => g.status === 'approved');
-      const currentUsed = currentApproved.reduce((total, g) => total + 1 + g.plusOnes, 0);
-
-      // Account for other guests currently being approved (race condition protection)
-      const currentlyApproving = guests.filter(g => g.id !== guestId && isApproving === g.id);
-      const pendingApprovalCapacity = currentlyApproving.reduce(
-        (total, g) => total + 1 + g.plusOnes,
-        0
-      );
-
-      const totalProjectedCapacity = currentUsed + pendingApprovalCapacity + 1 + guest.plusOnes;
-
-      if (totalProjectedCapacity > eventInfo.totalCapacity) {
-        showToast(
-          `Cannot approve: would exceed capacity (${totalProjectedCapacity}/${eventInfo.totalCapacity})`,
-          'warning'
-        );
-        setIsApproving(null);
-        return;
-      }
-
-      // Simulate API call with potential failure
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (Math.random() < 0.1) {
-            // 10% chance of failure
-            reject(new Error('Network error'));
-          } else {
-            resolve(undefined);
-          }
-        }, 500);
+      // Call approve API
+      const response = await fetch(`/api/guest-lists/${guestListId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entry_ids: [guestId] }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to approve guest');
+      }
+
+      // Update local state
       setGuests(prev =>
-        prev.map(guest => {
-          if (guest.id === guestId) {
-            const updatedGuest = { ...guest, status: 'approved' as const };
-
-            // Save to localStorage for sync with detail page
-            const existingGuests = SafeStorage.getJSON('event_guests') || {};
-            const success = SafeStorage.setJSON('event_guests', {
-              ...existingGuests,
-              [guestId]: { status: 'approved' },
-            });
-
-            if (!success) {
-              console.warn('Failed to save guest status to localStorage');
-            }
-
-            return updatedGuest;
-          }
-          return guest;
-        })
+        prev.map(g => (g.id === guestId ? { ...g, status: 'approved' as const } : g))
       );
 
       showToast(`${guest.name} approved successfully`, 'success');
@@ -233,32 +216,50 @@ export default function DJEventManagePage() {
   };
 
   const handleDenyGuest = async (guestId: string) => {
+    if (!guestListId) {
+      showToast('Event data not loaded', 'error');
+      return;
+    }
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const guest = guests.find(g => g.id === guestId);
+      if (!guest) {
+        throw new Error('Guest not found');
+      }
 
+      // Call deny API
+      const response = await fetch(`/api/guest-lists/${guestListId}/deny`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entry_ids: [guestId] }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to deny guest');
+      }
+
+      // Update local state
       setGuests(prev =>
-        prev.map(guest => {
-          if (guest.id === guestId) {
-            const updatedGuest = { ...guest, status: 'denied' as const };
-
-            // Save to localStorage for sync with detail page
-            const storedGuests = localStorage.getItem('event_guests');
-            const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
-            guestUpdates[guestId] = { status: 'denied' };
-            localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
-
-            return updatedGuest;
-          }
-          return guest;
-        })
+        prev.map(g => (g.id === guestId ? { ...g, status: 'denied' as const } : g))
       );
+
+      showToast(`${guest.name} denied`, 'success');
     } catch (error) {
       console.error('Failed to deny guest:', error);
+      showToast(
+        error instanceof Error ? error.message : 'Failed to deny guest. Please try again.',
+        'error'
+      );
     }
   };
 
   const handleApproveAll = async (event: React.MouseEvent) => {
+    if (!guestListId) {
+      showToast('Event data not loaded', 'error');
+      return;
+    }
+
     const pendingGuests = filteredGuests.filter(guest => guest.status === 'pending');
 
     if (pendingGuests.length === 0) return;
@@ -276,9 +277,19 @@ export default function DJEventManagePage() {
     setShowExplosion(true);
 
     try {
-      // Simulate API call (during explosion animation)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call approve API with all pending guest IDs (during explosion animation)
+      const response = await fetch(`/api/guest-lists/${guestListId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entry_ids: pendingGuests.map(g => g.id) }),
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to approve guests');
+      }
+
+      // Update local state
       setGuests(prev => {
         return prev.map(guest => {
           if (guest.status === 'pending') {
@@ -288,23 +299,16 @@ export default function DJEventManagePage() {
         });
       });
 
-      // Save all updates to localStorage using SafeStorage
-      const existingGuests = (SafeStorage.getJSON('event_guests') || {}) as Record<
-        string,
-        { status: string }
-      >;
-      pendingGuests.forEach(guest => {
-        existingGuests[guest.id] = { status: 'approved' };
-      });
-      SafeStorage.setJSON('event_guests', existingGuests);
-
       setIsApprovingAll(false);
     } catch (error) {
       console.error('Failed to approve all guests:', error);
       setIsApprovingAll(false);
       setShowExplosion(false);
       setApprovedGuestNames([]);
-      showToast('Failed to approve guests. Please try again.', 'error');
+      showToast(
+        error instanceof Error ? error.message : 'Failed to approve guests. Please try again.',
+        'error'
+      );
     }
   };
 
