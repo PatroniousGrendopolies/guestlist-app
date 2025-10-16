@@ -187,9 +187,13 @@ function GuestAuthContent() {
         setError(error);
         showToast(error, 'error');
       } else {
-        setSuccess('Account created! Please check your email to verify your account.');
+        setSuccess('Account created! Redirecting to your dashboard...');
         showToast('Account created successfully!', 'success');
-        setTimeout(() => setIsLogin(true), 2000);
+
+        // Auto-login after successful signup (email verification disabled for now)
+        SafeStorage.setItem('guestSession', JSON.stringify(guest));
+
+        setTimeout(() => router.push('/guest/dashboard'), 1000);
       }
     } catch (err) {
       const errorMessage = 'Signup failed. Please try again.';
