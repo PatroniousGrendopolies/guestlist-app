@@ -1,8 +1,11 @@
 const { createClient } = require('@supabase/supabase-js');
 
 // Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ohkrtsyqbfphsqessdzj.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oa3J0c3lxYmZwaHNxZXNzZHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MTEwMjMsImV4cCI6MjAzMzk4NzAyM30.e5iudSjqHhXrLxP2_XOwm6LjQPvTQzaHEmU2lCpGZwE';
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ohkrtsyqbfphsqessdzj.supabase.co';
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oa3J0c3lxYmZwaHNxZXNzZHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MTEwMjMsImV4cCI6MjAzMzk4NzAyM30.e5iudSjqHhXrLxP2_XOwm6LjQPvTQzaHEmU2lCpGZwE';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -81,7 +84,7 @@ CREATE POLICY IF NOT EXISTS "Anonymous can create auth records" ON guest_auth
 
 CREATE POLICY IF NOT EXISTS "Guests can update own auth" ON guest_auth
     FOR UPDATE USING (guest_id::text = auth.uid()::text);
-    `
+    `,
   });
 
   if (error) {

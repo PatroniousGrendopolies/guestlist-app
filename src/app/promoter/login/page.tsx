@@ -19,7 +19,7 @@ export default function PromoterLoginPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Mock validation for promoter
       if (email === 'promoter@test.com' && password === 'password123') {
         SafeStorage.setItem('promoter_authenticated', 'true');
@@ -58,7 +58,7 @@ export default function PromoterLoginPage() {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
               placeholder="promoter@test.com"
               required
@@ -73,7 +73,7 @@ export default function PromoterLoginPage() {
               type="password"
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
               placeholder="password123"
               required
@@ -90,9 +90,7 @@ export default function PromoterLoginPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Test credentials: promoter@test.com / password123
-          </p>
+          <p className="text-sm text-gray-600">Test credentials: promoter@test.com / password123</p>
         </div>
       </div>
     </div>

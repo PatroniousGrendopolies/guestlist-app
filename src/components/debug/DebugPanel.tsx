@@ -11,13 +11,13 @@ interface DebugPanelProps {
   onSimulateError?: () => void;
 }
 
-export default function DebugPanel({ 
-  onResetData, 
-  onFillToCapacity, 
-  onGenerateRandomGuests, 
-  onClearStorage, 
-  onToggleLoading, 
-  onSimulateError 
+export default function DebugPanel({
+  onResetData,
+  onFillToCapacity,
+  onGenerateRandomGuests,
+  onClearStorage,
+  onToggleLoading,
+  onSimulateError,
 }: DebugPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showStorage, setShowStorage] = useState(false);
@@ -69,10 +69,7 @@ export default function DebugPanel({
     <div className="fixed bottom-4 right-4 z-50 bg-white border-2 border-red-500 rounded-xl p-4 shadow-lg max-w-sm">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-red-600">Debug Panel</h3>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="text-gray-400 hover:text-gray-600"
-        >
+        <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
           ✕
         </button>
       </div>
@@ -128,9 +125,7 @@ export default function DebugPanel({
 
         {showStorage && (
           <div className="bg-gray-50 p-2 rounded text-xs max-h-40 overflow-y-auto">
-            <pre className="text-xs">
-              {JSON.stringify(getStorageData(), null, 2)}
-            </pre>
+            <pre className="text-xs">{JSON.stringify(getStorageData(), null, 2)}</pre>
           </div>
         )}
       </div>

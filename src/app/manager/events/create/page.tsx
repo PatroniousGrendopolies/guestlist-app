@@ -40,6 +40,7 @@ export default function CreateEventPage() {
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [draggedDJId, setDraggedDJId] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showInviteDropdown, setShowInviteDropdown] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const router = useRouter();
 
@@ -61,10 +62,21 @@ export default function CreateEventPage() {
     ];
     setExistingDJs(mockDJs);
 
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setEventDate(tomorrow.toISOString().split('T')[0]);
+    // Check for pre-selected date from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const preSelectedDate = urlParams.get('date');
+
+    if (preSelectedDate) {
+      // Use the date from URL parameter
+      setEventDate(preSelectedDate);
+      // Set current month to match the pre-selected date
+      setCurrentMonth(new Date(preSelectedDate + 'T00:00:00'));
+    } else {
+      // Set default date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setEventDate(tomorrow.toISOString().split('T')[0]);
+    }
   }, [router]);
 
   // ESC key handler to close modal
@@ -132,6 +144,21 @@ export default function CreateEventPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showCalendar]);
+
+  // Close invite dropdown when clicking outside
+  useEffect(() => {
+    if (!showInviteDropdown) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.invite-dropdown-container')) {
+        setShowInviteDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showInviteDropdown]);
 
   const handleAddExistingDJ = (dj: DJ) => {
     if (!selectedDJs.find(selected => selected.id === dj.id)) {
@@ -328,7 +355,7 @@ export default function CreateEventPage() {
       <div className="max-w-4xl mx-auto p-6">
         <div className="space-y-8">
           {/* Event Title and Date */}
-          <div className="flex gap-6">
+          <div className="flex flex-col md:flex-row gap-6">
             {/* Left: Event Title */}
             <div className="flex-1">
               <label className="block text-sm text-gray-700 mb-2">Event Title (optional)</label>
@@ -428,12 +455,59 @@ export default function CreateEventPage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg">DJ Selection</h2>
-              <button
-                onClick={() => setShowNewDJModal(true)}
-                className="bg-gray-300 text-black px-6 py-3 rounded-full hover:bg-gray-400 transition-colors"
-              >
-                Invite New DJ
-              </button>
+              <div className="relative invite-dropdown-container">
+                <button
+                  onClick={() => setShowInviteDropdown(!showInviteDropdown)}
+                  className="bg-gray-300 text-black px-6 py-3 rounded-full hover:bg-gray-400 transition-colors flex items-center gap-2"
+                >
+                  Invite New
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="currentColor">
+                    <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showInviteDropdown && (
+                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-20 min-w-[160px]">
+                    <button
+                      onClick={() => {
+                        setShowNewDJModal(true);
+                        setShowInviteDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      DJ
+                    </button>
+                    <button
+                      onClick={() => {
+                        // TODO: Add staff modal
+                        setShowInviteDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      Staff
+                    </button>
+                    <button
+                      onClick={() => {
+                        // TODO: Add promoter modal
+                        setShowInviteDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      Promoter
+                    </button>
+                    <button
+                      onClick={() => {
+                        // TODO: Add manager modal
+                        setShowInviteDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                    >
+                      Manager
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Search existing DJs */}
@@ -548,7 +622,7 @@ export default function CreateEventPage() {
 
             <div className="space-y-6">
               {/* Capacity and Distribution Side by Side */}
-              <div className="flex gap-6">
+              <div className="flex flex-col md:flex-row gap-6">
                 {/* Left: Total Capacity Input */}
                 <div className="flex-1">
                   <label className="block text-sm text-gray-700 mb-2">Total Guestlist Capacity</label>
@@ -592,7 +666,7 @@ export default function CreateEventPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => router.push('/manager/dashboard')}
               className="flex-1 bg-gray-100 text-black py-3 rounded-full hover:bg-gray-200 transition-colors text-sm"

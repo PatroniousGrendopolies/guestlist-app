@@ -20,7 +20,7 @@ function DJVerifyEmailPageContent() {
   const handleResendEmail = async () => {
     setIsResending(true);
     setResendMessage('');
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -51,9 +51,7 @@ function DJVerifyEmailPageContent() {
         <div className="text-center mb-8">
           <div className="text-6xl mb-6">📧</div>
           <h2 className="text-2xl font-light mb-4">Check your email</h2>
-          <p className="text-gray-600 mb-4">
-            We've sent a verification link to:
-          </p>
+          <p className="text-gray-600 mb-4">We've sent a verification link to:</p>
           <p className="text-lg font-medium mb-6">{email}</p>
           <p className="text-gray-600">
             Click the link in the email to verify your account and access your DJ dashboard.
@@ -65,15 +63,21 @@ function DJVerifyEmailPageContent() {
           <h3 className="font-medium mb-4">What to do next:</h3>
           <ol className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start gap-2">
-              <span className="bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mt-0.5">1</span>
+              <span className="bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mt-0.5">
+                1
+              </span>
               Check your email inbox (and spam folder)
             </li>
             <li className="flex items-start gap-2">
-              <span className="bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mt-0.5">2</span>
+              <span className="bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mt-0.5">
+                2
+              </span>
               Click the verification link in the email
             </li>
             <li className="flex items-start gap-2">
-              <span className="bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mt-0.5">3</span>
+              <span className="bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mt-0.5">
+                3
+              </span>
               You'll be redirected to your DJ dashboard
             </li>
           </ol>
@@ -82,17 +86,19 @@ function DJVerifyEmailPageContent() {
         {/* Resend Section */}
         <div className="text-center">
           <p className="text-gray-600 mb-4">Didn't receive the email?</p>
-          
+
           {resendMessage && (
-            <div className={`mb-4 p-3 rounded-xl ${
-              resendMessage.includes('Failed') 
-                ? 'bg-red-50 text-red-700 border border-red-200' 
-                : 'bg-green-50 text-green-700 border border-green-200'
-            }`}>
+            <div
+              className={`mb-4 p-3 rounded-xl ${
+                resendMessage.includes('Failed')
+                  ? 'bg-red-50 text-red-700 border border-red-200'
+                  : 'bg-green-50 text-green-700 border border-green-200'
+              }`}
+            >
               {resendMessage}
             </div>
           )}
-          
+
           <div className="space-y-3">
             <button
               onClick={handleResendEmail}
@@ -108,7 +114,7 @@ function DJVerifyEmailPageContent() {
                 'Resend verification email'
               )}
             </button>
-            
+
             <button
               onClick={handleChangeEmail}
               className="w-full bg-white text-black border-2 border-black py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors"
@@ -132,14 +138,16 @@ function DJVerifyEmailPageContent() {
 
 export default function DJVerifyEmailPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <DJVerifyEmailPageContent />
     </Suspense>
   );

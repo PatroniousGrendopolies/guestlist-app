@@ -8,7 +8,7 @@ const mockUsers = {
   doorman: { id: '2', name: 'Doorman', email: 'doorman@example.com', role: UserRole.DOORPERSON },
   promoter: { id: '3', name: 'Promoter', email: 'promoter@example.com', role: UserRole.PROMOTER },
   dj: { id: '4', name: 'DJ', email: 'dj@example.com', role: UserRole.DJ },
-  guest: { id: '5', name: 'Guest', email: 'guest@example.com', role: UserRole.GUEST }
+  guest: { id: '5', name: 'Guest', email: 'guest@example.com', role: UserRole.GUEST },
 };
 
 describe('Auth Utilities', () => {

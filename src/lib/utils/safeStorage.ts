@@ -101,6 +101,6 @@ export function useSafeStorage() {
     removeItem: SafeStorage.removeItem,
     getJSON: SafeStorage.getJSON,
     setJSON: SafeStorage.setJSON,
-    clear: SafeStorage.clear
+    clear: SafeStorage.clear,
   };
 }

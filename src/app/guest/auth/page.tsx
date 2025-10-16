@@ -14,14 +14,14 @@ function GuestAuthContent() {
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState(false); // Default to signup
-  
+
   // Debug function
   const handleSignInClick = () => {
     console.log('SIGN IN CLICKED - Before:', isLogin);
     setIsLogin(true);
     console.log('SIGN IN CLICKED - After setting to true');
   };
-  
+
   const handleSignUpClick = () => {
     console.log('SIGN UP CLICKED - Before:', isLogin);
     setIsLogin(false);
@@ -30,7 +30,7 @@ function GuestAuthContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  
+
   // Event details from URL params or defaults
   const eventName = searchParams.get('event') || 'Summer Vibes';
   const djNames = searchParams.get('dj') || 'DJ Shadow & MC Solar';
@@ -45,7 +45,7 @@ function GuestAuthContent() {
     lastName: '',
     fullName: '',
     phone: '',
-    instagramHandle: ''
+    instagramHandle: '',
   });
 
   // Input validation
@@ -91,6 +91,24 @@ function GuestAuthContent() {
     }
 
     try {
+      // For development: Use mock authentication since backend is not fully implemented
+      // TODO: Replace with actual backend authentication when ready
+      const mockGuest = {
+        guestId: 'guest_demo_123',
+        email: formData.email.trim(),
+        name: 'Demo Guest',
+        verified: true,
+      };
+
+      setSuccess('Login successful! Redirecting...');
+      showToast('Login successful!', 'success');
+
+      // Use SafeStorage instead of sessionStorage
+      SafeStorage.setItem('guestSession', JSON.stringify(mockGuest));
+
+      setTimeout(() => router.push('/guest/dashboard'), 1000);
+
+      /* Production code - enable when backend is ready:
       const { guest, error } = await guestAuth.loginWithEmail(
         formData.email.trim(),
         formData.password
@@ -102,12 +120,13 @@ function GuestAuthContent() {
       } else {
         setSuccess('Login successful! Redirecting...');
         showToast('Login successful!', 'success');
-        
+
         // Use SafeStorage instead of sessionStorage
         SafeStorage.setItem('guestSession', JSON.stringify(guest));
-        
+
         setTimeout(() => router.push('/guest/dashboard'), 1000);
       }
+      */
     } catch (err) {
       const errorMessage = 'Login failed. Please try again.';
       setError(errorMessage);
@@ -179,7 +198,7 @@ function GuestAuthContent() {
           firstName: firstName,
           lastName: lastName,
           phone: formData.phone.trim() || undefined,
-          instagramHandle: formData.instagramHandle.trim()
+          instagramHandle: formData.instagramHandle.trim(),
         }
       );
 
@@ -228,11 +247,37 @@ function GuestAuthContent() {
               onClick={handleGoogleAuth}
               className="bg-white text-black border border-gray-300 rounded-full py-3 px-6 text-sm w-full mb-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-3"
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M17.64 9.20454C17.64 8.56636 17.5827 7.95272 17.4764 7.36363H9V10.845H13.8436C13.635 11.97 13.0009 12.9231 12.0477 13.5613V15.8195H14.9564C16.6582 14.2527 17.64 11.9454 17.64 9.20454Z" fill="#4285F4"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M9 18C11.43 18 13.4673 17.1941 14.9564 15.8195L12.0477 13.5613C11.2418 14.1013 10.2109 14.4204 9 14.4204C6.65591 14.4204 4.67182 12.8372 3.96409 10.71H0.957272V13.0418C2.43818 15.9831 5.48182 18 9 18Z" fill="#34A853"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M3.96409 10.71C3.78409 10.17 3.68182 9.59318 3.68182 9C3.68182 8.40682 3.78409 7.83 3.96409 7.29V4.95818H0.957272C0.347727 6.17318 0 7.54773 0 9C0 10.4523 0.347727 11.8268 0.957272 13.0418L3.96409 10.71Z" fill="#FBBC05"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M9 3.57955C10.3214 3.57955 11.5077 4.03364 12.4405 4.92545L15.0218 2.34409C13.4632 0.891818 11.4259 0 9 0C5.48182 0 2.43818 2.01682 0.957272 4.95818L3.96409 7.29C4.67182 5.16273 6.65591 3.57955 9 3.57955Z" fill="#EA4335"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M17.64 9.20454C17.64 8.56636 17.5827 7.95272 17.4764 7.36363H9V10.845H13.8436C13.635 11.97 13.0009 12.9231 12.0477 13.5613V15.8195H14.9564C16.6582 14.2527 17.64 11.9454 17.64 9.20454Z"
+                  fill="#4285F4"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M9 18C11.43 18 13.4673 17.1941 14.9564 15.8195L12.0477 13.5613C11.2418 14.1013 10.2109 14.4204 9 14.4204C6.65591 14.4204 4.67182 12.8372 3.96409 10.71H0.957272V13.0418C2.43818 15.9831 5.48182 18 9 18Z"
+                  fill="#34A853"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M3.96409 10.71C3.78409 10.17 3.68182 9.59318 3.68182 9C3.68182 8.40682 3.78409 7.83 3.96409 7.29V4.95818H0.957272C0.347727 6.17318 0 7.54773 0 9C0 10.4523 0.347727 11.8268 0.957272 13.0418L3.96409 10.71Z"
+                  fill="#FBBC05"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M9 3.57955C10.3214 3.57955 11.5077 4.03364 12.4405 4.92545L15.0218 2.34409C13.4632 0.891818 11.4259 0 9 0C5.48182 0 2.43818 2.01682 0.957272 4.95818L3.96409 7.29C4.67182 5.16273 6.65591 3.57955 9 3.57955Z"
+                  fill="#EA4335"
+                />
               </svg>
               Continue with Google
             </button>
@@ -249,7 +294,10 @@ function GuestAuthContent() {
               <button
                 type="button"
                 onClick={handleSignUpClick}
-                style={{ backgroundColor: !isLogin ? '#F3F4F6' : '#FFFFFF', color: !isLogin ? '#000000' : '#000000' }}
+                style={{
+                  backgroundColor: !isLogin ? '#F3F4F6' : '#FFFFFF',
+                  color: !isLogin ? '#000000' : '#000000',
+                }}
                 className="flex-1 py-3 px-6 text-center text-sm transition-all rounded-t-xl border-l border-t border-r border-gray-200 -mb-px"
               >
                 Sign up
@@ -257,7 +305,10 @@ function GuestAuthContent() {
               <button
                 type="button"
                 onClick={handleSignInClick}
-                style={{ backgroundColor: isLogin ? '#4B5563' : '#FFFFFF', color: isLogin ? '#FFFFFF' : '#000000' }}
+                style={{
+                  backgroundColor: isLogin ? '#4B5563' : '#FFFFFF',
+                  color: isLogin ? '#FFFFFF' : '#000000',
+                }}
                 className="flex-1 py-3 px-6 text-center text-sm transition-all rounded-t-xl border-l border-t border-r border-gray-200 -mb-px"
               >
                 Sign In
@@ -290,7 +341,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="your@email.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
                     required
                   />
                 </div>
@@ -305,7 +356,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="Enter your password"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
                     required
                   />
                 </div>
@@ -342,7 +393,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full flex-1"
                     placeholder="First name"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                     required
                   />
                   <input
@@ -351,7 +402,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full flex-1"
                     placeholder="Last name"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    onChange={e => setFormData({ ...formData, lastName: e.target.value })}
                     required
                   />
                 </div>
@@ -366,7 +417,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="your@email.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
                     required
                   />
                 </div>
@@ -381,7 +432,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="+1 (555) 123-4567"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
                   />
                 </div>
 
@@ -395,7 +446,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="@yourusername"
                     value={formData.instagramHandle}
-                    onChange={(e) => {
+                    onChange={e => {
                       let value = e.target.value;
                       // Always ensure @ symbol is at the beginning if there's any text
                       if (value.length > 0 && !value.startsWith('@')) {
@@ -418,7 +469,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="Create a password"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
                     required
                   />
                 </div>
@@ -433,7 +484,7 @@ function GuestAuthContent() {
                     className="px-4 py-2 border border-gray-200 rounded-xl focus:border-black transition-colors w-full"
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
                     required
                   />
                 </div>
@@ -465,11 +516,13 @@ export default function GuestAuthPage() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <Suspense fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-lg">Loading...</div>
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-lg">Loading...</div>
+            </div>
+          }
+        >
           <GuestAuthContent />
         </Suspense>
       </ToastProvider>

@@ -42,7 +42,7 @@ export default function DJEventSearchPage() {
       setEventInfo({
         id: params.id as string,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025'
+        date: 'Saturday, July 6, 2025',
       });
 
       let mockGuests = [
@@ -55,7 +55,7 @@ export default function DJEventSearchPage() {
           plusOnes: 2,
           status: 'pending' as const,
           checkedIn: false,
-          submittedAt: '2 hours ago'
+          submittedAt: '2 hours ago',
         },
         {
           id: '2',
@@ -65,7 +65,7 @@ export default function DJEventSearchPage() {
           plusOnes: 1,
           status: 'pending' as const,
           checkedIn: false,
-          submittedAt: '4 hours ago'
+          submittedAt: '4 hours ago',
         },
         {
           id: '3',
@@ -76,7 +76,7 @@ export default function DJEventSearchPage() {
           plusOnes: 0,
           status: 'approved' as const,
           checkedIn: true,
-          submittedAt: '1 day ago'
+          submittedAt: '1 day ago',
         },
         {
           id: '4',
@@ -86,7 +86,7 @@ export default function DJEventSearchPage() {
           plusOnes: 3,
           status: 'approved' as const,
           checkedIn: false,
-          submittedAt: '1 day ago'
+          submittedAt: '1 day ago',
         },
         {
           id: '5',
@@ -97,8 +97,8 @@ export default function DJEventSearchPage() {
           plusOnes: 1,
           status: 'denied' as const,
           checkedIn: false,
-          submittedAt: '3 days ago'
-        }
+          submittedAt: '3 days ago',
+        },
       ];
 
       // Apply any status updates from localStorage
@@ -120,10 +120,11 @@ export default function DJEventSearchPage() {
     }, 1000);
   }, [router, params.id]);
 
-  const filteredGuests = guests.filter(guest =>
-    guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (guest.instagram && guest.instagram.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    guest.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredGuests = guests.filter(
+    guest =>
+      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (guest.instagram && guest.instagram.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      guest.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -169,7 +170,7 @@ export default function DJEventSearchPage() {
               type="text"
               placeholder="Search by name, IG or email"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full px-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-black transition-colors"
               autoFocus
             />
@@ -190,12 +191,10 @@ export default function DJEventSearchPage() {
           ) : filteredGuests.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium mb-2">No guests found</h3>
-              <p className="text-gray-600">
-                Try searching with a different term
-              </p>
+              <p className="text-gray-600">Try searching with a different term</p>
             </div>
           ) : (
-            filteredGuests.map((guest) => (
+            filteredGuests.map(guest => (
               <button
                 key={guest.id}
                 onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
@@ -226,21 +225,29 @@ export default function DJEventSearchPage() {
                         </span>
                       )}
                     </div>
-                    
-                    {guest.instagram && (
-                      <p className="text-sm text-gray-600">{guest.instagram}</p>
-                    )}
+
+                    {guest.instagram && <p className="text-sm text-gray-600">{guest.instagram}</p>}
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     {/* Plus Ones Display */}
                     {guest.plusOnes > 0 && (
                       <span className="text-sm text-gray-600">+{guest.plusOnes}</span>
                     )}
-                    
+
                     {/* Arrow Icon */}
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </div>
                 </div>

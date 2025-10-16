@@ -7,11 +7,15 @@ import { UserRole } from '@/types/enums';
 // Helper to get user-friendly role names if needed, or just use the enum values
 const getFriendlyRoleName = (role: UserRole): string => {
   switch (role) {
-    case UserRole.DJ: return 'DJ';
-    case UserRole.PROMOTER: return 'Promoter';
-    case UserRole.DOORPERSON: return 'Door Staff';
+    case UserRole.DJ:
+      return 'DJ';
+    case UserRole.PROMOTER:
+      return 'Promoter';
+    case UserRole.DOORPERSON:
+      return 'Door Staff';
     // Add other roles as needed, but managers typically invite DJs or Promoters
-    default: return role.charAt(0).toUpperCase() + role.slice(1);
+    default:
+      return role.charAt(0).toUpperCase() + role.slice(1);
   }
 };
 
@@ -21,7 +25,6 @@ const assignableRoles: UserRole[] = [
   UserRole.PROMOTER,
   UserRole.DOORPERSON, // Example: managers might also invite door staff
 ];
-
 
 export default function ManageInvitationsPage() {
   const [email, setEmail] = useState('');
@@ -71,8 +74,10 @@ export default function ManageInvitationsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Manage User Invitations</h1>
-        
+        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
+          Manage User Invitations
+        </h1>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -83,7 +88,7 @@ export default function ManageInvitationsPage() {
               name="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="user@example.com"
               required
@@ -98,11 +103,11 @@ export default function ManageInvitationsPage() {
               name="roleToAssign"
               id="roleToAssign"
               value={roleToAssign}
-              onChange={(e) => setRoleToAssign(e.target.value as UserRole)}
+              onChange={e => setRoleToAssign(e.target.value as UserRole)}
               className="mt-1 block w-full px-4 py-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               required
             >
-              {assignableRoles.map((role) => (
+              {assignableRoles.map(role => (
                 <option key={role} value={role}>
                   {getFriendlyRoleName(role)}
                 </option>
@@ -120,12 +125,19 @@ export default function ManageInvitationsPage() {
         </form>
 
         {message && (
-          <div className={`mt-6 p-4 rounded-md text-sm font-medium border ${
-            messageType === 'success' ? 'bg-green-50 border-green-300 text-green-700' :
-            messageType === 'error' ? 'bg-red-50 border-red-300 text-red-700' :
-            'bg-blue-50 border-blue-300 text-blue-700' // info
-          }`} role="alert">
-            <p className="font-semibold">{messageType.charAt(0).toUpperCase() + messageType.slice(1)}</p>
+          <div
+            className={`mt-6 p-4 rounded-md text-sm font-medium border ${
+              messageType === 'success'
+                ? 'bg-green-50 border-green-300 text-green-700'
+                : messageType === 'error'
+                  ? 'bg-red-50 border-red-300 text-red-700'
+                  : 'bg-blue-50 border-blue-300 text-blue-700' // info
+            }`}
+            role="alert"
+          >
+            <p className="font-semibold">
+              {messageType.charAt(0).toUpperCase() + messageType.slice(1)}
+            </p>
             <p>{message}</p>
           </div>
         )}

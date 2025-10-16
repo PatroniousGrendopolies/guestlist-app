@@ -26,7 +26,7 @@ export default function DoorpersonLoginPage() {
     }
 
     setIsLoading(true);
-    
+
     try {
       // TODO: Replace with actual authentication
       // For now, accept any 4-digit PIN
@@ -57,7 +57,7 @@ export default function DoorpersonLoginPage() {
         {/* PIN Display */}
         <div className="text-center mb-8">
           <div className="flex justify-center gap-4 mb-4">
-            {[0, 1, 2, 3].map((index) => (
+            {[0, 1, 2, 3].map(index => (
               <div
                 key={index}
                 className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center"
@@ -66,14 +66,12 @@ export default function DoorpersonLoginPage() {
               </div>
             ))}
           </div>
-          {error && (
-            <p className="text-red-600 text-sm mb-4">{error}</p>
-          )}
+          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
         </div>
 
         {/* PIN Keypad */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
             <button
               key={num}
               onClick={() => handleKeyPress(num.toString())}

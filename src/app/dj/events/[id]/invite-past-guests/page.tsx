@@ -45,7 +45,7 @@ export default function InvitePastGuestsPage() {
       setEventInfo({
         id: params.id as string,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025'
+        date: 'Saturday, July 6, 2025',
       });
 
       // Mock past guests data
@@ -58,9 +58,9 @@ export default function InvitePastGuestsPage() {
           phone: '+1 (555) 111-2222',
           lastAttended: {
             eventName: 'Friday Night Fever',
-            date: 'June 14, 2025'
+            date: 'June 14, 2025',
           },
-          totalVisits: 8
+          totalVisits: 8,
         },
         {
           id: '2',
@@ -70,9 +70,9 @@ export default function InvitePastGuestsPage() {
           phone: '+1 (555) 333-4444',
           lastAttended: {
             eventName: 'Weekend Vibes',
-            date: 'June 7, 2025'
+            date: 'June 7, 2025',
           },
-          totalVisits: 5
+          totalVisits: 5,
         },
         {
           id: '3',
@@ -81,9 +81,9 @@ export default function InvitePastGuestsPage() {
           phone: '+1 (555) 555-6666',
           lastAttended: {
             eventName: 'Friday Night Fever',
-            date: 'June 14, 2025'
+            date: 'June 14, 2025',
           },
-          totalVisits: 12
+          totalVisits: 12,
         },
         {
           id: '4',
@@ -93,9 +93,9 @@ export default function InvitePastGuestsPage() {
           phone: '+1 (555) 777-8888',
           lastAttended: {
             eventName: 'Summer Kickoff',
-            date: 'May 31, 2025'
+            date: 'May 31, 2025',
           },
-          totalVisits: 3
+          totalVisits: 3,
         },
         {
           id: '5',
@@ -105,10 +105,10 @@ export default function InvitePastGuestsPage() {
           phone: '+1 (555) 999-0000',
           lastAttended: {
             eventName: 'Friday Night Fever',
-            date: 'June 14, 2025'
+            date: 'June 14, 2025',
           },
-          totalVisits: 7
-        }
+          totalVisits: 7,
+        },
       ];
 
       // Filter out guests who have already been invited to this event
@@ -195,7 +195,9 @@ export default function InvitePastGuestsPage() {
             ← Dashboard
           </button>
           <h1 className="text-2xl font-light mb-1">Invite Past Guests</h1>
-          <p className="text-gray-600">{eventInfo.name} • {eventInfo.date}</p>
+          <p className="text-gray-600">
+            {eventInfo.name} • {eventInfo.date}
+          </p>
         </div>
       </div>
 
@@ -210,12 +212,14 @@ export default function InvitePastGuestsPage() {
             >
               {selectedGuests.size === sortedGuests.length ? 'Deselect All' : 'Select All'}
             </button>
-            
+
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Sort by:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'alphabetical' | 'visits' | 'lastAttended')}
+                onChange={e =>
+                  setSortBy(e.target.value as 'alphabetical' | 'visits' | 'lastAttended')
+                }
                 className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-sm border-none focus:outline-none hover:bg-gray-200 transition-colors"
               >
                 <option value="alphabetical">Alphabetical</option>
@@ -229,13 +233,24 @@ export default function InvitePastGuestsPage() {
           {sortedGuests.length === 0 ? (
             <div className="text-center py-12">
               <div className="mb-4">
-                <svg className="w-16 h-16 text-gray-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg
+                  className="w-16 h-16 text-gray-300 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
               </div>
               <h3 className="text-lg font-medium mb-2">No Available Past Guests</h3>
               <p className="text-gray-600 text-sm max-w-md mx-auto">
-                All your past guests have already been invited to this event, or you don't have any past guests yet.
+                All your past guests have already been invited to this event, or you don't have any
+                past guests yet.
               </p>
               <button
                 onClick={() => router.push('/dj/dashboard')}
@@ -246,55 +261,63 @@ export default function InvitePastGuestsPage() {
             </div>
           ) : (
             <div className="space-y-3 pb-32">
-              {sortedGuests.map((guest) => (
-              <div
-                key={guest.id}
-                onClick={() => handleGuestToggle(guest.id)}
-                className="bg-white border border-gray-200 rounded-xl p-2 cursor-pointer hover:border-gray-300 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  {/* Checkbox */}
-                  <div className="flex-shrink-0">
-                    <div className={`w-6 h-6 rounded-full border-2 transition-colors ${
-                      selectedGuests.has(guest.id) 
-                        ? 'bg-black border-black' 
-                        : 'bg-white border-gray-300'
-                    }`}>
-                      {selectedGuests.has(guest.id) && (
-                        <svg className="w-full h-full p-1" viewBox="0 0 24 24" fill="none">
-                          <path d="M5 13l4 4L19 7" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Guest Info */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm">{guest.name}</p>
-                        {guest.instagram && (
-                          <a 
-                            href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {guest.instagram}
-                          </a>
+              {sortedGuests.map(guest => (
+                <div
+                  key={guest.id}
+                  onClick={() => handleGuestToggle(guest.id)}
+                  className="bg-white border border-gray-200 rounded-xl p-2 cursor-pointer hover:border-gray-300 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Checkbox */}
+                    <div className="flex-shrink-0">
+                      <div
+                        className={`w-6 h-6 rounded-full border-2 transition-colors ${
+                          selectedGuests.has(guest.id)
+                            ? 'bg-black border-black'
+                            : 'bg-white border-gray-300'
+                        }`}
+                      >
+                        {selectedGuests.has(guest.id) && (
+                          <svg className="w-full h-full p-1" viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M5 13l4 4L19 7"
+                              stroke="white"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
                         )}
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">{guest.totalVisits} visits</p>
-                        <p className="text-xs text-gray-500">
-                          Last attended: {guest.lastAttended.date}
-                        </p>
+                    </div>
+
+                    {/* Guest Info */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm">{guest.name}</p>
+                          {guest.instagram && (
+                            <a
+                              href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {guest.instagram}
+                            </a>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500">{guest.totalVisits} visits</p>
+                          <p className="text-xs text-gray-500">
+                            Last attended: {guest.lastAttended.date}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
               ))}
             </div>
           )}
@@ -305,8 +328,8 @@ export default function InvitePastGuestsPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-white p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {selectedGuests.size === 0 
-              ? 'No guests selected' 
+            {selectedGuests.size === 0
+              ? 'No guests selected'
               : `${selectedGuests.size} guest${selectedGuests.size === 1 ? '' : 's'} selected`}
           </p>
           <button

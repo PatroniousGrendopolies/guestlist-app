@@ -38,7 +38,7 @@ export default function StaffEventManagePage() {
       setEventInfo({
         id: params.id as string,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025'
+        date: 'Saturday, July 6, 2025',
       });
 
       // Mock staff member's own guests (auto-approved since staff don't need approval)
@@ -52,7 +52,7 @@ export default function StaffEventManagePage() {
           checkedIn: false,
           submittedAt: '2 hours ago',
           addedBy: 'Alex',
-          addedByType: 'staff'
+          addedByType: 'staff',
         },
         {
           id: '2',
@@ -62,7 +62,7 @@ export default function StaffEventManagePage() {
           checkedIn: true,
           submittedAt: '4 hours ago',
           addedBy: 'Alex',
-          addedByType: 'staff'
+          addedByType: 'staff',
         },
         {
           id: '3',
@@ -73,8 +73,8 @@ export default function StaffEventManagePage() {
           checkedIn: false,
           submittedAt: '1 day ago',
           addedBy: 'Alex',
-          addedByType: 'staff'
-        }
+          addedByType: 'staff',
+        },
       ]);
 
       // Mock full event guest list (including other staff, DJs, promoters)
@@ -89,7 +89,7 @@ export default function StaffEventManagePage() {
           checkedIn: false,
           submittedAt: '2 hours ago',
           addedBy: 'Alex',
-          addedByType: 'staff'
+          addedByType: 'staff',
         },
         {
           id: '2',
@@ -99,7 +99,7 @@ export default function StaffEventManagePage() {
           checkedIn: true,
           submittedAt: '4 hours ago',
           addedBy: 'Alex',
-          addedByType: 'staff'
+          addedByType: 'staff',
         },
         {
           id: '3',
@@ -110,7 +110,7 @@ export default function StaffEventManagePage() {
           checkedIn: false,
           submittedAt: '1 day ago',
           addedBy: 'Alex',
-          addedByType: 'staff'
+          addedByType: 'staff',
         },
         // Other staff guests
         {
@@ -122,7 +122,7 @@ export default function StaffEventManagePage() {
           checkedIn: true,
           submittedAt: '3 hours ago',
           addedBy: 'Jordan',
-          addedByType: 'staff'
+          addedByType: 'staff',
         },
         // DJ guests
         {
@@ -134,7 +134,7 @@ export default function StaffEventManagePage() {
           checkedIn: false,
           submittedAt: '1 hour ago',
           addedBy: 'DJ Marcus',
-          addedByType: 'dj'
+          addedByType: 'dj',
         },
         {
           id: '6',
@@ -144,7 +144,7 @@ export default function StaffEventManagePage() {
           checkedIn: false,
           submittedAt: '30 minutes ago',
           addedBy: 'DJ Marcus',
-          addedByType: 'dj'
+          addedByType: 'dj',
         },
         {
           id: '7',
@@ -155,7 +155,7 @@ export default function StaffEventManagePage() {
           checkedIn: true,
           submittedAt: '5 hours ago',
           addedBy: 'MC Groove',
-          addedByType: 'dj'
+          addedByType: 'dj',
         },
         // Promoter guests
         {
@@ -167,8 +167,8 @@ export default function StaffEventManagePage() {
           checkedIn: false,
           submittedAt: '6 hours ago',
           addedBy: 'Taylor',
-          addedByType: 'promoter'
-        }
+          addedByType: 'promoter',
+        },
       ]);
 
       setIsLoading(false);
@@ -177,12 +177,16 @@ export default function StaffEventManagePage() {
 
   const handleUpdatePlusOnes = (guestId: string, newPlusOnes: number) => {
     // Update both my guests and all guests arrays
-    setMyGuests(prev => prev.map(guest =>
-      guest.id === guestId ? { ...guest, plusOnes: Math.max(0, newPlusOnes) } : guest
-    ));
-    setAllGuests(prev => prev.map(guest =>
-      guest.id === guestId ? { ...guest, plusOnes: Math.max(0, newPlusOnes) } : guest
-    ));
+    setMyGuests(prev =>
+      prev.map(guest =>
+        guest.id === guestId ? { ...guest, plusOnes: Math.max(0, newPlusOnes) } : guest
+      )
+    );
+    setAllGuests(prev =>
+      prev.map(guest =>
+        guest.id === guestId ? { ...guest, plusOnes: Math.max(0, newPlusOnes) } : guest
+      )
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -213,7 +217,7 @@ export default function StaffEventManagePage() {
 
   const filterGuestsByTab = (guests: Guest[]) => {
     let filtered = guests;
-    
+
     // Filter by status
     switch (filterTab) {
       case 'checked-in':
@@ -225,12 +229,12 @@ export default function StaffEventManagePage() {
       default:
         break;
     }
-    
+
     // Filter by person
     if (personFilter !== 'all') {
       filtered = filtered.filter(guest => guest.addedBy === personFilter);
     }
-    
+
     return filtered;
   };
 
@@ -238,13 +242,16 @@ export default function StaffEventManagePage() {
   const totalGuestCount = allGuests.length;
   const checkedInCount = allGuests.filter(g => g.checkedIn).length;
   const pendingCount = allGuests.filter(g => !g.checkedIn && g.status === 'approved').length;
-  
+
   // Get unique people who added guests
   const uniquePeople = Array.from(new Set(allGuests.map(g => g.addedBy)));
-  const personCounts = uniquePeople.reduce((acc, person) => {
-    acc[person] = allGuests.filter(g => g.addedBy === person).length;
-    return acc;
-  }, {} as Record<string, number>);
+  const personCounts = uniquePeople.reduce(
+    (acc, person) => {
+      acc[person] = allGuests.filter(g => g.addedBy === person).length;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   if (isLoading) {
     return (
@@ -305,19 +312,17 @@ export default function StaffEventManagePage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {myGuests.map((guest) => (
+                {myGuests.map(guest => (
                   <div key={guest.id} className="bg-white border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-1">
                       {/* Left side - Guest Info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg">{guest.name}</h3>
-                          {guest.plusOnes > 0 && (
-                            <span className="text-lg">+{guest.plusOnes}</span>
-                          )}
+                          {guest.plusOnes > 0 && <span className="text-lg">+{guest.plusOnes}</span>}
                         </div>
                       </div>
-                      
+
                       {/* Right side - Controls */}
                       <div className="flex items-center gap-1">
                         <button
@@ -334,12 +339,12 @@ export default function StaffEventManagePage() {
                         </button>
                       </div>
                     </div>
-                    
+
                     {/* Bottom row - Instagram and Tags */}
                     <div className="flex items-center justify-between">
                       <div>
                         {guest.instagram && (
-                          <a 
+                          <a
                             href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -379,7 +384,7 @@ export default function StaffEventManagePage() {
               >
                 All
               </button>
-              {uniquePeople.map((person) => (
+              {uniquePeople.map(person => (
                 <button
                   key={person}
                   onClick={() => setPersonFilter(person)}
@@ -395,19 +400,17 @@ export default function StaffEventManagePage() {
             </div>
 
             <div className="space-y-3">
-              {filterGuestsByTab(allGuests).map((guest) => (
+              {filterGuestsByTab(allGuests).map(guest => (
                 <div key={guest.id} className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-1">
                     {/* Left side - Guest Info */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg">{guest.name}</h3>
-                        {guest.plusOnes > 0 && (
-                          <span className="text-lg">+{guest.plusOnes}</span>
-                        )}
+                        {guest.plusOnes > 0 && <span className="text-lg">+{guest.plusOnes}</span>}
                       </div>
                     </div>
-                    
+
                     {/* Right side - Controls (only for staff member's own guests) */}
                     {guest.addedByType === 'staff' && guest.addedBy === 'Alex' && (
                       <div className="flex items-center gap-1">
@@ -426,12 +429,12 @@ export default function StaffEventManagePage() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Bottom row - Instagram and Tags */}
                   <div className="flex items-center justify-between">
                     <div>
                       {guest.instagram && (
-                        <a 
+                        <a
                           href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
                           target="_blank"
                           rel="noopener noreferrer"

@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
   );
 
   // 1. Get Authenticated User
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
   if (userError || !user) {
     return NextResponse.json({ error: 'Unauthorized: User not authenticated.' }, { status: 401 });
@@ -45,15 +48,19 @@ export async function POST(request: NextRequest) {
   }
 
   // Check if user has manager role
-  if (profile.role !== UserRole.MANAGER) { 
-    return NextResponse.json({ error: 'Forbidden: Only managers can send invitations.' }, { status: 403 });
+  if (profile.role !== UserRole.MANAGER) {
+    return NextResponse.json(
+      { error: 'Forbidden: Only managers can send invitations.' },
+      { status: 403 }
+    );
   }
 
   // 3. Parse and Validate Request Body
   let requestBody;
   try {
     requestBody = await request.json();
-  } catch { // Removed unused variable 'e'
+  } catch {
+    // Removed unused variable 'e'
     return NextResponse.json({ error: 'Invalid request body: Must be JSON.' }, { status: 400 });
   }
 
@@ -64,7 +71,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!roleToAssign || !Object.values(UserRole).includes(roleToAssign as UserRole)) {
-    return NextResponse.json({ error: `Invalid role specified. Must be one of: ${Object.values(UserRole).join(', ')}` }, { status: 400 });
+    return NextResponse.json(
+      { error: `Invalid role specified. Must be one of: ${Object.values(UserRole).join(', ')}` },
+      { status: 400 }
+    );
   }
 
   // 4. Create Invitation in Database
@@ -80,13 +90,22 @@ export async function POST(request: NextRequest) {
 
   if (insertError) {
     console.error('Error creating invitation:', insertError);
-    if (insertError.code === '23505') { 
-        return NextResponse.json({ error: 'Failed to create invitation. Possible duplicate or constraint violation.' }, { status: 409 });
+    if (insertError.code === '23505') {
+      return NextResponse.json(
+        { error: 'Failed to create invitation. Possible duplicate or constraint violation.' },
+        { status: 409 }
+      );
     }
-    return NextResponse.json({ error: 'Failed to create invitation in database.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create invitation in database.' },
+      { status: 500 }
+    );
   }
 
   // 5. Return Success Response
   // Cookies are now handled by the cookieStore, so direct NextResponse is fine.
-  return NextResponse.json({ message: 'Invitation created successfully.', invitation }, { status: 201 });
+  return NextResponse.json(
+    { message: 'Invitation created successfully.', invitation },
+    { status: 201 }
+  );
 }

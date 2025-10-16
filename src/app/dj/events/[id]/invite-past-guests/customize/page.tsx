@@ -52,16 +52,40 @@ export default function CustomizeInvitationPage() {
         id: params.id as string,
         name: 'Saturday Night Sessions',
         date: 'Saturday, July 6',
-        venue: 'Datcha'
+        venue: 'Datcha',
       });
 
       // Mock selected guests data (in real app, fetch based on selectedGuestIds)
       const mockGuests: PastGuest[] = [
-        { id: '1', name: 'Emma Wilson', instagram: '@emmaw', email: 'emma@example.com', phone: '+1 (555) 111-2222' },
-        { id: '2', name: 'James Miller', instagram: '@jmiller', email: 'james@example.com', phone: '+1 (555) 333-4444' },
+        {
+          id: '1',
+          name: 'Emma Wilson',
+          instagram: '@emmaw',
+          email: 'emma@example.com',
+          phone: '+1 (555) 111-2222',
+        },
+        {
+          id: '2',
+          name: 'James Miller',
+          instagram: '@jmiller',
+          email: 'james@example.com',
+          phone: '+1 (555) 333-4444',
+        },
         { id: '3', name: 'Sophia Davis', email: 'sophia@example.com', phone: '+1 (555) 555-6666' },
-        { id: '4', name: 'Oliver Brown', instagram: '@oliverb', email: 'oliver@example.com', phone: '+1 (555) 777-8888' },
-        { id: '5', name: 'Isabella Martinez', instagram: '@bellamart', email: 'isabella@example.com', phone: '+1 (555) 999-0000' }
+        {
+          id: '4',
+          name: 'Oliver Brown',
+          instagram: '@oliverb',
+          email: 'oliver@example.com',
+          phone: '+1 (555) 777-8888',
+        },
+        {
+          id: '5',
+          name: 'Isabella Martinez',
+          instagram: '@bellamart',
+          email: 'isabella@example.com',
+          phone: '+1 (555) 999-0000',
+        },
       ].filter(g => selectedGuestIds.includes(g.id));
 
       setSelectedGuests(mockGuests);
@@ -95,20 +119,17 @@ export default function CustomizeInvitationPage() {
           Name: guest.name.split(' ')[0],
           EventName: eventInfo!.name,
           Date: eventInfo!.date,
-          Venue: eventInfo!.venue
+          Venue: eventInfo!.venue,
         }),
-        djName: 'DJ Shadow' // In real app, get from auth
+        djName: 'DJ Shadow', // In real app, get from auth
       }));
 
       // Send invitations with progress tracking
       let successCount = 0;
-      await MockInvitationService.sendBulkInvitations(
-        invitationRequests,
-        (completed, total) => {
-          // Could update UI with progress here
-          console.log(`Sent ${completed}/${total} invitations`);
-        }
-      ).then(results => {
+      await MockInvitationService.sendBulkInvitations(invitationRequests, (completed, total) => {
+        // Could update UI with progress here
+        console.log(`Sent ${completed}/${total} invitations`);
+      }).then(results => {
         successCount = results.filter(r => r.status === 'sent').length;
       });
 
@@ -164,7 +185,8 @@ export default function CustomizeInvitationPage() {
           </button>
           <h1 className="text-2xl font-light mb-1">Customize Your Message</h1>
           <p className="text-gray-600">
-            Inviting {selectedGuests.length} guest{selectedGuests.length === 1 ? '' : 's'} to {eventInfo?.name}
+            Inviting {selectedGuests.length} guest{selectedGuests.length === 1 ? '' : 's'} to{' '}
+            {eventInfo?.name}
           </p>
         </div>
       </div>
@@ -177,7 +199,7 @@ export default function CustomizeInvitationPage() {
             <label className="block text-sm font-medium mb-2">Your invitation message</label>
             <textarea
               value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
+              onChange={e => setCustomMessage(e.target.value)}
               maxLength={CHARACTER_LIMIT}
               className="w-full p-4 border border-gray-200 rounded-xl resize-none focus:outline-none focus:border-black transition-colors"
               rows={4}
@@ -203,7 +225,7 @@ export default function CustomizeInvitationPage() {
             <h3 className="text-sm font-medium mb-2">Recipients</h3>
             <div className="bg-gray-50 rounded-xl p-4">
               <div className="flex flex-wrap gap-2">
-                {selectedGuests.map((guest) => (
+                {selectedGuests.map(guest => (
                   <span key={guest.id} className="bg-white px-3 py-1 rounded-full text-sm">
                     {guest.name}
                   </span>
@@ -233,9 +255,7 @@ export default function CustomizeInvitationPage() {
           </button>
 
           {/* Info Text */}
-          <p className="text-xs text-gray-500 text-center mt-4">
-            Invitations will be sent via SMS
-          </p>
+          <p className="text-xs text-gray-500 text-center mt-4">Invitations will be sent via SMS</p>
         </div>
       </div>
     </div>

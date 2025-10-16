@@ -77,7 +77,7 @@ export default function DJEventManagePage() {
 
         // Mock data loading with potential failure simulation
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Simulate random API failure in development (5% chance)
         if (process.env.NODE_ENV === 'development' && Math.random() < 0.05) {
           throw new Error('Simulated API failure');
@@ -89,7 +89,7 @@ export default function DJEventManagePage() {
           date: 'Saturday, July 6, 2025',
           totalCapacity: 75,
           spotsUsed: 23,
-          otherDJs: ['DJ Marcus', 'MC Groove']
+          otherDJs: ['DJ Marcus', 'MC Groove'],
         });
 
         setGuests([
@@ -102,7 +102,7 @@ export default function DJEventManagePage() {
             plusOnes: 2,
             status: 'pending',
             checkedIn: false,
-            submittedAt: '2 hours ago'
+            submittedAt: '2 hours ago',
           },
           {
             id: '2',
@@ -112,7 +112,7 @@ export default function DJEventManagePage() {
             plusOnes: 1,
             status: 'pending',
             checkedIn: false,
-            submittedAt: '4 hours ago'
+            submittedAt: '4 hours ago',
           },
           {
             id: '3',
@@ -123,7 +123,7 @@ export default function DJEventManagePage() {
             plusOnes: 0,
             status: 'approved',
             checkedIn: true,
-            submittedAt: '1 day ago'
+            submittedAt: '1 day ago',
           },
           {
             id: '4',
@@ -133,8 +133,8 @@ export default function DJEventManagePage() {
             plusOnes: 3,
             status: 'approved',
             checkedIn: false,
-            submittedAt: '1 day ago'
-          }
+            submittedAt: '1 day ago',
+          },
         ]);
 
         setIsLoading(false);
@@ -156,7 +156,7 @@ export default function DJEventManagePage() {
     }
 
     setIsApproving(guestId);
-    
+
     try {
       // Check capacity before approving (atomic operation)
       const guest = guests.find(g => g.id === guestId);
@@ -167,15 +167,21 @@ export default function DJEventManagePage() {
       // Calculate current capacity INCLUDING any guests currently being approved
       const currentApproved = guests.filter(g => g.status === 'approved');
       const currentUsed = currentApproved.reduce((total, g) => total + 1 + g.plusOnes, 0);
-      
+
       // Account for other guests currently being approved (race condition protection)
       const currentlyApproving = guests.filter(g => g.id !== guestId && isApproving === g.id);
-      const pendingApprovalCapacity = currentlyApproving.reduce((total, g) => total + 1 + g.plusOnes, 0);
-      
+      const pendingApprovalCapacity = currentlyApproving.reduce(
+        (total, g) => total + 1 + g.plusOnes,
+        0
+      );
+
       const totalProjectedCapacity = currentUsed + pendingApprovalCapacity + 1 + guest.plusOnes;
 
       if (totalProjectedCapacity > eventInfo.totalCapacity) {
-        showToast(`Cannot approve: would exceed capacity (${totalProjectedCapacity}/${eventInfo.totalCapacity})`, 'warning');
+        showToast(
+          `Cannot approve: would exceed capacity (${totalProjectedCapacity}/${eventInfo.totalCapacity})`,
+          'warning'
+        );
         setIsApproving(null);
         return;
       }
@@ -183,33 +189,36 @@ export default function DJEventManagePage() {
       // Simulate API call with potential failure
       await new Promise((resolve, reject) => {
         setTimeout(() => {
-          if (Math.random() < 0.1) { // 10% chance of failure
+          if (Math.random() < 0.1) {
+            // 10% chance of failure
             reject(new Error('Network error'));
           } else {
             resolve(undefined);
           }
         }, 500);
       });
-      
-      setGuests(prev => prev.map(guest => {
-        if (guest.id === guestId) {
-          const updatedGuest = { ...guest, status: 'approved' as const };
-          
-          // Save to localStorage for sync with detail page
-          const existingGuests = SafeStorage.getJSON('event_guests') || {};
-          const success = SafeStorage.setJSON('event_guests', {
-            ...existingGuests,
-            [guestId]: { status: 'approved' }
-          });
-          
-          if (!success) {
-            console.warn('Failed to save guest status to localStorage');
+
+      setGuests(prev =>
+        prev.map(guest => {
+          if (guest.id === guestId) {
+            const updatedGuest = { ...guest, status: 'approved' as const };
+
+            // Save to localStorage for sync with detail page
+            const existingGuests = SafeStorage.getJSON('event_guests') || {};
+            const success = SafeStorage.setJSON('event_guests', {
+              ...existingGuests,
+              [guestId]: { status: 'approved' },
+            });
+
+            if (!success) {
+              console.warn('Failed to save guest status to localStorage');
+            }
+
+            return updatedGuest;
           }
-          
-          return updatedGuest;
-        }
-        return guest;
-      }));
+          return guest;
+        })
+      );
 
       showToast(`${guest.name} approved successfully`, 'success');
     } catch (error) {
@@ -227,21 +236,23 @@ export default function DJEventManagePage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setGuests(prev => prev.map(guest => {
-        if (guest.id === guestId) {
-          const updatedGuest = { ...guest, status: 'denied' as const };
-          
-          // Save to localStorage for sync with detail page
-          const storedGuests = localStorage.getItem('event_guests');
-          const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
-          guestUpdates[guestId] = { status: 'denied' };
-          localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
-          
-          return updatedGuest;
-        }
-        return guest;
-      }));
+
+      setGuests(prev =>
+        prev.map(guest => {
+          if (guest.id === guestId) {
+            const updatedGuest = { ...guest, status: 'denied' as const };
+
+            // Save to localStorage for sync with detail page
+            const storedGuests = localStorage.getItem('event_guests');
+            const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
+            guestUpdates[guestId] = { status: 'denied' };
+            localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
+
+            return updatedGuest;
+          }
+          return guest;
+        })
+      );
     } catch (error) {
       console.error('Failed to deny guest:', error);
     }
@@ -249,26 +260,26 @@ export default function DJEventManagePage() {
 
   const handleApproveAll = async (event: React.MouseEvent) => {
     const pendingGuests = filteredGuests.filter(guest => guest.status === 'pending');
-    
+
     if (pendingGuests.length === 0) return;
-    
+
     // Capture button position for explosion animation
     const rect = event.currentTarget.getBoundingClientRect();
     const x = ((rect.left + rect.width / 2) / window.innerWidth) * 100;
     const y = ((rect.top + rect.height / 2) / window.innerHeight) * 100;
     setExplosionButtonPos({ x, y });
-    
+
     setIsApprovingAll(true);
     setApprovedGuestNames(pendingGuests.map(guest => guest.name));
-    
+
     // Start explosion animation
     setShowExplosion(true);
-    
+
     try {
       // Simulate API call (during explosion animation)
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setGuests(prev => {        
+
+      setGuests(prev => {
         return prev.map(guest => {
           if (guest.status === 'pending') {
             return { ...guest, status: 'approved' as const };
@@ -276,14 +287,17 @@ export default function DJEventManagePage() {
           return guest;
         });
       });
-      
+
       // Save all updates to localStorage using SafeStorage
-      const existingGuests = (SafeStorage.getJSON('event_guests') || {}) as Record<string, {status: string}>;
+      const existingGuests = (SafeStorage.getJSON('event_guests') || {}) as Record<
+        string,
+        { status: string }
+      >;
       pendingGuests.forEach(guest => {
         existingGuests[guest.id] = { status: 'approved' };
       });
       SafeStorage.setJSON('event_guests', existingGuests);
-      
+
       setIsApprovingAll(false);
     } catch (error) {
       console.error('Failed to approve all guests:', error);
@@ -309,7 +323,7 @@ export default function DJEventManagePage() {
 
     // Prevent negative plus ones
     const validPlusOnes = Math.max(0, newPlusOnes);
-    
+
     const guest = guests.find(g => g.id === guestId);
     if (!guest) {
       showToast('Guest not found', 'error');
@@ -319,27 +333,33 @@ export default function DJEventManagePage() {
     // Calculate current capacity
     const currentApproved = guests.filter(g => g.status === 'approved');
     const currentUsed = currentApproved.reduce((total, g) => total + 1 + g.plusOnes, 0);
-    
+
     // Calculate change in capacity
     const capacityChange = validPlusOnes - guest.plusOnes;
     const newTotalCapacity = currentUsed + capacityChange;
 
     // Check if increasing plus ones would exceed capacity
     if (capacityChange > 0 && newTotalCapacity > eventInfo.totalCapacity) {
-      showToast(`Cannot add plus ones: would exceed capacity (${newTotalCapacity}/${eventInfo.totalCapacity})`, 'warning');
+      showToast(
+        `Cannot add plus ones: would exceed capacity (${newTotalCapacity}/${eventInfo.totalCapacity})`,
+        'warning'
+      );
       return;
     }
 
     // Update the guest's plus ones
-    setGuests(prev => prev.map(guest =>
-      guest.id === guestId ? { ...guest, plusOnes: validPlusOnes } : guest
-    ));
+    setGuests(prev =>
+      prev.map(guest => (guest.id === guestId ? { ...guest, plusOnes: validPlusOnes } : guest))
+    );
 
     // Save to localStorage
-    const existingGuests = (SafeStorage.getJSON('event_guests') || {}) as Record<string, {status?: string; plusOnes?: number}>;
+    const existingGuests = (SafeStorage.getJSON('event_guests') || {}) as Record<
+      string,
+      { status?: string; plusOnes?: number }
+    >;
     SafeStorage.setJSON('event_guests', {
       ...existingGuests,
-      [guestId]: { ...existingGuests[guestId], plusOnes: validPlusOnes }
+      [guestId]: { ...existingGuests[guestId], plusOnes: validPlusOnes },
     });
 
     showToast(`Updated plus ones for ${guest.name}`, 'success');
@@ -357,7 +377,7 @@ export default function DJEventManagePage() {
         plusOnes: 2,
         status: 'pending',
         checkedIn: false,
-        submittedAt: '2 hours ago'
+        submittedAt: '2 hours ago',
       },
       {
         id: '2',
@@ -367,8 +387,8 @@ export default function DJEventManagePage() {
         plusOnes: 1,
         status: 'pending',
         checkedIn: false,
-        submittedAt: '4 hours ago'
-      }
+        submittedAt: '4 hours ago',
+      },
     ]);
     SafeStorage.removeItem('event_guests');
     showToast('Reset guest list to initial state', 'success');
@@ -376,10 +396,10 @@ export default function DJEventManagePage() {
 
   const debugFillToCapacity = () => {
     if (!eventInfo) return;
-    
+
     const newGuests = [];
     let totalUsed = 0;
-    
+
     // Add guests until near capacity
     for (let i = 1; totalUsed < eventInfo.totalCapacity - 5; i++) {
       const plusOnes = Math.floor(Math.random() * 3);
@@ -392,11 +412,11 @@ export default function DJEventManagePage() {
         plusOnes,
         status: 'approved' as const,
         checkedIn: false,
-        submittedAt: `${i} hours ago`
+        submittedAt: `${i} hours ago`,
       });
       totalUsed += 1 + plusOnes;
     }
-    
+
     setGuests(newGuests);
     showToast(`Filled to near capacity (${totalUsed}/${eventInfo.totalCapacity})`, 'success');
   };
@@ -412,7 +432,7 @@ export default function DJEventManagePage() {
         plusOnes: 8,
         status: 'pending' as const,
         checkedIn: false,
-        submittedAt: '30 seconds ago'
+        submittedAt: '30 seconds ago',
       },
       {
         id: 'edge2',
@@ -422,7 +442,7 @@ export default function DJEventManagePage() {
         plusOnes: 0,
         status: 'pending' as const,
         checkedIn: false,
-        submittedAt: '999 days ago'
+        submittedAt: '999 days ago',
       },
       {
         id: 'edge3',
@@ -433,10 +453,10 @@ export default function DJEventManagePage() {
         plusOnes: 15,
         status: 'pending' as const,
         checkedIn: false,
-        submittedAt: '2 minutes ago'
-      }
+        submittedAt: '2 minutes ago',
+      },
     ];
-    
+
     setGuests(prev => [...prev, ...edgeCases]);
     showToast('Added edge case guests for testing', 'success');
   };
@@ -472,7 +492,7 @@ export default function DJEventManagePage() {
   const pendingCount = guests.filter(g => g.status === 'pending').length;
   const approvedCount = guests.filter(g => g.status === 'approved').length;
   const deniedCount = guests.filter(g => g.status === 'denied').length;
-  
+
   // Calculate total spots used including plus ones
   const spotsUsed = guests
     .filter(g => g.status === 'approved')
@@ -565,223 +585,222 @@ export default function DJEventManagePage() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto">
-          <button
-            onClick={() => router.push('/dj/dashboard')}
-            className="text-gray-600 hover:text-black transition-colors mb-4 text-sm"
-          >
-            ← Dashboard
-          </button>
-          <h1 className="text-2xl font-light mb-1">{eventInfo.name}</h1>
-          <p className="text-gray-600 mb-1">{eventInfo.date}</p>
-          {eventInfo.otherDJs && eventInfo.otherDJs.length > 0 && (
-            <p className="text-sm text-gray-500">With {eventInfo.otherDJs.join(', ')}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto p-6">
-        {/* Event Summary */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-4">Guest List Overview</h2>
-          <div className="mb-4">
-            <div className="relative">
-              <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
-                <div 
-                  className="bg-black h-4 rounded-full transition-all duration-300 relative"
-                  style={{ width: `${(spotsUsed / eventInfo.totalCapacity) * 100}%` }}
-                >
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-[10px]">
-                    {spotsUsed}
-                  </span>
-                </div>
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-black text-[10px]">
-                  {eventInfo.totalCapacity}
-                </span>
-              </div>
-              <div className="flex justify-between mt-2">
-                <span className="text-xs text-gray-500">Approved</span>
-                <span className="text-xs text-gray-500">List capacity</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Approve All Button */}
-          <div className="mb-4">
-            {activeTab === 'pending' && pendingCount > 0 ? (
-              <button
-                onClick={handleApproveAll}
-                className="w-full px-6 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-900 transition-colors"
-              >
-                Approve All Pending
-              </button>
-            ) : (
-              <div className="h-12"></div>
+        {/* Header */}
+        <div className="p-6">
+          <div className="max-w-4xl mx-auto">
+            <button
+              onClick={() => router.push('/dj/dashboard')}
+              className="text-gray-600 hover:text-black transition-colors mb-4 text-sm"
+            >
+              ← Dashboard
+            </button>
+            <h1 className="text-2xl font-light mb-1">{eventInfo.name}</h1>
+            <p className="text-gray-600 mb-1">{eventInfo.date}</p>
+            {eventInfo.otherDJs && eventInfo.otherDJs.length > 0 && (
+              <p className="text-sm text-gray-500">With {eventInfo.otherDJs.join(', ')}</p>
             )}
           </div>
+        </div>
 
-          {/* Search Button */}
-          <button
-            onClick={() => router.push(`/dj/events/${params.id}/search`)}
-            className="w-full px-6 py-3 bg-gray-100 text-black rounded-full font-medium hover:bg-gray-200 transition-colors mb-4"
-          >
-            Search Guests
-          </button>
+        <div className="max-w-4xl mx-auto p-6">
+          {/* Event Summary */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-4">Guest List Overview</h2>
+            <div className="mb-4">
+              <div className="relative">
+                <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
+                  <div
+                    className="bg-black h-4 rounded-full transition-all duration-300 relative"
+                    style={{ width: `${(spotsUsed / eventInfo.totalCapacity) * 100}%` }}
+                  >
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-[10px]">
+                      {spotsUsed}
+                    </span>
+                  </div>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-black text-[10px]">
+                    {eventInfo.totalCapacity}
+                  </span>
+                </div>
+                <div className="flex justify-between mt-2">
+                  <span className="text-xs text-gray-500">Approved</span>
+                  <span className="text-xs text-gray-500">List capacity</span>
+                </div>
+              </div>
+            </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-2">
+            {/* Approve All Button */}
+            <div className="mb-4">
+              {activeTab === 'pending' && pendingCount > 0 ? (
+                <button
+                  onClick={handleApproveAll}
+                  className="w-full px-6 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-900 transition-colors"
+                >
+                  Approve All Pending
+                </button>
+              ) : (
+                <div className="h-12"></div>
+              )}
+            </div>
+
+            {/* Search Button */}
             <button
-              onClick={() => setActiveTab('pending')}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'pending' 
-                  ? 'bg-gray-600 text-white' 
-                  : 'bg-gray-100 text-black hover:bg-gray-200'
-              }`}
+              onClick={() => router.push(`/dj/events/${params.id}/search`)}
+              className="w-full px-6 py-3 bg-gray-100 text-black rounded-full font-medium hover:bg-gray-200 transition-colors mb-4"
             >
-              Pending ({pendingCount})
+              Search Guests
             </button>
-            <button
-              onClick={() => setActiveTab('approved')}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'approved' 
-                  ? 'bg-gray-400 text-white' 
-                  : 'bg-gray-100 text-black hover:bg-gray-200'
-              }`}
-            >
-              Approved ({approvedCount})
-            </button>
-            {deniedCount > 0 && (
+
+            {/* Filter Tabs */}
+            <div className="flex gap-2">
               <button
-                onClick={() => setActiveTab('denied')}
+                onClick={() => setActiveTab('pending')}
                 className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === 'denied' 
-                    ? 'bg-gray-400 text-white' 
+                  activeTab === 'pending'
+                    ? 'bg-gray-600 text-white'
                     : 'bg-gray-100 text-black hover:bg-gray-200'
                 }`}
               >
-                Denied ({deniedCount})
+                Pending ({pendingCount})
               </button>
-            )}
-          </div>
-        </div>
-
-        {/* Guest List */}
-        <div className="space-y-4">
-          {filteredGuests.length === 0 ? (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium">
-                {activeTab === 'pending' && 'No pending guests'}
-                {activeTab === 'approved' && 'No approved guests'}
-                {activeTab === 'denied' && 'No denied guests'}
-              </h3>
-            </div>
-          ) : (
-            filteredGuests.map((guest) => (
-              <div
-                key={guest.id}
-                className="bg-white border border-gray-200 rounded-xl p-4"
+              <button
+                onClick={() => setActiveTab('approved')}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === 'approved'
+                    ? 'bg-gray-400 text-white'
+                    : 'bg-gray-100 text-black hover:bg-gray-200'
+                }`}
               >
-                <div>
-                  {/* Name and Plus Ones */}
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="text-lg truncate" title={guest.name}>{guest.name}</h3>
-                      {guest.plusOnes > 0 && (
-                        <span className="text-lg shrink-0">+{guest.plusOnes}</span>
-                      )}
-                    </div>
-                    {/* Plus/Minus Controls - Right side */}
-                    {guest.status === 'pending' && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
-                          className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                          disabled={guest.plusOnes <= 0}
-                        >
-                          <span className="leading-none">−</span>
-                        </button>
-                        <button
-                          onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
-                          className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
-                        >
-                          <span className="leading-none">+</span>
-                        </button>
+                Approved ({approvedCount})
+              </button>
+              {deniedCount > 0 && (
+                <button
+                  onClick={() => setActiveTab('denied')}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'denied'
+                      ? 'bg-gray-400 text-white'
+                      : 'bg-gray-100 text-black hover:bg-gray-200'
+                  }`}
+                >
+                  Denied ({deniedCount})
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Guest List */}
+          <div className="space-y-4">
+            {filteredGuests.length === 0 ? (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium">
+                  {activeTab === 'pending' && 'No pending guests'}
+                  {activeTab === 'approved' && 'No approved guests'}
+                  {activeTab === 'denied' && 'No denied guests'}
+                </h3>
+              </div>
+            ) : (
+              filteredGuests.map(guest => (
+                <div key={guest.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div>
+                    {/* Name and Plus Ones */}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="text-lg truncate" title={guest.name}>
+                          {guest.name}
+                        </h3>
+                        {guest.plusOnes > 0 && (
+                          <span className="text-lg shrink-0">+{guest.plusOnes}</span>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Instagram Handle */}
-                  {guest.instagram && (
-                    <a
-                      href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-800 transition-colors mb-2 block truncate"
-                      title={guest.instagram}
-                    >
-                      {guest.instagram}
-                    </a>
-                  )}
-
-                  {/* Status Badge and Action Buttons on same line */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      {guest.checkedIn && (
-                        <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
-                          Checked In
-                        </span>
-                      )}
-                      {guest.status === 'approved' && !guest.checkedIn && (
-                        <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
-                          Approved
-                        </span>
-                      )}
+                      {/* Plus/Minus Controls - Right side */}
                       {guest.status === 'pending' && (
-                        <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs">
-                          Pending
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes - 1)}
+                            className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                            disabled={guest.plusOnes <= 0}
+                          >
+                            <span className="leading-none">−</span>
+                          </button>
+                          <button
+                            onClick={() => handleUpdatePlusOnes(guest.id, guest.plusOnes + 1)}
+                            className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors text-sm"
+                          >
+                            <span className="leading-none">+</span>
+                          </button>
+                        </div>
                       )}
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      {guest.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleDenyGuest(guest.id)}
-                            className="px-3 py-1 bg-white text-black border border-black rounded-full text-xs hover:bg-gray-50 transition-colors"
-                          >
-                            Deny
-                          </button>
-                          <button
-                            onClick={() => handleApproveGuest(guest.id)}
-                            disabled={isApproving === guest.id}
-                            className="px-3 py-1 bg-black text-white rounded-full text-xs hover:bg-gray-900 transition-colors disabled:opacity-50"
-                          >
-                            {isApproving === guest.id ? '...' : 'Approve'}
-                          </button>
-                        </>
-                      )}
+                    {/* Instagram Handle */}
+                    {guest.instagram && (
+                      <a
+                        href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 transition-colors mb-2 block truncate"
+                        title={guest.instagram}
+                      >
+                        {guest.instagram}
+                      </a>
+                    )}
 
-                      {/* View Details Button for non-pending */}
-                      {guest.status !== 'pending' && (
-                        <button
-                          onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
-                          className="px-4 py-1.5 bg-gray-100 text-black rounded-full text-xs hover:bg-gray-200 transition-colors"
-                        >
-                          View Details
-                        </button>
-                      )}
+                    {/* Status Badge and Action Buttons on same line */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        {guest.checkedIn && (
+                          <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
+                            Checked In
+                          </span>
+                        )}
+                        {guest.status === 'approved' && !guest.checkedIn && (
+                          <span className="bg-white text-black border border-gray-300 px-3 py-1 rounded-full text-xs">
+                            Approved
+                          </span>
+                        )}
+                        {guest.status === 'pending' && (
+                          <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs">
+                            Pending
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        {guest.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleDenyGuest(guest.id)}
+                              className="px-3 py-1 bg-white text-black border border-black rounded-full text-xs hover:bg-gray-50 transition-colors"
+                            >
+                              Deny
+                            </button>
+                            <button
+                              onClick={() => handleApproveGuest(guest.id)}
+                              disabled={isApproving === guest.id}
+                              className="px-3 py-1 bg-black text-white rounded-full text-xs hover:bg-gray-900 transition-colors disabled:opacity-50"
+                            >
+                              {isApproving === guest.id ? '...' : 'Approve'}
+                            </button>
+                          </>
+                        )}
+
+                        {/* View Details Button for non-pending */}
+                        {guest.status !== 'pending' && (
+                          <button
+                            onClick={() => router.push(`/dj/events/${params.id}/guest/${guest.id}`)}
+                            className="px-4 py-1.5 bg-gray-100 text-black rounded-full text-xs hover:bg-gray-200 transition-colors"
+                          >
+                            View Details
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Toast Notifications */}

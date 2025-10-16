@@ -21,7 +21,7 @@ export default function DJLoginPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // Mock validation - detect user type from credentials
       if (email === 'dj@test.com' && password === 'password123') {
         // DJ credentials
@@ -79,13 +79,11 @@ export default function DJLoginPage() {
           {/* Reset Form */}
           <form onSubmit={handleForgotPassword} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
               <input
                 type="email"
                 value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
+                onChange={e => setResetEmail(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
                 placeholder="your@email.com"
                 required
@@ -93,11 +91,13 @@ export default function DJLoginPage() {
             </div>
 
             {resetMessage && (
-              <div className={`p-3 rounded-xl ${
-                resetMessage.includes('Failed') 
-                  ? 'bg-red-50 text-red-700 border border-red-200' 
-                  : 'bg-green-50 text-green-700 border border-green-200'
-              }`}>
+              <div
+                className={`p-3 rounded-xl ${
+                  resetMessage.includes('Failed')
+                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    : 'bg-green-50 text-green-700 border border-green-200'
+                }`}
+              >
                 {resetMessage}
               </div>
             )}
@@ -145,13 +145,11 @@ export default function DJLoginPage() {
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
               placeholder="your@email.com"
               required
@@ -159,13 +157,11 @@ export default function DJLoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
               placeholder="Enter your password"
               required

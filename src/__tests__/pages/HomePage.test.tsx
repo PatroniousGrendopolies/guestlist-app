@@ -37,7 +37,7 @@ describe('Home Page', () => {
     // Mock the Supabase auth to return no session
     const { supabase } = jest.requireMock('@/lib/supabase/client');
     supabase.auth.getSession.mockResolvedValue({
-      data: { session: null }
+      data: { session: null },
     });
 
     render(<Home />);
@@ -52,11 +52,11 @@ describe('Home Page', () => {
     // Mock the Supabase auth to return a session
     const { supabase } = jest.requireMock('@/lib/supabase/client');
     supabase.auth.getSession.mockResolvedValue({
-      data: { 
+      data: {
         session: {
-          user: { id: '1', email: 'test@example.com' }
-        }
-      }
+          user: { id: '1', email: 'test@example.com' },
+        },
+      },
     });
 
     render(<Home />);

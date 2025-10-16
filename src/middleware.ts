@@ -5,7 +5,19 @@ import type { NextRequest } from 'next/server';
 import { UserRole } from './types/enums';
 
 // Define public paths that should always be accessible
-const publicPaths = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/confirm', '/auth/error', '/auth/update-password', '/doorperson/login', '/doorperson/scanner', '/doorperson/search', '/doorperson/checkin'];
+const publicPaths = [
+  '/',
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/confirm',
+  '/auth/error',
+  '/auth/update-password',
+  '/doorperson/login',
+  '/doorperson/scanner',
+  '/doorperson/search',
+  '/doorperson/checkin',
+];
 
 // Temporarily disable middleware to debug database connection issues
 const DISABLE_MIDDLEWARE = true;
@@ -56,7 +68,9 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
   // Allow access to public paths without further checks if they are explicitly listed
@@ -83,12 +97,12 @@ export async function middleware(request: NextRequest) {
 
   // Only check profiles for routes that actually need role-based protection
   let userRole = UserRole.GUEST;
-  
+
   // Check if this path actually needs role-based protection
-  const needsRoleCheck = Object.keys(protectedRoutesConfig).some(routePrefix => 
+  const needsRoleCheck = Object.keys(protectedRoutesConfig).some(routePrefix =>
     pathname.startsWith(routePrefix)
   );
-  
+
   if (needsRoleCheck) {
     // Only do the database lookup if we actually need to check roles
     try {
@@ -98,11 +112,11 @@ export async function middleware(request: NextRequest) {
         .eq('id', user.id)
         .single();
 
-      console.log('Profile lookup result:', { 
-        userId: user.id, 
-        profile, 
+      console.log('Profile lookup result:', {
+        userId: user.id,
+        profile,
         error: profileError?.message,
-        hasProfile: !!profile 
+        hasProfile: !!profile,
       });
 
       if (profile && !profileError) {

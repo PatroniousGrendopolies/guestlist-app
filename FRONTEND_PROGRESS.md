@@ -1,6 +1,7 @@
 # Nightlist Frontend Development Progress
 
 ## Overview
+
 This document tracks the implementation progress of the Nightlist guest list management app frontend, based on the specifications in `Frontend-Design-Specs.md`.
 
 **Overall Progress: 84% Complete (16/19 tasks)**
@@ -10,6 +11,7 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## 🎯 Project Status
 
 ### Live Application
+
 - **Production URL**: https://fluffy-horse-f5ca43.netlify.app
 - **Test QR Generator**: https://fluffy-horse-f5ca43.netlify.app/test-qr
 - **Doorperson Interface**: https://fluffy-horse-f5ca43.netlify.app/doorperson/login
@@ -19,65 +21,77 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## ✅ Completed Features (16/19)
 
 ### Guest Interface
-- [x] **Guest auth page with event info header and new layout** *(High Priority)*
+
+- [x] **Guest auth page with event info header and new layout** _(High Priority)_
   - Clean authentication flow
   - Event branding integration
   - Mobile-first responsive design
 
 ### Doorperson Interface (100% Complete)
-- [x] **Doorperson PIN login page** *(High Priority)*
+
+- [x] **Doorperson PIN login page** _(High Priority)_
+
   - 4-digit PIN authentication
   - Nightlist branding consistency
   - Clean keypad interface
 
-- [x] **QR scanner interface with camera** *(High Priority)*
+- [x] **QR scanner interface with camera** _(High Priority)_
+
   - Real QR code scanning with `qr-scanner` library
   - Black corner targets (no middle line)
   - Camera permission handling
   - Mobile-optimized layout
 
-- [x] **Manual guest search interface** *(High Priority)*
+- [x] **Manual guest search interface** _(High Priority)_
+
   - Voice search functionality
   - Alphabetical sorting
   - Filter by inviter
   - Show/hide checked-in guests toggle
 
-- [x] **Check-in confirmation screen** *(High Priority)*
+- [x] **Check-in confirmation screen** _(High Priority)_
+
   - Editable plus-ones with +/- buttons
   - Auto-redirect to scanner (3 seconds)
   - VIP status indicators
   - Banned guest alert system
 
-- [x] **Dark mode toggle and persistence** *(High Priority)*
+- [x] **Dark mode toggle and persistence** _(High Priority)_
+
   - Consistent across all doorperson screens
   - LocalStorage persistence
   - Optimized for night use
 
-- [x] **Last check-in popup functionality** *(Medium Priority)*
+- [x] **Last check-in popup functionality** _(Medium Priority)_
+
   - Shows recent check-in details
   - Guest name, plus-ones, time, inviter
 
-- [x] **Mobile optimization** *(High Priority)*
+- [x] **Mobile optimization** _(High Priority)_
+
   - No scrolling required on phone screens
   - Touch-friendly interface
   - Compact spacing while maintaining readability
 
-- [x] **Problem guest alert system** *(Medium Priority)*
+- [x] **Problem guest alert system** _(Medium Priority)_
+
   - Banned guest detection
   - Warning alerts with manager contact
   - Visual indicators (red alerts)
 
-- [x] **End-to-end testing** *(High Priority)*
+- [x] **End-to-end testing** _(High Priority)_
   - Complete doorperson flow validation
   - QR scanning functionality verified
   - Dark mode persistence tested
 
 ### Staff/Manager Interface
-- [x] **Staff login page rebuild** *(High Priority)*
+
+- [x] **Staff login page rebuild** _(High Priority)_
+
   - Updated with new design system
   - Consistent branding
 
-- [x] **Manager dashboard rebuild** *(High Priority)*
+- [x] **Manager dashboard rebuild** _(High Priority)_
   - Modern interface design
   - Improved user experience
 
@@ -86,13 +100,16 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## 🔄 Pending Tasks (3/19)
 
 ### Dashboard Rebuilds (Medium Priority)
+
 - [ ] **Rebuild promoter dashboard with new design**
+
   - Apply Nightlist branding consistency
   - Mobile-first responsive design
   - Event-specific link generation
   - Guest approval/management interface
 
 - [ ] **Rebuild DJ dashboard with new design**
+
   - Event-based list management
   - Batch invite functionality
   - Guest approval workflow
@@ -109,6 +126,7 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## 🛠 Technical Implementation
 
 ### Key Technologies
+
 - **Framework**: Next.js 15.3.3 with TypeScript
 - **Styling**: Tailwind CSS
 - **QR Scanning**: `qr-scanner` library v1.4.2
@@ -117,6 +135,7 @@ This document tracks the implementation progress of the Nightlist guest list man
 - **Database**: Supabase integration
 
 ### Architecture Highlights
+
 - **Progressive Web App**: Camera access, offline capability
 - **Mobile-First Design**: Optimized for doorperson tablet/phone use
 - **Real-time Features**: Live guest counts, instant QR detection
@@ -124,6 +143,7 @@ This document tracks the implementation progress of the Nightlist guest list man
 - **Dark Mode**: Night-optimized interface with persistence
 
 ### Performance Optimizations
+
 - **Mobile Layout**: Fits entirely on screen without scrolling
 - **Instant QR Detection**: Fast scanning with visual feedback
 - **Responsive Design**: Adapts to all device sizes
@@ -134,12 +154,14 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## 🎨 Design System
 
 ### Nightlist Branding
+
 - **Colors**: Black and white primary palette
 - **Typography**: Light, modern fonts with mixed case
 - **Layout**: Clean, minimal, rounded corners
 - **Interactions**: Smooth transitions and hover states
 
 ### Mobile Optimization
+
 - **Touch Targets**: 44px minimum for accessibility
 - **Compact Spacing**: Efficient use of screen real estate
 - **Readable Text**: High contrast, appropriate sizing
@@ -150,6 +172,7 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## 📊 User Flow Status
 
 ### Doorperson Flow (Complete)
+
 1. ✅ PIN Login → Scanner Interface
 2. ✅ QR Scan → Auto Check-in → Return to Scanner
 3. ✅ Manual Search → Guest Selection → Check-in
@@ -157,11 +180,13 @@ This document tracks the implementation progress of the Nightlist guest list man
 5. ✅ Problem Guest Detection → Manager Alert
 
 ### Guest Flow (Complete)
+
 1. ✅ Landing/Auth Screen
 2. ✅ Event Selection Interface
 3. ✅ QR Code Generation for Check-in
 
 ### Management Flows (Partial)
+
 1. ✅ Manager Dashboard (rebuilt)
 2. ✅ Staff Login (rebuilt)
 3. 🔄 Promoter Dashboard (pending rebuild)
@@ -173,12 +198,15 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## 🚀 Next Steps
 
 ### Immediate Priorities
+
 1. **Promoter Dashboard Rebuild**
+
    - Event-specific link generation
    - Guest management interface
    - Capacity request system
 
 2. **DJ Dashboard Rebuild**
+
    - Event-based workflows
    - Batch invitation system
    - Performance analytics
@@ -189,6 +217,7 @@ This document tracks the implementation progress of the Nightlist guest list man
    - Monitoring tools
 
 ### Future Enhancements
+
 - Native iOS app for doorperson (Phase 2)
 - Apple/Google Wallet integration for VIPs
 - Advanced analytics dashboard
@@ -199,12 +228,14 @@ This document tracks the implementation progress of the Nightlist guest list man
 ## 📝 Notes & Decisions
 
 ### Recent Updates
+
 - **2025-06-30**: Scanner target changed to black corners (no middle line)
 - **2025-06-30**: Header simplified from "Nightlist Scanner" to "Nightlist"
 - **2025-06-30**: Dark mode persistence implemented across all doorperson screens
 - **2025-06-30**: Mobile layout optimized to prevent scrolling
 
 ### Key Design Decisions
+
 - **QR Scanner**: Real implementation over mock functionality
 - **Dark Mode**: Essential for nightclub environment
 - **Mobile-First**: Primary interface is tablet/phone based
@@ -212,5 +243,5 @@ This document tracks the implementation progress of the Nightlist guest list man
 
 ---
 
-*Last Updated: June 30, 2025*
-*Live Application: https://fluffy-horse-f5ca43.netlify.app*
+_Last Updated: June 30, 2025_
+_Live Application: https://fluffy-horse-f5ca43.netlify.app_

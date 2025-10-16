@@ -42,7 +42,7 @@ export default function PromoterCapacityRequestPage() {
           date: 'Sat Jul 6',
           venue: 'Datcha',
           currentCapacity: 50,
-          spotsUsed: 28
+          spotsUsed: 28,
         });
 
         setIsLoading(false);
@@ -62,15 +62,14 @@ export default function PromoterCapacityRequestPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // Mock success
       setShowSuccess(true);
-      
+
       // Auto-redirect after 2 seconds
       setTimeout(() => {
         router.push(`/promoter/events/${eventInfo?.id}/manage`);
       }, 2000);
-      
     } catch (error) {
       console.error('Failed to submit request:', error);
     } finally {
@@ -104,11 +103,10 @@ export default function PromoterCapacityRequestPage() {
           <div className="text-4xl mb-4">✓</div>
           <h1 className="text-xl mb-2">Request Submitted</h1>
           <p className="text-gray-600 mb-4">
-            Your request for {requestedSpots} additional spots has been sent to the manager for approval.
+            Your request for {requestedSpots} additional spots has been sent to the manager for
+            approval.
           </p>
-          <p className="text-sm text-gray-500">
-            Redirecting to event management...
-          </p>
+          <p className="text-sm text-gray-500">Redirecting to event management...</p>
         </div>
       </div>
     );
@@ -126,7 +124,9 @@ export default function PromoterCapacityRequestPage() {
             ← Back to Event
           </button>
           <h1 className="text-2xl font-light mb-1">Request Additional Spots</h1>
-          <p className="text-gray-600">{eventInfo.name} • {eventInfo.date}</p>
+          <p className="text-gray-600">
+            {eventInfo.name} • {eventInfo.date}
+          </p>
         </div>
       </div>
 
@@ -176,7 +176,7 @@ export default function PromoterCapacityRequestPage() {
                 min="1"
                 max="100"
                 value={requestedSpots}
-                onChange={(e) => setRequestedSpots(parseInt(e.target.value) || 1)}
+                onChange={e => setRequestedSpots(parseInt(e.target.value) || 1)}
                 className="w-20 text-center px-3 py-2 border border-gray-200 rounded-full focus:border-black transition-colors"
               />
               <button
@@ -194,7 +194,7 @@ export default function PromoterCapacityRequestPage() {
             <textarea
               id="reason"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={e => setReason(e.target.value)}
               rows={4}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-black transition-colors resize-none"
               placeholder="Comments"

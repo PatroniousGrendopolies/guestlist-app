@@ -5,6 +5,7 @@
 To complete the event creation functionality, please add these fields to the `events` table via the Supabase Dashboard SQL Editor:
 
 ### 🌐 Supabase Dashboard URL
+
 https://supabase.com/dashboard/project/ohkrtsyqbfphsqessdzj/sql/new
 
 ### 📝 SQL Commands to Execute
@@ -28,6 +29,7 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS dj_approval_deadline TIMESTAMP WITH 
 ### 🧪 Verification
 
 Run this to test the migration worked:
+
 ```bash
 node check-event-fields.js
 ```

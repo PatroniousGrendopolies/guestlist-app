@@ -12,7 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     headers: {
-      'User-Agent': 'guestlist-app/1.0'
-    }
-  }
+      'User-Agent': 'guestlist-app/1.0',
+    },
+  },
 });

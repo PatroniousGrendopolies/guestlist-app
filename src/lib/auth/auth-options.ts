@@ -86,7 +86,7 @@ export const authOptions: NextAuthConfig = {
           // Simple password comparison for Edge Runtime compatibility
           // In production, we would use proper password hashing not in Edge Runtime
           const passwordMatch = credentials.password === user.password;
-          
+
           if (!passwordMatch) {
             return null;
           }

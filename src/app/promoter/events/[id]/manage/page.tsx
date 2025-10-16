@@ -30,7 +30,9 @@ export default function PromoterEventManagePage() {
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null);
   const [allGuests, setAllGuests] = useState<Guest[]>([]);
   const [activeTab, setActiveTab] = useState<'my-list' | 'complete-guestlist'>('my-list');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'denied'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'denied'>(
+    'all'
+  );
   const [personFilter, setPersonFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [shareEventId, setShareEventId] = useState<string | null>(null);
@@ -56,7 +58,7 @@ export default function PromoterEventManagePage() {
           date: 'Sat Jul 6',
           venue: 'Datcha',
           capacity: 50,
-          spotsUsed: 28
+          spotsUsed: 28,
         });
 
         // Mock guest data - mix of promoter's guests and others
@@ -71,7 +73,7 @@ export default function PromoterEventManagePage() {
             status: 'approved',
             checkedIn: false,
             submittedAt: '2 hours ago',
-            addedBy: 'Alex'
+            addedBy: 'Alex',
           },
           {
             id: '2',
@@ -82,7 +84,7 @@ export default function PromoterEventManagePage() {
             status: 'pending',
             checkedIn: false,
             submittedAt: '4 hours ago',
-            addedBy: 'Alex'
+            addedBy: 'Alex',
           },
           {
             id: '3',
@@ -94,7 +96,7 @@ export default function PromoterEventManagePage() {
             status: 'approved',
             checkedIn: true,
             submittedAt: '1 day ago',
-            addedBy: 'DJ Marcus'
+            addedBy: 'DJ Marcus',
           },
           {
             id: '4',
@@ -105,7 +107,7 @@ export default function PromoterEventManagePage() {
             status: 'pending',
             checkedIn: false,
             submittedAt: '6 hours ago',
-            addedBy: 'Staff John'
+            addedBy: 'Staff John',
           },
           {
             id: '5',
@@ -117,8 +119,8 @@ export default function PromoterEventManagePage() {
             status: 'approved',
             checkedIn: false,
             submittedAt: '8 hours ago',
-            addedBy: 'Alex'
-          }
+            addedBy: 'Alex',
+          },
         ]);
 
         setIsLoading(false);
@@ -138,7 +140,7 @@ export default function PromoterEventManagePage() {
     const shareData = {
       title: `Join me at ${eventInfo.name}`,
       text: `You're invited to ${eventInfo.name} on ${eventInfo.date}. Join the guest list!`,
-      url: shareUrl
+      url: shareUrl,
     };
 
     if (navigator.share) {
@@ -166,7 +168,7 @@ export default function PromoterEventManagePage() {
         document.execCommand('copy');
         document.body.removeChild(textArea);
       }
-      
+
       setShareEventId(eventInfo.id);
       setTimeout(() => setShareEventId(null), 2000);
     } catch (err) {
@@ -175,22 +177,22 @@ export default function PromoterEventManagePage() {
   };
 
   const handleApproveGuest = (guestId: string) => {
-    setAllGuests(prev => prev.map(guest =>
-      guest.id === guestId ? { ...guest, status: 'approved' as const } : guest
-    ));
+    setAllGuests(prev =>
+      prev.map(guest => (guest.id === guestId ? { ...guest, status: 'approved' as const } : guest))
+    );
   };
 
   const handleDenyGuest = (guestId: string) => {
-    setAllGuests(prev => prev.map(guest =>
-      guest.id === guestId ? { ...guest, status: 'denied' as const } : guest
-    ));
+    setAllGuests(prev =>
+      prev.map(guest => (guest.id === guestId ? { ...guest, status: 'denied' as const } : guest))
+    );
   };
 
   const handleUpdatePlusOnes = (guestId: string, newPlusOnes: number) => {
     const validPlusOnes = Math.max(0, newPlusOnes);
-    setAllGuests(prev => prev.map(guest =>
-      guest.id === guestId ? { ...guest, plusOnes: validPlusOnes } : guest
-    ));
+    setAllGuests(prev =>
+      prev.map(guest => (guest.id === guestId ? { ...guest, plusOnes: validPlusOnes } : guest))
+    );
   };
 
   // Filter guests based on active tab
@@ -198,21 +200,26 @@ export default function PromoterEventManagePage() {
   const displayGuests = activeTab === 'my-list' ? myGuests : allGuests;
 
   // Apply status filter
-  const statusFilteredGuests = statusFilter === 'all' 
-    ? displayGuests 
-    : displayGuests.filter(guest => guest.status === statusFilter);
+  const statusFilteredGuests =
+    statusFilter === 'all'
+      ? displayGuests
+      : displayGuests.filter(guest => guest.status === statusFilter);
 
   // Apply person filter (only for complete guestlist)
-  const filteredGuests = activeTab === 'complete-guestlist' && personFilter !== 'all'
-    ? statusFilteredGuests.filter(guest => guest.addedBy === personFilter)
-    : statusFilteredGuests;
+  const filteredGuests =
+    activeTab === 'complete-guestlist' && personFilter !== 'all'
+      ? statusFilteredGuests.filter(guest => guest.addedBy === personFilter)
+      : statusFilteredGuests;
 
   // Get unique people for filtering
   const uniquePeople = Array.from(new Set(allGuests.map(g => g.addedBy)));
-  const personCounts = uniquePeople.reduce((acc, person) => {
-    acc[person] = allGuests.filter(g => g.addedBy === person).length;
-    return acc;
-  }, {} as Record<string, number>);
+  const personCounts = uniquePeople.reduce(
+    (acc, person) => {
+      acc[person] = allGuests.filter(g => g.addedBy === person).length;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   // Calculate capacity usage
   const approvedGuests = allGuests.filter(g => g.status === 'approved');
@@ -249,7 +256,9 @@ export default function PromoterEventManagePage() {
             ← Dashboard
           </button>
           <h1 className="text-2xl font-light mb-1">{eventInfo.name}</h1>
-          <p className="text-gray-600 mb-1">{eventInfo.date} at {eventInfo.venue}</p>
+          <p className="text-gray-600 mb-1">
+            {eventInfo.date} at {eventInfo.venue}
+          </p>
         </div>
       </div>
 
@@ -258,7 +267,7 @@ export default function PromoterEventManagePage() {
         <div className="mb-6">
           <div className="relative">
             <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
-              <div 
+              <div
                 className="bg-black h-4 rounded-full transition-all duration-300 relative"
                 style={{ width: `${(totalSpotsUsed / eventInfo.capacity) * 100}%` }}
               >
@@ -415,28 +424,23 @@ export default function PromoterEventManagePage() {
             <div className="text-center py-12">
               <h3 className="text-lg mb-2">No guests found</h3>
               <p className="text-gray-600">
-                {activeTab === 'my-list' 
+                {activeTab === 'my-list'
                   ? 'Your approved guests will appear here.'
                   : 'Guests from all contributors will appear here.'}
               </p>
             </div>
           ) : (
-            filteredGuests.map((guest) => (
-              <div
-                key={guest.id}
-                className="bg-white border border-gray-200 rounded-xl p-4"
-              >
+            filteredGuests.map(guest => (
+              <div key={guest.id} className="bg-white border border-gray-200 rounded-xl p-4">
                 <div className="flex items-start justify-between">
                   {/* Guest Info */}
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <h3 className="text-base">{guest.name}</h3>
-                        {guest.plusOnes > 0 && (
-                          <span className="text-base">+{guest.plusOnes}</span>
-                        )}
+                        {guest.plusOnes > 0 && <span className="text-base">+{guest.plusOnes}</span>}
                       </div>
-                      
+
                       {/* +/- Controls in top right */}
                       {guest.status === 'pending' && guest.addedBy === 'Alex' && (
                         <div className="flex items-center gap-1">
@@ -458,7 +462,7 @@ export default function PromoterEventManagePage() {
                     </div>
 
                     {guest.instagram && (
-                      <a 
+                      <a
                         href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
                         target="_blank"
                         rel="noopener noreferrer"

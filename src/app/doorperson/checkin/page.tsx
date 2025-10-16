@@ -52,12 +52,11 @@ function CheckInContent() {
     try {
       // Simulate API call to check in guest
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Update guest status
       setGuest({ ...guest, checked_in: true, plus_ones: plusOnes });
       setIsCheckedIn(true);
       setTotalCheckedIn(prev => prev + 1 + plusOnes);
-      
     } catch (error) {
       console.error('Check-in failed:', error);
     } finally {
@@ -83,15 +82,19 @@ function CheckInContent() {
       const timer = setTimeout(() => {
         handleContinue();
       }, 3000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isCheckedIn, handleContinue]);
 
   if (!guest) {
     return (
-      <div className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex items-center justify-center`}>
-        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isDarkMode ? 'border-white' : 'border-black'}`}></div>
+      <div
+        className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex items-center justify-center`}
+      >
+        <div
+          className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isDarkMode ? 'border-white' : 'border-black'}`}
+        ></div>
       </div>
     );
   }
@@ -99,20 +102,30 @@ function CheckInContent() {
   // Handle banned guests
   if (guest.status === 'banned') {
     return (
-      <div className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col items-center justify-center p-6`}>
+      <div
+        className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col items-center justify-center p-6`}
+      >
         <div className="w-full max-w-sm text-center">
           <div className="text-6xl mb-6">⚠️</div>
           <h1 className="text-2xl font-bold text-red-600 mb-4">ALERT</h1>
-          <div className={`${isDarkMode ? 'bg-red-950 border-red-800' : 'bg-red-50 border-red-200'} border rounded-xl p-6 mb-8`}>
+          <div
+            className={`${isDarkMode ? 'bg-red-950 border-red-800' : 'bg-red-50 border-red-200'} border rounded-xl p-6 mb-8`}
+          >
             <h2 className="text-xl font-semibold mb-2">{guest.name}</h2>
             <p className="text-red-600 text-lg font-semibold mb-4">BANNED</p>
-            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-sm mb-2`}>Reason: Aggressive behavior</p>
-            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-sm`}>Date: May 15, 2024</p>
+            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-sm mb-2`}>
+              Reason: Aggressive behavior
+            </p>
+            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-sm`}>
+              Date: May 15, 2024
+            </p>
           </div>
           <p className="text-red-600 font-bold text-lg mb-8">DO NOT ADMIT</p>
           <div className="space-y-3">
             <button
-              onClick={() => {/* Call manager functionality */}}
+              onClick={() => {
+                /* Call manager functionality */
+              }}
               className="w-full bg-yellow-500 text-white py-4 rounded-xl font-medium hover:bg-yellow-600 transition-colors"
             >
               Call Manager
@@ -132,15 +145,22 @@ function CheckInContent() {
   // Success state after check-in
   if (isCheckedIn) {
     return (
-      <div className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col items-center justify-center p-6`}>
+      <div
+        className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col items-center justify-center p-6`}
+      >
         <div className="w-full max-w-sm text-center">
           <div className="text-6xl text-green-500 mb-6">✓</div>
           <h1 className="text-2xl font-bold text-green-600 mb-8">CHECKED IN</h1>
-          
+
           <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-xl p-6 mb-8`}>
             <h2 className="text-xl font-semibold mb-4">
               {guest.name}
-              {plusOnes > 0 && <span className={`font-normal ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}> +{plusOnes}</span>}
+              {plusOnes > 0 && (
+                <span className={`font-normal ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {' '}
+                  +{plusOnes}
+                </span>
+              )}
             </h2>
             <div className="space-y-2 text-left">
               {guest.status === 'vip' && (
@@ -151,14 +171,18 @@ function CheckInContent() {
               )}
               {guest.addedBy && (
                 <div className="flex justify-between">
-                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Invited by:</span>
+                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+                    Invited by:
+                  </span>
                   <span className="font-medium">{guest.addedBy}</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className={`${isDarkMode ? 'bg-green-950 border-green-800' : 'bg-green-50 border-green-200'} border rounded-xl p-4 mb-8`}>
+          <div
+            className={`${isDarkMode ? 'bg-green-950 border-green-800' : 'bg-green-50 border-green-200'} border rounded-xl p-4 mb-8`}
+          >
             <p className={`${isDarkMode ? 'text-green-400' : 'text-green-700'} font-medium`}>
               Total Tonight: {totalCheckedIn}
             </p>
@@ -185,7 +209,9 @@ function CheckInContent() {
 
   // Default check-in confirmation state
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col items-center justify-center p-6`}>
+    <div
+      className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col items-center justify-center p-6`}
+    >
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-8">
@@ -197,12 +223,14 @@ function CheckInContent() {
           <h2 className="text-xl font-semibold mb-4">
             {guest.name}
             {guest.status === 'vip' && (
-              <span className={`ml-2 ${isDarkMode ? 'bg-yellow-900 text-yellow-200' : 'bg-yellow-100 text-yellow-800'} px-2 py-1 rounded text-xs font-semibold`}>
+              <span
+                className={`ml-2 ${isDarkMode ? 'bg-yellow-900 text-yellow-200' : 'bg-yellow-100 text-yellow-800'} px-2 py-1 rounded text-xs font-semibold`}
+              >
                 VIP
               </span>
             )}
           </h2>
-          
+
           <div className="space-y-3">
             {guest.addedBy && (
               <div className="flex justify-between items-center">
@@ -210,9 +238,11 @@ function CheckInContent() {
                 <span className="font-medium">{guest.addedBy}</span>
               </div>
             )}
-            
+
             <div className="flex items-center justify-between">
-              <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-sm`}>Edit plus ones:</span>
+              <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-sm`}>
+                Edit plus ones:
+              </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPlusOnes(Math.max(0, plusOnes - 1))}
@@ -241,14 +271,16 @@ function CheckInContent() {
           >
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
-                <div className={`animate-spin rounded-full h-5 w-5 border-b-2 ${isDarkMode ? 'border-black' : 'border-white'}`}></div>
+                <div
+                  className={`animate-spin rounded-full h-5 w-5 border-b-2 ${isDarkMode ? 'border-black' : 'border-white'}`}
+                ></div>
                 Checking In...
               </div>
             ) : (
               'Check In Guest'
             )}
           </button>
-          
+
           <button
             onClick={handleGoBack}
             disabled={isLoading}
@@ -264,11 +296,13 @@ function CheckInContent() {
 
 export default function CheckInPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>
+      }
+    >
       <CheckInContent />
     </Suspense>
   );

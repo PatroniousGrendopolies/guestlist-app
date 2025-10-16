@@ -29,7 +29,7 @@ export default function StaffDashboardPage() {
     // Simulate API call to get staff data
     setTimeout(() => {
       setStaffName('Alex');
-      
+
       // Mock next 7 days events
       setNext7DaysEvents([
         {
@@ -39,7 +39,7 @@ export default function StaffDashboardPage() {
           djs: ['DJ Marcus', 'MC Groove'],
           spotsUsed: 3,
           totalSpots: 5,
-          status: 'upcoming'
+          status: 'upcoming',
         },
         {
           id: '2',
@@ -48,7 +48,7 @@ export default function StaffDashboardPage() {
           djs: ['DJ Luna'],
           spotsUsed: 5,
           totalSpots: 5,
-          status: 'upcoming'
+          status: 'upcoming',
         },
         {
           id: '3',
@@ -57,8 +57,8 @@ export default function StaffDashboardPage() {
           djs: ['DJ Beats', 'MC Flow'],
           spotsUsed: 2,
           totalSpots: 5,
-          status: 'upcoming'
-        }
+          status: 'upcoming',
+        },
       ]);
 
       // Mock additional future events (loaded when "View more" is clicked)
@@ -70,7 +70,7 @@ export default function StaffDashboardPage() {
           djs: ['DJ Shadow'],
           spotsUsed: 0,
           totalSpots: 5,
-          status: 'upcoming'
+          status: 'upcoming',
         },
         {
           id: '5',
@@ -79,8 +79,8 @@ export default function StaffDashboardPage() {
           djs: ['DJ Electric', 'MC Smooth'],
           spotsUsed: 1,
           totalSpots: 5,
-          status: 'upcoming'
-        }
+          status: 'upcoming',
+        },
       ]);
 
       setIsLoading(false);
@@ -121,7 +121,7 @@ export default function StaffDashboardPage() {
     const shareData = {
       title: `Join me at ${event.name}`,
       text: `You're invited to ${event.name} on ${event.date}. Join the guest list!`,
-      url: shareUrl
+      url: shareUrl,
     };
 
     if (navigator.share) {
@@ -142,16 +142,15 @@ export default function StaffDashboardPage() {
   const handleCapacityRequest = async (eventId: string) => {
     // Simulate API call to request capacity increase
     console.log(`Requesting ${requestedCapacity} spots for event ${eventId}: ${requestReason}`);
-    
+
     // Show success state
     setCapacityRequestEventId(null);
     setRequestReason('');
     setRequestedCapacity(6);
-    
+
     // You could show a toast notification here
     alert('Capacity request sent to manager!');
   };
-
 
   if (isLoading) {
     return (
@@ -191,20 +190,15 @@ export default function StaffDashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {next7DaysEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-white border border-gray-200 rounded-xl p-8"
-                >
+              {next7DaysEvents.map(event => (
+                <div key={event.id} className="bg-white border border-gray-200 rounded-xl p-8">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="text-lg">{event.name}</h3>
                     <p className="text-xs text-gray-600">{event.date}</p>
                   </div>
-                  
+
                   {event.djs.length > 0 && (
-                    <p className="text-sm text-gray-500 mb-6">
-                      With {event.djs.join(', ')}
-                    </p>
+                    <p className="text-sm text-gray-500 mb-6">With {event.djs.join(', ')}</p>
                   )}
 
                   {/* Capacity Meter */}
@@ -282,18 +276,20 @@ export default function StaffDashboardPage() {
                         <div className="flex items-center gap-3">
                           <select
                             value={requestedCapacity}
-                            onChange={(e) => setRequestedCapacity(Number(e.target.value))}
+                            onChange={e => setRequestedCapacity(Number(e.target.value))}
                             className="border border-gray-200 rounded-lg px-3 py-1 text-sm"
                           >
                             {[6, 7, 8, 9, 10].map(num => (
-                              <option key={num} value={num}>{num} spots</option>
+                              <option key={num} value={num}>
+                                {num} spots
+                              </option>
                             ))}
                           </select>
                           <input
                             type="text"
                             placeholder="Reason (optional)"
                             value={requestReason}
-                            onChange={(e) => setRequestReason(e.target.value)}
+                            onChange={e => setRequestReason(e.target.value)}
                             className="flex-1 border border-gray-200 rounded-lg px-3 py-1 text-sm"
                           />
                         </div>
@@ -332,20 +328,15 @@ export default function StaffDashboardPage() {
           <div className="mb-8">
             <h2 className="text-xl mb-4">More Upcoming Events</h2>
             <div className="space-y-4">
-              {additionalEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-white border border-gray-200 rounded-xl p-8"
-                >
+              {additionalEvents.map(event => (
+                <div key={event.id} className="bg-white border border-gray-200 rounded-xl p-8">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="text-lg">{event.name}</h3>
                     <p className="text-xs text-gray-600">{event.date}</p>
                   </div>
-                  
+
                   {event.djs.length > 0 && (
-                    <p className="text-sm text-gray-500 mb-6">
-                      With {event.djs.join(', ')}
-                    </p>
+                    <p className="text-sm text-gray-500 mb-6">With {event.djs.join(', ')}</p>
                   )}
 
                   {/* Capacity Meter */}
@@ -423,18 +414,20 @@ export default function StaffDashboardPage() {
                         <div className="flex items-center gap-3">
                           <select
                             value={requestedCapacity}
-                            onChange={(e) => setRequestedCapacity(Number(e.target.value))}
+                            onChange={e => setRequestedCapacity(Number(e.target.value))}
                             className="border border-gray-200 rounded-lg px-3 py-1 text-sm"
                           >
                             {[6, 7, 8, 9, 10].map(num => (
-                              <option key={num} value={num}>{num} spots</option>
+                              <option key={num} value={num}>
+                                {num} spots
+                              </option>
                             ))}
                           </select>
                           <input
                             type="text"
                             placeholder="Reason (optional)"
                             value={requestReason}
-                            onChange={(e) => setRequestReason(e.target.value)}
+                            onChange={e => setRequestReason(e.target.value)}
                             className="flex-1 border border-gray-200 rounded-lg px-3 py-1 text-sm"
                           />
                         </div>

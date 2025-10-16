@@ -25,7 +25,7 @@ export default function QRScannerPage() {
     name: 'Sarah Johnson',
     plusOnes: 2,
     addedBy: 'DJ Shadow',
-    time: '9:45 PM'
+    time: '9:45 PM',
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +74,7 @@ export default function QRScannerPage() {
       // Create QR scanner instance
       qrScannerRef.current = new QrScanner(
         videoRef.current,
-        (result) => handleQRCodeDetected(result.data),
+        result => handleQRCodeDetected(result.data),
         {
           preferredCamera: 'environment', // Use back camera on mobile
           highlightScanRegion: false, // We'll use our own scan overlay
@@ -86,7 +86,6 @@ export default function QRScannerPage() {
       // Start the scanner
       await qrScannerRef.current.start();
       setError('');
-      
     } catch (err) {
       console.error('Error starting QR scanner:', err);
       setError('Camera access denied. Please enable camera permissions.');
@@ -110,13 +109,13 @@ export default function QRScannerPage() {
 
   const handleQRCodeDetected = async (qrData: string) => {
     if (isLoading) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       // Parse the QR code data
       const guestData = JSON.parse(qrData);
-      
+
       // Validate guest data structure
       if (!guestData.id || !guestData.name) {
         throw new Error('Invalid QR code format');
@@ -127,21 +126,20 @@ export default function QRScannerPage() {
         name: guestData.name,
         plusOnes: guestData.plus_ones || 0,
         addedBy: guestData.addedBy || 'Scanner',
-        time: new Date().toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
+        time: new Date().toLocaleTimeString('en-US', {
+          hour: 'numeric',
           minute: '2-digit',
-          hour12: true 
-        })
+          hour12: true,
+        }),
       });
-      
+
       // Navigate to check-in confirmation
       router.push(`/doorperson/checkin?guest=${encodeURIComponent(JSON.stringify(guestData))}`);
-      
     } catch (error) {
       console.error('Error processing QR code:', error);
       setError('Invalid QR code. Please try again or use manual search.');
       setIsLoading(false);
-      
+
       // Clear error after 3 seconds
       setTimeout(() => {
         setError('');
@@ -152,23 +150,27 @@ export default function QRScannerPage() {
   // Fallback click handler for testing
   const handleVideoClick = async () => {
     if (isLoading) return;
-    
+
     // This is just for testing - in production, only QR detection should work
     const mockGuest: Guest = {
       id: '123',
       name: 'Test Guest (Click)',
       status: 'vip',
       plus_ones: 2,
-      checked_in: false
+      checked_in: false,
     };
-    
+
     handleQRCodeDetected(JSON.stringify(mockGuest));
   };
 
   return (
-    <div className={`h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col overflow-hidden`}>
+    <div
+      className={`h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} flex flex-col overflow-hidden`}
+    >
       {/* Header */}
-      <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+      <div
+        className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}
+      >
         <h1 className="text-xl font-light">Nightlist</h1>
         <button
           onClick={handleLogout}
@@ -203,7 +205,7 @@ export default function QRScannerPage() {
               className="w-full h-full object-cover cursor-pointer"
               onClick={handleVideoClick}
             />
-            
+
             {/* Scan Overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-64 h-64 relative">
@@ -224,7 +226,6 @@ export default function QRScannerPage() {
                 </div>
               </div>
             )}
-
           </div>
         )}
       </div>
@@ -232,7 +233,11 @@ export default function QRScannerPage() {
       {/* Instruction text below camera */}
       <div className="px-4 py-2">
         <p className={`text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          {error ? 'Camera error - please retry' : isLoading ? 'Processing QR code...' : 'Point camera at guest QR code'}
+          {error
+            ? 'Camera error - please retry'
+            : isLoading
+              ? 'Processing QR code...'
+              : 'Point camera at guest QR code'}
         </p>
       </div>
 
@@ -252,11 +257,19 @@ export default function QRScannerPage() {
             onClick={() => setShowLastCheckInModal(true)}
             className={`${isDarkMode ? 'bg-gray-900 hover:bg-gray-800' : 'bg-gray-50 hover:bg-gray-100'} rounded-xl p-3 text-center transition-colors`}
           >
-            <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs block`}>Last Check-in</span>
-            <span className="text-sm font-medium mt-1 block truncate">{lastCheckIn.name} ({lastCheckIn.time})</span>
+            <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs block`}>
+              Last Check-in
+            </span>
+            <span className="text-sm font-medium mt-1 block truncate">
+              {lastCheckIn.name} ({lastCheckIn.time})
+            </span>
           </button>
-          <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-xl p-3 text-center`}>
-            <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs block`}>Total Tonight</span>
+          <div
+            className={`${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-xl p-3 text-center`}
+          >
+            <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs block`}>
+              Total Tonight
+            </span>
             <span className="font-semibold text-lg mt-1 block">{totalCheckedIn}</span>
           </div>
         </div>
@@ -275,23 +288,33 @@ export default function QRScannerPage() {
       {/* Last Check-in Modal */}
       {showLastCheckInModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className={`${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} rounded-xl p-6 max-w-sm w-full`}>
+          <div
+            className={`${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} rounded-xl p-6 max-w-sm w-full`}
+          >
             <h3 className="text-xl font-medium mb-4">Last Check-in Details</h3>
             <div className="space-y-3">
               <div>
-                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Name:</span>
+                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                  Name:
+                </span>
                 <p className="font-medium">{lastCheckIn.name}</p>
               </div>
               <div>
-                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Plus Ones:</span>
+                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                  Plus Ones:
+                </span>
                 <p className="font-medium">{lastCheckIn.plusOnes}</p>
               </div>
               <div>
-                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Added By:</span>
+                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                  Added By:
+                </span>
                 <p className="font-medium">{lastCheckIn.addedBy}</p>
               </div>
               <div>
-                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Check-in Time:</span>
+                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                  Check-in Time:
+                </span>
                 <p className="font-medium">{lastCheckIn.time}</p>
               </div>
             </div>

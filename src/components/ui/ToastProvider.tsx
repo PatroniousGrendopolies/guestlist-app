@@ -17,7 +17,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }>({
     message: '',
     type: 'info',
-    isVisible: false
+    isVisible: false,
   });
 
   const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {

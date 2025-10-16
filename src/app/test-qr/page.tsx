@@ -7,7 +7,7 @@ export default function TestQRPage() {
     name: 'Test Guest',
     status: 'vip',
     plus_ones: 2,
-    addedBy: 'QR Test'
+    addedBy: 'QR Test',
   };
 
   // Generate QR code URL using the API
@@ -18,11 +18,11 @@ export default function TestQRPage() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
       <h1 className="text-2xl font-light mb-2">Test QR Code</h1>
       <p className="text-gray-600 mb-8">Scan this with the Nightlist scanner</p>
-      
+
       <div className="bg-white p-4 rounded-xl shadow-lg">
         <img src={qrUrl} alt="Test QR Code" className="w-72 h-72" />
       </div>
-      
+
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-600 mb-2">Encoded data:</p>
         <code className="bg-gray-100 px-3 py-1 rounded text-xs">
@@ -32,7 +32,8 @@ export default function TestQRPage() {
 
       <div className="mt-8 text-center max-w-md">
         <p className="text-sm text-gray-500">
-          Take a photo of this QR code with your phone and show it to the scanner camera to test the QR scanning functionality.
+          Take a photo of this QR code with your phone and show it to the scanner camera to test the
+          QR scanning functionality.
         </p>
       </div>
     </div>

@@ -21,14 +21,17 @@ The CI/CD pipeline is implemented using GitHub Actions and consists of two main 
 To use these workflows, you need to set up the following secrets in your GitHub repository:
 
 ### For All Deployments
+
 - `DATABASE_URL`: Connection string for your production database
 - `NEXTAUTH_SECRET`: Secret key for NextAuth.js
 - `PRODUCTION_URL`: Your production site URL
 
 ### For Vercel Deployment
+
 - `VERCEL_TOKEN`: API token from Vercel
 
 ### For Netlify Deployment
+
 - `NETLIFY_AUTH_TOKEN`: API token from Netlify
 - `NETLIFY_SITE_ID`: ID of your Netlify site
 - `NETLIFY_URL`: URL of your Netlify deployment
@@ -46,6 +49,7 @@ To use these workflows, you need to set up the following secrets in your GitHub 
 The repository includes workflows for both Vercel and Netlify. Choose one based on your preference:
 
 ### Using Vercel
+
 1. Create an account on Vercel
 2. Create a new project
 3. Generate a Vercel API token
@@ -53,6 +57,7 @@ The repository includes workflows for both Vercel and Netlify. Choose one based 
 5. Use the `cd-vercel.yml` workflow or uncomment the Vercel section in `ci-cd.yml`
 
 ### Using Netlify
+
 1. Create an account on Netlify
 2. Create a new site
 3. Generate a Netlify API token

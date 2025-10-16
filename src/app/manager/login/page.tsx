@@ -19,7 +19,7 @@ export default function ManagerLoginPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Mock validation for different manager types
       if (email === 'owner@datcha.com' && password === 'password123') {
         SafeStorage.setItem('manager_authenticated', 'true');
@@ -72,7 +72,7 @@ export default function ManagerLoginPage() {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black transition-colors"
               placeholder="manager@datcha.com"
               required
@@ -87,7 +87,7 @@ export default function ManagerLoginPage() {
               type="password"
               id="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black transition-colors"
               placeholder="password123"
               required

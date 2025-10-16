@@ -31,7 +31,7 @@ export default function ManualSearchPage() {
       plus_ones: 2,
       checked_in: false,
       email: 'sarah@example.com',
-      addedBy: 'DJ Shadow'
+      addedBy: 'DJ Shadow',
     },
     {
       id: '2',
@@ -40,7 +40,7 @@ export default function ManualSearchPage() {
       plus_ones: 1,
       checked_in: false,
       email: 'sam@example.com',
-      addedBy: 'Promoter Mike'
+      addedBy: 'Promoter Mike',
     },
     {
       id: '3',
@@ -49,7 +49,7 @@ export default function ManualSearchPage() {
       plus_ones: 0,
       checked_in: false,
       email: 'mike@example.com',
-      addedBy: 'Staff'
+      addedBy: 'Staff',
     },
     {
       id: '4',
@@ -58,7 +58,7 @@ export default function ManualSearchPage() {
       plus_ones: 3,
       checked_in: true,
       email: 'jen@example.com',
-      addedBy: 'Manager'
+      addedBy: 'Manager',
     },
     {
       id: '5',
@@ -67,7 +67,7 @@ export default function ManualSearchPage() {
       plus_ones: 0,
       checked_in: false,
       email: 'alex@example.com',
-      addedBy: 'DJ Shadow'
+      addedBy: 'DJ Shadow',
     },
     {
       id: '6',
@@ -76,7 +76,7 @@ export default function ManualSearchPage() {
       plus_ones: 1,
       checked_in: false,
       email: 'maria@example.com',
-      addedBy: 'DJ Tiesto'
+      addedBy: 'DJ Tiesto',
     },
     {
       id: '7',
@@ -85,7 +85,7 @@ export default function ManualSearchPage() {
       plus_ones: 2,
       checked_in: true,
       email: 'david@example.com',
-      addedBy: 'Promoter Sarah'
+      addedBy: 'Promoter Sarah',
     },
     {
       id: '8',
@@ -94,8 +94,8 @@ export default function ManualSearchPage() {
       plus_ones: 0,
       checked_in: false,
       email: 'emily@example.com',
-      addedBy: 'Staff'
-    }
+      addedBy: 'Staff',
+    },
   ];
 
   // Get unique inviters for filter buttons
@@ -103,9 +103,10 @@ export default function ManualSearchPage() {
 
   // Filter and sort guests
   let filteredGuests = searchQuery
-    ? allGuests.filter(guest =>
-        guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        guest.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    ? allGuests.filter(
+        guest =>
+          guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          guest.email?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : allGuests;
 
@@ -136,7 +137,8 @@ export default function ManualSearchPage() {
 
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const SpeechRecognition =
+        (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
@@ -183,7 +185,9 @@ export default function ManualSearchPage() {
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       {/* Header */}
-      <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+      <div
+        className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'border-gray-800' : 'border-gray-200'}`}
+      >
         <button
           onClick={handleBack}
           className={`${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'} transition-colors`}
@@ -201,7 +205,7 @@ export default function ManualSearchPage() {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search by name or email..."
               className={`flex-1 ${isDarkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-300 text-black'} border-2 rounded-xl px-4 py-4 placeholder-gray-400 focus:outline-none focus:border-black transition-colors`}
               autoFocus
@@ -212,12 +216,27 @@ export default function ManualSearchPage() {
               aria-label="Voice search"
             >
               {isListening ? (
-                <svg className="w-5 h-5 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                <svg
+                  className="w-5 h-5 text-red-500 animate-pulse"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                  />
                 </svg>
               ) : (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                  />
                 </svg>
               )}
             </button>
@@ -239,8 +258,8 @@ export default function ManualSearchPage() {
                 showCheckedIn
                   ? 'bg-black text-white border-black'
                   : isDarkMode
-                  ? 'border-gray-600 text-gray-400 hover:border-gray-500'
-                  : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                    ? 'border-gray-600 text-gray-400 hover:border-gray-500'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
               }`}
             >
               {showCheckedIn ? 'Hide' : 'Show'} checked in
@@ -263,8 +282,8 @@ export default function ManualSearchPage() {
                 filterBy === 'all'
                   ? 'bg-black text-white'
                   : isDarkMode
-                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               All
@@ -277,8 +296,8 @@ export default function ManualSearchPage() {
                   filterBy === inviter
                     ? 'bg-black text-white'
                     : isDarkMode
-                    ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 {inviter}
@@ -291,13 +310,15 @@ export default function ManualSearchPage() {
         <div className="space-y-3 pb-20">
           {filteredGuests.length === 0 ? (
             <div className="text-center py-12">
-              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>No guests found</p>
+              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
+                No guests found
+              </p>
               <p className={`${isDarkMode ? 'text-gray-500' : 'text-gray-400'} text-sm`}>
                 Try searching with a different name or email
               </p>
             </div>
           ) : (
-            filteredGuests.map((guest) => (
+            filteredGuests.map(guest => (
               <button
                 key={guest.id}
                 onClick={() => handleGuestSelect(guest)}
@@ -319,12 +340,12 @@ export default function ManualSearchPage() {
                           </span>
                         )}
                       </div>
-                      {guest.plus_ones > 0 && (
-                        <span className="text-sm">+{guest.plus_ones}</span>
-                      )}
+                      {guest.plus_ones > 0 && <span className="text-sm">+{guest.plus_ones}</span>}
                     </div>
                     {guest.addedBy && (
-                      <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} mt-1`}>
+                      <p
+                        className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} mt-1`}
+                      >
                         by {guest.addedBy}
                       </p>
                     )}

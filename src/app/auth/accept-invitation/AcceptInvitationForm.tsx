@@ -46,7 +46,11 @@ function AcceptInvitationForm({ acceptInvitationAction, initialToken }: AcceptIn
   };
 
   if (!token && !searchParamsHook.get('token')) {
-    return <p className="text-red-500 p-4 text-center">Invitation token is missing. Please use the link provided in your invitation.</p>;
+    return (
+      <p className="text-red-500 p-4 text-center">
+        Invitation token is missing. Please use the link provided in your invitation.
+      </p>
+    );
   }
 
   return (
@@ -62,7 +66,7 @@ function AcceptInvitationForm({ acceptInvitationAction, initialToken }: AcceptIn
             name="token"
             id="token"
             value={token}
-            onChange={(e) => setToken(e.target.value)}
+            onChange={e => setToken(e.target.value)}
             readOnly={!!initialToken || !!searchParamsHook.get('token')}
             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 disabled:opacity-75"
             required
@@ -81,13 +85,21 @@ function AcceptInvitationForm({ acceptInvitationAction, initialToken }: AcceptIn
         </button>
       </form>
       {message && (
-        <div className={`mt-6 p-4 rounded-md text-sm font-medium border ${ 
-          messageType === 'success' ? 'bg-green-50 border-green-300 text-green-700' :
-          messageType === 'error' ? 'bg-red-50 border-red-300 text-red-700' :
-          messageType === 'warning' ? 'bg-yellow-50 border-yellow-300 text-yellow-700' :
-          'bg-blue-50 border-blue-300 text-blue-700'
-        }`} role="alert">
-          <p className="font-semibold">{messageType.charAt(0).toUpperCase() + messageType.slice(1)}</p>
+        <div
+          className={`mt-6 p-4 rounded-md text-sm font-medium border ${
+            messageType === 'success'
+              ? 'bg-green-50 border-green-300 text-green-700'
+              : messageType === 'error'
+                ? 'bg-red-50 border-red-300 text-red-700'
+                : messageType === 'warning'
+                  ? 'bg-yellow-50 border-yellow-300 text-yellow-700'
+                  : 'bg-blue-50 border-blue-300 text-blue-700'
+          }`}
+          role="alert"
+        >
+          <p className="font-semibold">
+            {messageType.charAt(0).toUpperCase() + messageType.slice(1)}
+          </p>
           <p>{message}</p>
         </div>
       )}

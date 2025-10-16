@@ -30,16 +30,16 @@ describe('Dashboard Page', () => {
     // Mock the Supabase auth to return manager user
     const { supabase } = jest.requireMock('@/lib/supabase/client');
     supabase.auth.getUser.mockResolvedValue({
-      data: { 
+      data: {
         user: {
           id: mockUsers.manager.id,
           email: mockUsers.manager.email,
           user_metadata: {
             full_name: mockUsers.manager.name,
             role: mockUsers.manager.role,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     render(<Dashboard />);
@@ -54,16 +54,16 @@ describe('Dashboard Page', () => {
     // Mock the Supabase auth to return doorman user
     const { supabase } = jest.requireMock('@/lib/supabase/client');
     supabase.auth.getUser.mockResolvedValue({
-      data: { 
+      data: {
         user: {
           id: mockUsers.doorman.id,
           email: mockUsers.doorman.email,
           user_metadata: {
             full_name: mockUsers.doorman.name,
             role: mockUsers.doorman.role,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     render(<Dashboard />);
@@ -78,16 +78,16 @@ describe('Dashboard Page', () => {
     // Mock the Supabase auth to return guest user
     const { supabase } = jest.requireMock('@/lib/supabase/client');
     supabase.auth.getUser.mockResolvedValue({
-      data: { 
+      data: {
         user: {
           id: mockUsers.guest.id,
           email: mockUsers.guest.email,
           user_metadata: {
             full_name: mockUsers.guest.name,
             role: mockUsers.guest.role,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     render(<Dashboard />);

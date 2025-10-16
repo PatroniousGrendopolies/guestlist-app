@@ -9,13 +9,15 @@ interface ExplosionAnimationProps {
   buttonPosition?: { x: number; y: number };
 }
 
-export default function ExplosionAnimation({ 
-  isVisible, 
-  onAnimationComplete, 
+export default function ExplosionAnimation({
+  isVisible,
+  onAnimationComplete,
   approvedNames,
-  buttonPosition = { x: 50, y: 50 } // Default to center
+  buttonPosition = { x: 50, y: 50 }, // Default to center
 }: ExplosionAnimationProps) {
-  const [animationPhase, setAnimationPhase] = useState<'explosion' | 'text' | 'fadeOut' | 'complete'>('explosion');
+  const [animationPhase, setAnimationPhase] = useState<
+    'explosion' | 'text' | 'fadeOut' | 'complete'
+  >('explosion');
 
   useEffect(() => {
     if (!isVisible) {
@@ -76,7 +78,7 @@ export default function ExplosionAnimation({
               }}
             />
           ))}
-          
+
           {/* Screen wipe overlay */}
           <div
             className="absolute inset-0 bg-black"
@@ -91,10 +93,10 @@ export default function ExplosionAnimation({
 
       {/* Text Display Phase */}
       {(animationPhase === 'text' || animationPhase === 'fadeOut') && (
-        <div 
+        <div
           className="absolute inset-0 bg-black flex items-center justify-center transition-opacity duration-500"
-          style={{ 
-            opacity: animationPhase === 'fadeOut' ? 0 : 1 
+          style={{
+            opacity: animationPhase === 'fadeOut' ? 0 : 1,
           }}
         >
           <div className="text-center text-white max-w-lg px-6">
@@ -116,7 +118,7 @@ export default function ExplosionAnimation({
             >
               {formatNames(approvedNames)}
             </p>
-            
+
             {/* Decorative particles */}
             {[...Array(12)].map((_, i) => (
               <div
@@ -137,65 +139,133 @@ export default function ExplosionAnimation({
       {/* CSS-in-JS Style injection */}
       <style jsx>{`
         @keyframes explode-0 {
-          0% { width: 20px; height: 20px; opacity: 1; }
-          100% { width: 300px; height: 300px; opacity: 0; }
+          0% {
+            width: 20px;
+            height: 20px;
+            opacity: 1;
+          }
+          100% {
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+          }
         }
         @keyframes explode-1 {
-          0% { width: 15px; height: 15px; opacity: 0.8; }
-          100% { width: 250px; height: 250px; opacity: 0; }
+          0% {
+            width: 15px;
+            height: 15px;
+            opacity: 0.8;
+          }
+          100% {
+            width: 250px;
+            height: 250px;
+            opacity: 0;
+          }
         }
         @keyframes explode-2 {
-          0% { width: 25px; height: 25px; opacity: 0.9; }
-          100% { width: 400px; height: 400px; opacity: 0; }
+          0% {
+            width: 25px;
+            height: 25px;
+            opacity: 0.9;
+          }
+          100% {
+            width: 400px;
+            height: 400px;
+            opacity: 0;
+          }
         }
         @keyframes explode-3 {
-          0% { width: 18px; height: 18px; opacity: 0.7; }
-          100% { width: 350px; height: 350px; opacity: 0; }
+          0% {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+          }
+          100% {
+            width: 350px;
+            height: 350px;
+            opacity: 0;
+          }
         }
         @keyframes explode-4 {
-          0% { width: 22px; height: 22px; opacity: 0.8; }
-          100% { width: 450px; height: 450px; opacity: 0; }
+          0% {
+            width: 22px;
+            height: 22px;
+            opacity: 0.8;
+          }
+          100% {
+            width: 450px;
+            height: 450px;
+            opacity: 0;
+          }
         }
         @keyframes explode-5 {
-          0% { width: 16px; height: 16px; opacity: 0.6; }
-          100% { width: 320px; height: 320px; opacity: 0; }
+          0% {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+          }
+          100% {
+            width: 320px;
+            height: 320px;
+            opacity: 0;
+          }
         }
         @keyframes explode-6 {
-          0% { width: 28px; height: 28px; opacity: 0.9; }
-          100% { width: 500px; height: 500px; opacity: 0; }
+          0% {
+            width: 28px;
+            height: 28px;
+            opacity: 0.9;
+          }
+          100% {
+            width: 500px;
+            height: 500px;
+            opacity: 0;
+          }
         }
         @keyframes explode-7 {
-          0% { width: 12px; height: 12px; opacity: 0.5; }
-          100% { width: 280px; height: 280px; opacity: 0; }
+          0% {
+            width: 12px;
+            height: 12px;
+            opacity: 0.5;
+          }
+          100% {
+            width: 280px;
+            height: 280px;
+            opacity: 0;
+          }
         }
 
         @keyframes screenWipe {
-          0% { clip-path: circle(0% at ${buttonPosition.x}% ${buttonPosition.y}%); }
-          100% { clip-path: circle(150% at ${buttonPosition.x}% ${buttonPosition.y}%); }
+          0% {
+            clip-path: circle(0% at ${buttonPosition.x}% ${buttonPosition.y}%);
+          }
+          100% {
+            clip-path: circle(150% at ${buttonPosition.x}% ${buttonPosition.y}%);
+          }
         }
 
         @keyframes fadeInUp {
-          0% { 
-            opacity: 0; 
+          0% {
+            opacity: 0;
             transform: translateY(30px);
           }
-          100% { 
-            opacity: 1; 
+          100% {
+            opacity: 1;
             transform: translateY(0);
           }
         }
 
         @keyframes particle-float {
-          0% { 
-            opacity: 0; 
+          0% {
+            opacity: 0;
             transform: translateY(0px) scale(0);
           }
-          50% { 
-            opacity: 1; 
+          50% {
+            opacity: 1;
             transform: translateY(-20px) scale(1);
           }
-          100% { 
-            opacity: 0; 
+          100% {
+            opacity: 0;
             transform: translateY(-40px) scale(0.5);
           }
         }

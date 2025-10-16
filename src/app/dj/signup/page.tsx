@@ -27,7 +27,7 @@ function DJSignupPageContent() {
     phone: '',
     instagram: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,28 +43,28 @@ function DJSignupPageContent() {
       setEventInfo({
         id: eventId,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025'
+        date: 'Saturday, July 6, 2025',
       });
     }
   }, [searchParams]);
 
   const validateStep1 = () => {
     const newErrors: Partial<FormData> = {};
-    
+
     if (!formData.djName.trim()) {
       newErrors.djName = 'DJ/Stage name is required';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     }
-    
+
     if (!formData.instagram.trim()) {
       newErrors.instagram = 'Instagram handle is required';
     }
@@ -75,13 +75,13 @@ function DJSignupPageContent() {
 
   const validateStep2 = () => {
     const newErrors: Partial<FormData> = {};
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
     }
-    
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
@@ -110,14 +110,13 @@ function DJSignupPageContent() {
     if (!validateStep2()) return;
 
     setIsLoading(true);
-    
+
     try {
       // Simulate API call to create DJ account
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Redirect to email verification or login
       router.push('/dj/verify-email?email=' + encodeURIComponent(formData.email));
-      
     } catch (error) {
       console.error('Signup failed:', error);
       setErrors({ email: 'An error occurred. Please try again.' });
@@ -151,15 +150,19 @@ function DJSignupPageContent() {
       <div className="max-w-2xl mx-auto p-6">
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-4">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              step >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'
-            }`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'
+              }`}
+            >
               1
             </div>
             <div className={`h-1 w-16 ${step >= 2 ? 'bg-black' : 'bg-gray-200'}`}></div>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              step >= 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'
-            }`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'
+              }`}
+            >
               2
             </div>
           </div>
@@ -170,7 +173,9 @@ function DJSignupPageContent() {
           <div>
             <div className="text-center mb-8">
               <h2 className="text-2xl font-light mb-2">Tell us about yourself</h2>
-              <p className="text-gray-600">We need some basic information to set up your DJ profile</p>
+              <p className="text-gray-600">
+                We need some basic information to set up your DJ profile
+              </p>
             </div>
 
             <div className="space-y-6">
@@ -181,7 +186,7 @@ function DJSignupPageContent() {
                 <input
                   type="text"
                   value={formData.djName}
-                  onChange={(e) => handleInputChange('djName', e.target.value)}
+                  onChange={e => handleInputChange('djName', e.target.value)}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:border-black transition-colors ${
                     errors.djName ? 'border-red-500' : 'border-gray-200'
                   }`}
@@ -197,7 +202,7 @@ function DJSignupPageContent() {
                 <input
                   type="text"
                   value={formData.givenName}
-                  onChange={(e) => handleInputChange('givenName', e.target.value)}
+                  onChange={e => handleInputChange('givenName', e.target.value)}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
                   placeholder="John Smith"
                 />
@@ -210,7 +215,7 @@ function DJSignupPageContent() {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  onChange={e => handleInputChange('email', e.target.value)}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:border-black transition-colors ${
                     errors.email ? 'border-red-500' : 'border-gray-200'
                   }`}
@@ -226,7 +231,7 @@ function DJSignupPageContent() {
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  onChange={e => handleInputChange('phone', e.target.value)}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:border-black transition-colors ${
                     errors.phone ? 'border-red-500' : 'border-gray-200'
                   }`}
@@ -242,13 +247,15 @@ function DJSignupPageContent() {
                 <input
                   type="text"
                   value={formData.instagram}
-                  onChange={(e) => handleInstagramChange(e.target.value)}
+                  onChange={e => handleInstagramChange(e.target.value)}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:border-black transition-colors ${
                     errors.instagram ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="@djshadow"
                 />
-                {errors.instagram && <p className="text-red-500 text-sm mt-1">{errors.instagram}</p>}
+                {errors.instagram && (
+                  <p className="text-red-500 text-sm mt-1">{errors.instagram}</p>
+                )}
               </div>
             </div>
 
@@ -271,13 +278,11 @@ function DJSignupPageContent() {
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
                 <input
                   type="password"
                   value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  onChange={e => handleInputChange('password', e.target.value)}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:border-black transition-colors ${
                     errors.password ? 'border-red-500' : 'border-gray-200'
                   }`}
@@ -294,13 +299,15 @@ function DJSignupPageContent() {
                 <input
                   type="password"
                   value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  onChange={e => handleInputChange('confirmPassword', e.target.value)}
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:border-black transition-colors ${
                     errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="Confirm password"
                 />
-                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                )}
               </div>
             </div>
 
@@ -359,14 +366,16 @@ function DJSignupPageContent() {
 
 export default function DJSignupPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <DJSignupPageContent />
     </Suspense>
   );

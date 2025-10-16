@@ -11,7 +11,7 @@ jobs:
   test:
     name: Test and Lint
     runs-on: ubuntu-latest
-    
+
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/guestlist_test
       NEXTAUTH_SECRET: test_secret
@@ -41,22 +41,22 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Run ESLint
         run: npm run lint
-        
+
       - name: Check formatting
         run: npm run format:check
-        
+
       - name: Run Prisma migrations
         run: npx prisma migrate deploy
-        
+
       - name: Run tests
         run: npm test
-        
+
       # Upload test coverage as an artifact
       - name: Upload test coverage
         uses: actions/upload-artifact@v3
@@ -70,20 +70,20 @@ jobs:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Build project
         run: npm run build
         env:
@@ -91,7 +91,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: ${{ secrets.PRODUCTION_URL }}
-      
+
       # Deploy to Netlify
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2
@@ -99,7 +99,7 @@ jobs:
           publish-dir: './.next'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions"
+          deploy-message: 'Deploy from GitHub Actions'
           enable-pull-request-comment: true
           enable-commit-comment: true
           overwrites-pull-request-comment: true

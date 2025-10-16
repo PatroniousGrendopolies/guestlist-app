@@ -30,7 +30,7 @@ export async function GET(
         max_capacity,
         current_capacity,
         status,
-        creator:profiles!guest_lists_created_by_user_id_fkey(id, first_name, last_name)
+        created_by_user_id
       )
     `)
     .eq('id', id)

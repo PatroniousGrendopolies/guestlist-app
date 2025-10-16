@@ -45,7 +45,7 @@ export default function DJAnalyticsPage() {
         totalGuestsLifetime: 487,
         bestPerformingEvent: 'Summer Vibes',
         thisMonthAttendees: 67,
-        lastMonthAttendees: 52
+        lastMonthAttendees: 52,
       });
 
       setEventStats([
@@ -56,7 +56,7 @@ export default function DJAnalyticsPage() {
           signups: 68,
           attended: 58,
           conversionRate: 85,
-          totalImpact: 58
+          totalImpact: 58,
         },
         {
           id: '2',
@@ -65,7 +65,7 @@ export default function DJAnalyticsPage() {
           signups: 72,
           attended: 45,
           conversionRate: 63,
-          totalImpact: 45
+          totalImpact: 45,
         },
         {
           id: '3',
@@ -74,7 +74,7 @@ export default function DJAnalyticsPage() {
           signups: 75,
           attended: 71,
           conversionRate: 95,
-          totalImpact: 71
+          totalImpact: 71,
         },
         {
           id: '4',
@@ -83,7 +83,7 @@ export default function DJAnalyticsPage() {
           signups: 60,
           attended: 42,
           conversionRate: 70,
-          totalImpact: 42
+          totalImpact: 42,
         },
         {
           id: '5',
@@ -92,8 +92,8 @@ export default function DJAnalyticsPage() {
           signups: 55,
           attended: 38,
           conversionRate: 69,
-          totalImpact: 38
-        }
+          totalImpact: 38,
+        },
       ]);
 
       setIsLoading(false);
@@ -102,15 +102,21 @@ export default function DJAnalyticsPage() {
 
   const getTimeRangeLabel = () => {
     switch (timeRange) {
-      case '3months': return 'Last 3 Months';
-      case '6months': return 'Last 6 Months';
-      case '1year': return 'Last 12 Months';
+      case '3months':
+        return 'Last 3 Months';
+      case '6months':
+        return 'Last 6 Months';
+      case '1year':
+        return 'Last 12 Months';
     }
   };
 
   const getGrowthPercentage = () => {
     if (!overallStats) return 0;
-    const growth = ((overallStats.thisMonthAttendees - overallStats.lastMonthAttendees) / overallStats.lastMonthAttendees) * 100;
+    const growth =
+      ((overallStats.thisMonthAttendees - overallStats.lastMonthAttendees) /
+        overallStats.lastMonthAttendees) *
+      100;
     return Math.round(growth);
   };
 
@@ -141,13 +147,13 @@ export default function DJAnalyticsPage() {
               <h1 className="text-2xl font-light mb-2">Performance Analytics</h1>
               <p className="text-gray-300">Track your draw and conversion rates</p>
             </div>
-            
+
             <div className="flex gap-2">
               <button
                 onClick={() => setTimeRange('3months')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  timeRange === '3months' 
-                    ? 'bg-white text-black' 
+                  timeRange === '3months'
+                    ? 'bg-white text-black'
                     : 'bg-gray-800 text-white hover:bg-gray-700'
                 }`}
               >
@@ -156,8 +162,8 @@ export default function DJAnalyticsPage() {
               <button
                 onClick={() => setTimeRange('6months')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  timeRange === '6months' 
-                    ? 'bg-white text-black' 
+                  timeRange === '6months'
+                    ? 'bg-white text-black'
                     : 'bg-gray-800 text-white hover:bg-gray-700'
                 }`}
               >
@@ -166,8 +172,8 @@ export default function DJAnalyticsPage() {
               <button
                 onClick={() => setTimeRange('1year')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  timeRange === '1year' 
-                    ? 'bg-white text-black' 
+                  timeRange === '1year'
+                    ? 'bg-white text-black'
                     : 'bg-gray-800 text-white hover:bg-gray-700'
                 }`}
               >
@@ -187,23 +193,26 @@ export default function DJAnalyticsPage() {
               <p className="text-3xl font-bold">{overallStats.totalEvents}</p>
               <p className="text-sm text-gray-500 mt-1">{getTimeRangeLabel()}</p>
             </div>
-            
+
             <div className="bg-gray-50 rounded-xl p-6">
               <h3 className="text-sm text-gray-600 font-medium mb-1">Average Conversion</h3>
               <p className="text-3xl font-bold">{overallStats.averageConversion}%</p>
               <p className="text-sm text-gray-500 mt-1">Signups to attendance</p>
             </div>
-            
+
             <div className="bg-gray-50 rounded-xl p-6">
               <h3 className="text-sm text-gray-600 font-medium mb-1">This Month</h3>
               <p className="text-3xl font-bold">{overallStats.thisMonthAttendees}</p>
-              <p className={`text-sm mt-1 ${
-                getGrowthPercentage() >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {getGrowthPercentage() >= 0 ? '+' : ''}{getGrowthPercentage()}% from last month
+              <p
+                className={`text-sm mt-1 ${
+                  getGrowthPercentage() >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {getGrowthPercentage() >= 0 ? '+' : ''}
+                {getGrowthPercentage()}% from last month
               </p>
             </div>
-            
+
             <div className="bg-gray-50 rounded-xl p-6">
               <h3 className="text-sm text-gray-600 font-medium mb-1">Lifetime Total</h3>
               <p className="text-3xl font-bold">{overallStats.totalGuestsLifetime}</p>
@@ -220,7 +229,8 @@ export default function DJAnalyticsPage() {
               <h3 className="text-lg font-semibold">Best Performing Event</h3>
             </div>
             <p className="text-gray-700">
-              <strong>{overallStats.bestPerformingEvent}</strong> had your highest conversion rate at 95%
+              <strong>{overallStats.bestPerformingEvent}</strong> had your highest conversion rate
+              at 95%
             </p>
           </div>
         )}
@@ -228,16 +238,16 @@ export default function DJAnalyticsPage() {
         {/* Event-by-Event Breakdown */}
         <div className="mb-8">
           <h2 className="text-xl font-medium mb-6">Event-by-Event Breakdown</h2>
-          
+
           <div className="space-y-4">
-            {eventStats.map((event) => (
+            {eventStats.map(event => (
               <div key={event.id} className="bg-white border border-gray-200 rounded-xl p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-6">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold mb-1">{event.name}</h3>
                     <p className="text-gray-600 text-sm">{event.date}</p>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
                     <div>
                       <div className="text-2xl font-bold text-blue-600">{event.signups}</div>
@@ -248,10 +258,15 @@ export default function DJAnalyticsPage() {
                       <div className="text-xs text-gray-500">Attended</div>
                     </div>
                     <div>
-                      <div className={`text-2xl font-bold ${
-                        event.conversionRate >= 80 ? 'text-green-600' :
-                        event.conversionRate >= 60 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
+                      <div
+                        className={`text-2xl font-bold ${
+                          event.conversionRate >= 80
+                            ? 'text-green-600'
+                            : event.conversionRate >= 60
+                              ? 'text-yellow-600'
+                              : 'text-red-600'
+                        }`}
+                      >
                         {event.conversionRate}%
                       </div>
                       <div className="text-xs text-gray-500">Conversion</div>
@@ -261,20 +276,21 @@ export default function DJAnalyticsPage() {
                       <div className="text-xs text-gray-500">Total Impact</div>
                     </div>
                   </div>
-                  
+
                   <div className="lg:w-24">
                     <div className="bg-gray-200 rounded-full h-2 mb-1">
-                      <div 
+                      <div
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          event.conversionRate >= 80 ? 'bg-green-500' :
-                          event.conversionRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                          event.conversionRate >= 80
+                            ? 'bg-green-500'
+                            : event.conversionRate >= 60
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
                         }`}
                         style={{ width: `${event.conversionRate}%` }}
                       ></div>
                     </div>
-                    <p className="text-xs text-gray-500 text-center">
-                      {event.conversionRate}%
-                    </p>
+                    <p className="text-xs text-gray-500 text-center">{event.conversionRate}%</p>
                   </div>
                 </div>
               </div>

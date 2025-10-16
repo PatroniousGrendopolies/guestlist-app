@@ -45,7 +45,7 @@ export default function DJGuestDetailPage() {
       setEventInfo({
         id: params.id as string,
         name: 'Saturday Night Sessions',
-        date: 'Saturday, July 6, 2025'
+        date: 'Saturday, July 6, 2025',
       });
 
       // Mock guest data based on guestId
@@ -69,7 +69,7 @@ export default function DJGuestDetailPage() {
           plusOnes: 1,
           status: 'pending',
           checkedIn: false,
-          submittedAt: '4 hours ago'
+          submittedAt: '4 hours ago',
         },
         '3': {
           id: '3',
@@ -81,7 +81,7 @@ export default function DJGuestDetailPage() {
           status: 'approved',
           checkedIn: true,
           submittedAt: '1 day ago',
-          checkInTime: '9:45 PM'
+          checkInTime: '9:45 PM',
         },
         '4': {
           id: '4',
@@ -91,14 +91,14 @@ export default function DJGuestDetailPage() {
           plusOnes: 3,
           status: 'approved',
           checkedIn: false,
-          submittedAt: '1 day ago'
-        }
+          submittedAt: '1 day ago',
+        },
       };
 
       // Check for updated guest status from management page
       const storedGuests = localStorage.getItem('event_guests');
       let foundGuest = mockGuests[params.guestId as string];
-      
+
       if (storedGuests && foundGuest) {
         const guestUpdates = JSON.parse(storedGuests);
         const guestUpdate = guestUpdates[params.guestId as string];
@@ -106,7 +106,7 @@ export default function DJGuestDetailPage() {
           foundGuest = { ...foundGuest, ...guestUpdate };
         }
       }
-      
+
       setGuest(foundGuest || null);
       setIsLoading(false);
     }, 1000);
@@ -114,23 +114,23 @@ export default function DJGuestDetailPage() {
 
   const handleApproveGuest = async () => {
     if (!guest) return;
-    
+
     setIsApproving(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       setGuest(prev => {
         if (!prev) return null;
         const updatedGuest = { ...prev, status: 'approved' as const };
-        
+
         // Save to localStorage for sync with management page
         const storedGuests = localStorage.getItem('event_guests');
         const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
         guestUpdates[prev.id] = { status: 'approved' };
         localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
-        
+
         return updatedGuest;
       });
     } catch (error) {
@@ -142,23 +142,23 @@ export default function DJGuestDetailPage() {
 
   const handleDenyGuest = async () => {
     if (!guest) return;
-    
+
     setIsDenying(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       setGuest(prev => {
         if (!prev) return null;
         const updatedGuest = { ...prev, status: 'denied' as const };
-        
+
         // Save to localStorage for sync with management page
         const storedGuests = localStorage.getItem('event_guests');
         const guestUpdates = storedGuests ? JSON.parse(storedGuests) : {};
         guestUpdates[prev.id] = { status: 'denied' };
         localStorage.setItem('event_guests', JSON.stringify(guestUpdates));
-        
+
         return updatedGuest;
       });
     } catch (error) {
@@ -170,8 +170,8 @@ export default function DJGuestDetailPage() {
 
   const handleUpdatePlusOnes = (newPlusOnes: number) => {
     if (!guest) return;
-    
-    setGuest(prev => prev ? { ...prev, plusOnes: Math.max(0, newPlusOnes) } : null);
+
+    setGuest(prev => (prev ? { ...prev, plusOnes: Math.max(0, newPlusOnes) } : null));
   };
 
   const getStatusColor = (status: string) => {
@@ -237,7 +237,7 @@ export default function DJGuestDetailPage() {
             <div>
               <h2 className="text-2xl font-light mb-2">{guest.name}</h2>
               {guest.instagram && (
-                <a 
+                <a
                   href={`https://instagram.com/${guest.instagram.replace('@', '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -246,7 +246,9 @@ export default function DJGuestDetailPage() {
                   {guest.instagram}
                 </a>
               )}
-              <span className={`inline-block px-3 py-1 rounded-lg text-sm ${getStatusColor(guest.status)}`}>
+              <span
+                className={`inline-block px-3 py-1 rounded-lg text-sm ${getStatusColor(guest.status)}`}
+              >
                 {guest.status.charAt(0).toUpperCase() + guest.status.slice(1)}
               </span>
               {guest.checkedIn && (
@@ -288,7 +290,6 @@ export default function DJGuestDetailPage() {
                 <p className="text-sm text-gray-500">Check-in Time {guest.checkInTime}</p>
               </div>
             )}
-
           </div>
         </div>
 
@@ -335,7 +336,6 @@ export default function DJGuestDetailPage() {
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

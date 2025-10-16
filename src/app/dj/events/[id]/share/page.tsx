@@ -38,11 +38,11 @@ export default function DJEventSharePage() {
         date: 'Saturday, July 6, 2025',
         venue: 'Nightlist',
         spotsUsed: 23,
-        totalSpots: 75
+        totalSpots: 75,
       };
 
       const mockEventLink = `https://nightlist.app/guest/signup?event=${params.id}&dj=shadow`;
-      
+
       setEventInfo(mockEventInfo);
       setEventLink(mockEventLink);
       setQrCodeData(mockEventLink);
@@ -63,13 +63,13 @@ export default function DJEventSharePage() {
     // Simple placeholder QR code visualization
     canvas.width = 200;
     canvas.height = 200;
-    
+
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, 200, 200);
-    
+
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(10, 10, 180, 180);
-    
+
     ctx.fillStyle = '#000000';
     ctx.font = '12px monospace';
     ctx.textAlign = 'center';
@@ -90,7 +90,7 @@ export default function DJEventSharePage() {
 
   const handleShare = async (platform: 'sms' | 'whatsapp' | 'instagram' | 'native') => {
     const shareText = `${eventInfo?.name} is happening on ${eventInfo?.date} at ${eventInfo?.venue}. Join the guest list: ${eventLink}`;
-    
+
     switch (platform) {
       case 'sms':
         window.open(`sms:?body=${encodeURIComponent(shareText)}`);
@@ -109,7 +109,7 @@ export default function DJEventSharePage() {
             await navigator.share({
               title: eventInfo?.name,
               text: shareText,
-              url: eventLink
+              url: eventLink,
             });
           } catch (err) {
             console.log('Sharing cancelled');
@@ -173,7 +173,7 @@ export default function DJEventSharePage() {
             <p>{eventInfo.date}</p>
             <p>{eventInfo.venue}</p>
           </div>
-          
+
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-4">
               Active signups: <strong>{eventInfo.spotsUsed}</strong>
@@ -200,12 +200,14 @@ export default function DJEventSharePage() {
               </button>
             </div>
             {copyMessage && (
-              <p className={`text-sm ${copyMessage.includes('Failed') ? 'text-red-600' : 'text-black'}`}>
+              <p
+                className={`text-sm ${copyMessage.includes('Failed') ? 'text-red-600' : 'text-black'}`}
+              >
                 {copyMessage}
               </p>
             )}
           </div>
-          
+
           <div className="text-center">
             <button
               onClick={() => handleShare('native')}
@@ -221,7 +223,7 @@ export default function DJEventSharePage() {
           <h3 className="text-lg font-medium mb-4">Event Capacity</h3>
           <div className="relative">
             <div className="bg-gray-200 rounded-full h-3 relative overflow-hidden">
-              <div 
+              <div
                 className="bg-black h-3 rounded-full transition-all duration-300 relative"
                 style={{ width: `${(eventInfo.spotsUsed / eventInfo.totalSpots) * 100}%` }}
               >

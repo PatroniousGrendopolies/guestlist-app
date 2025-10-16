@@ -49,13 +49,13 @@ export class MockInvitationService {
 
     // Simulate 90% success rate
     const isSuccess = Math.random() > 0.1;
-    
+
     const invitation: InvitationResponse = {
       id: `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       guestId: request.guestId,
       status: isSuccess ? 'sent' : 'failed',
       sentAt: new Date().toISOString(),
-      errorMessage: isSuccess ? undefined : 'Failed to deliver message'
+      errorMessage: isSuccess ? undefined : 'Failed to deliver message',
     };
 
     // Simulate delivery and read receipts for successful sends
@@ -63,7 +63,7 @@ export class MockInvitationService {
       // 95% get delivered
       if (Math.random() > 0.05) {
         invitation.deliveredAt = new Date(Date.now() + Math.random() * 60000).toISOString(); // 0-60s later
-        
+
         // 70% of delivered get read
         if (Math.random() > 0.3) {
           invitation.readAt = new Date(Date.now() + Math.random() * 300000 + 60000).toISOString(); // 1-6min later
@@ -79,20 +79,20 @@ export class MockInvitationService {
 
   // Send multiple invitations
   static async sendBulkInvitations(
-    requests: InvitationRequest[], 
+    requests: InvitationRequest[],
     onProgress?: (completed: number, total: number) => void
   ): Promise<InvitationResponse[]> {
     const results: InvitationResponse[] = [];
-    
+
     for (let i = 0; i < requests.length; i++) {
       const result = await this.sendInvitation(requests[i]);
       results.push(result);
-      
+
       if (onProgress) {
         onProgress(i + 1, requests.length);
       }
     }
-    
+
     return results;
   }
 
@@ -106,16 +106,16 @@ export class MockInvitationService {
   // Personalize message by replacing variables
   static personalizeMessage(template: string, variables: Record<string, string>): string {
     let message = template;
-    
+
     Object.entries(variables).forEach(([key, value]) => {
       const regex = new RegExp(`\\[${key}\\]`, 'g');
       message = message.replace(regex, value);
     });
-    
+
     // Auto-shorten any URLs in the message
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    message = message.replace(urlRegex, (url) => this.shortenUrl(url));
-    
+    message = message.replace(urlRegex, url => this.shortenUrl(url));
+
     return message;
   }
 
@@ -123,7 +123,7 @@ export class MockInvitationService {
   static getEventInvitations(eventId: string): InvitationResponse[] {
     const stored = localStorage.getItem(INVITATION_STORAGE_KEY);
     if (!stored) return [];
-    
+
     const all = JSON.parse(stored);
     return all.filter((inv: any) => inv.request.eventId === eventId);
   }
@@ -131,7 +131,7 @@ export class MockInvitationService {
   // Get invitation analytics for an event
   static getEventAnalytics(eventId: string): InvitationAnalytics {
     const invitations = this.getEventInvitations(eventId);
-    
+
     const analytics: InvitationAnalytics = {
       totalSent: invitations.length,
       delivered: invitations.filter(inv => inv.deliveredAt).length,
@@ -140,8 +140,8 @@ export class MockInvitationService {
       responses: {
         accepted: 0,
         declined: 0,
-        noResponse: 0
-      }
+        noResponse: 0,
+      },
     };
 
     // Simulate response rates for read messages
@@ -171,25 +171,27 @@ export class MockInvitationService {
   private static storeInvitation(request: InvitationRequest, response: InvitationResponse) {
     const stored = localStorage.getItem(INVITATION_STORAGE_KEY);
     const invitations = stored ? JSON.parse(stored) : [];
-    
+
     invitations.push({
       request,
       response,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
+
     // Keep only last 1000 invitations
     if (invitations.length > 1000) {
       invitations.splice(0, invitations.length - 1000);
     }
-    
+
     localStorage.setItem(INVITATION_STORAGE_KEY, JSON.stringify(invitations));
   }
 
   // Simulate guest response to invitation
-  static async simulateGuestResponse(invitationId: string): Promise<'accepted' | 'declined' | 'no_response'> {
+  static async simulateGuestResponse(
+    invitationId: string
+  ): Promise<'accepted' | 'declined' | 'no_response'> {
     await delay(Math.random() * 2000 + 1000); // 1-3s delay
-    
+
     const rand = Math.random();
     if (rand < 0.6) return 'accepted';
     if (rand < 0.8) return 'declined';

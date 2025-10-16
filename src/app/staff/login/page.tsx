@@ -18,7 +18,7 @@ export default function StaffLoginPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Mock validation - detect user type from credentials
       if (email === 'dj@test.com' && password === 'password123') {
         // DJ credentials
@@ -63,7 +63,7 @@ export default function StaffLoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-black transition-colors"
               placeholder="Enter your email"
               required
@@ -78,18 +78,14 @@ export default function StaffLoginPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-black transition-colors"
               placeholder="Enter your password"
               required
             />
           </div>
 
-          {error && (
-            <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{error}</div>}
 
           <button
             type="submit"

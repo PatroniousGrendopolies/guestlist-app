@@ -9,9 +9,7 @@ export const dynamic = 'force-dynamic';
 // Server Component part with relaxed typing to bypass Next.js PageProps constraint bug
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function AcceptInvitationPage(props: any) {
-  const searchParams = props?.searchParams as
-    | Record<string, string | string[]>
-    | undefined;
+  const searchParams = props?.searchParams as Record<string, string | string[]> | undefined;
 
   // Token from URL query params, passed to the client component as initialToken
   const tokenParam = searchParams?.token;
@@ -47,11 +45,17 @@ export default async function AcceptInvitationPage(props: any) {
       }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
-      return { status: 'error', message: 'You must be logged in to accept an invitation. Please log in and try the link again.' };
+      return {
+        status: 'error',
+        message:
+          'You must be logged in to accept an invitation. Please log in and try the link again.',
+      };
     }
-    
+
     const { data, error } = await supabase.rpc('accept_invitation_and_assign_role', {
       p_token: tokenToAccept,
     });
@@ -62,11 +66,18 @@ export default async function AcceptInvitationPage(props: any) {
     }
 
     if (data && typeof data === 'object' && 'status' in data && 'message' in data) {
-        const result = data as { status: 'success' | 'error' | 'info' | 'warning'; message: string; assigned_role?: string };
-        return result;
+      const result = data as {
+        status: 'success' | 'error' | 'info' | 'warning';
+        message: string;
+        assigned_role?: string;
+      };
+      return result;
     }
 
-    return { status: 'error', message: 'Unexpected response from server when accepting invitation.' };
+    return {
+      status: 'error',
+      message: 'Unexpected response from server when accepting invitation.',
+    };
   }
 
   return (

@@ -1,6 +1,7 @@
 # Guest List App - Frontend Design Specifications
 
 ## Overview
+
 This document contains the complete frontend design specifications for the Datcha nightclub guest list management app. All user flows, screens, and interactions have been methodically planned for implementation in Magic Patterns or similar design tools.
 
 ## User Types Overview
@@ -18,6 +19,7 @@ This document contains the complete frontend design specifications for the Datch
 ## 1. GUEST FLOW
 
 ### Entry Points
+
 - Social media link (Instagram, etc.)
 - Text/DM invitation link
 - Google Auth for expedited sign-in
@@ -25,6 +27,7 @@ This document contains the complete frontend design specifications for the Datch
 ### User Flows
 
 #### Flow A: New Guest
+
 1. Click invitation link → Landing/Auth screen
 2. Select "Create a profile"
 3. Input data screen (name, email, phone, Instagram handle)
@@ -36,6 +39,7 @@ This document contains the complete frontend design specifications for the Datch
 9. View QR code ticket screen
 
 #### Flow B: Returning Guest
+
 1. Click invitation link → Landing/Auth screen
 2. Sign in (Google Auth or email/phone)
 3. Pre-filled data review screen
@@ -47,6 +51,7 @@ This document contains the complete frontend design specifications for the Datch
 ### Screen Inventory
 
 #### Screen 1: Landing/Auth Screen
+
 - Logo/Event branding
 - "Continue with Google" button (prominent)
 - "Sign in with Email" button
@@ -54,6 +59,7 @@ This document contains the complete frontend design specifications for the Datch
 - "Forgot Password?" link
 
 #### Screen 2A: Email Sign In
+
 - Email field
 - Password field
 - "Sign In" button
@@ -61,11 +67,13 @@ This document contains the complete frontend design specifications for the Datch
 - "Back" button
 
 #### Screen 2B: Forgot Password
+
 - Email field
 - "Send Reset Link" button
 - Success/error messages
 
 #### Screen 3: Create Profile
+
 - Name field (required)
 - Email field (required)
 - Phone field (required)
@@ -74,11 +82,13 @@ This document contains the complete frontend design specifications for the Datch
 - "Confirm" button
 
 #### Screen 4: Email Confirmation Sent
+
 - "Check your email" message
 - Resend link option
 - What to expect instructions
 
 #### Screen 5: Event Selection
+
 - List of upcoming events (up to 1 month)
   - Event name
   - Date/time
@@ -87,11 +97,13 @@ This document contains the complete frontend design specifications for the Datch
 - "Submit to Guest List" button
 
 #### Screen 6: Submission Confirmation
+
 - "You've been submitted to the guest list"
 - "You'll receive a text when approved"
 - Event details summary
 
 #### Screen 7: QR Code Ticket
+
 - Event name and date
 - Guest name + "and X guests"
 - Large QR code
@@ -99,16 +111,19 @@ This document contains the complete frontend design specifications for the Datch
 - Status indicator (Active/Checked In)
 
 #### Screen 8: Modify Guest Count
+
 - Current count display
 - New count selector
 - "Update" button
 - Error state: "Guest list full"
 
 #### Screen 9: Denial Notification
+
 - Polite message: "Unfortunately, the guest list for [event] is at capacity. We hope to see you at a future event!"
 - "View Other Events" button
 
 ### Design Notes
+
 - Mobile-first responsive design
 - Email confirmation skipped for Google Auth users
 - QR codes accessible via link in confirmation text
@@ -121,6 +136,7 @@ This document contains the complete frontend design specifications for the Datch
 ## 2. DOORPERSON FLOW
 
 ### Entry Points
+
 - Direct URL or bookmark on club device (tablet/phone)
 - PIN auth for quick shift changes
 - Progressive Web App (Phase 1), Native iOS (Phase 2)
@@ -128,12 +144,14 @@ This document contains the complete frontend design specifications for the Datch
 ### User Flows
 
 #### Flow A: QR Code Scanning (Primary)
+
 1. Login with PIN
 2. Land on scan screen (camera active)
 3. Guest shows QR → Automatic scan
 4. See result screen (2-3 seconds) → Auto-return to scan
 
 #### Flow B: Manual Search (Backup)
+
 1. From scan screen → Tap "Search Guests"
 2. Search/browse list
 3. Tap guest name → See details (including +N and who invited)
@@ -142,17 +160,20 @@ This document contains the complete frontend design specifications for the Datch
 ### Screen Inventory
 
 #### Screen 1: Login
+
 - Venue logo
 - PIN pad (large buttons)
 - "OPEN LIST SCANNER" button
 
 #### Screen 2: QR Scan (Main Screen)
+
 - Camera view in rounded rectangle (85% of screen)
 - Scan indicator overlay
 - "Search Guests" button (bottom, always visible)
 - "Checked in: 47/120" (top corner)
 
 #### Screen 3A: Scan Success
+
 - LARGE green checkmark
 - Guest name (big text)
 - "+3 guests" indicator
@@ -161,11 +182,13 @@ This document contains the complete frontend design specifications for the Datch
 - Auto-dismiss in 3 seconds
 
 #### Screen 3B: Scan Denied
+
 - LARGE red X
 - Reason: "Not on list" / "Already checked in" / "Denied entry"
 - "Back to Scan" button
 
 #### Screen 4: Manual Search
+
 - Search bar (top)
 - Guest list (simple):
   - Name
@@ -173,6 +196,7 @@ This document contains the complete frontend design specifications for the Datch
   - +N count
 
 #### Screen 5: Guest Details
+
 - Guest name (large)
 - Status (Approved/Denied)
 - Plus ones count
@@ -182,16 +206,19 @@ This document contains the complete frontend design specifications for the Datch
 - "Back" button
 
 #### Screen 6: Manual QR Entry
+
 - Text field for QR code
 - Number pad
 - "Submit" button
 
 #### Screen 7: VIP Plus Count (Special Flow)
+
 - "How many guests with [VIP Name]?"
 - Number selector (0 to max set by manager)
 - "Confirm" button
 
 ### Design Considerations
+
 - **Night Mode Optimized**:
   - Dark theme with high contrast
   - Minimal white to avoid eye strain
@@ -211,6 +238,7 @@ This document contains the complete frontend design specifications for the Datch
 ## 3. STAFF FLOW
 
 ### Entry Points
+
 - Direct URL for staff
 - Email invitation from manager
 - Mobile-first interface
@@ -218,6 +246,7 @@ This document contains the complete frontend design specifications for the Datch
 ### User Flows
 
 #### Flow A: Regular Night Guest List
+
 1. Login → Dashboard
 2. See tonight's event
 3. Share invite link (expires after event)
@@ -227,6 +256,7 @@ This document contains the complete frontend design specifications for the Datch
 ### Screen Inventory
 
 #### Screen 1: Staff Dashboard
+
 - Welcome "Hey [Name]!"
 - **Tonight's Event**:
   - Event name with DJ lineup
@@ -237,6 +267,7 @@ This document contains the complete frontend design specifications for the Datch
   - Most recent attendees
 
 #### Screen 2: Share Invite
+
 - Tonight's event details
 - Two prominent buttons:
   - "Copy Link" (copies to clipboard)
@@ -244,6 +275,7 @@ This document contains the complete frontend design specifications for the Datch
 - Invite expires: "Valid until [tonight 11:59 PM]"
 
 #### Screen 3: My Guest List
+
 - Date/Event header
 - Capacity bar: "3/5 spots used"
 - **If full**: "Request More Spots" button
@@ -253,12 +285,14 @@ This document contains the complete frontend design specifications for the Datch
   - Check-in status
 
 #### Screen 4: Request Additional Capacity
+
 - "Need more than 5 spots?"
 - Number picker: 6-10
 - Optional reason field
 - "Send Request" button
 
 ### Key Features
+
 - Default capacity: 5 guests
 - No approval needed (link = approved)
 - Event-specific expiring links
@@ -271,6 +305,7 @@ This document contains the complete frontend design specifications for the Datch
 ## 4. DJ FLOW
 
 ### Entry Points
+
 - Direct URL (TBD)
 - Email invitation from manager with event details
 - Mobile-first but desktop capable
@@ -278,12 +313,14 @@ This document contains the complete frontend design specifications for the Datch
 ### User Flows
 
 #### Flow A: First Time Setup
+
 1. Click invitation link (shows event date & all DJs)
 2. Create account (name, email, phone, Instagram - required)
 3. Verify email
 4. Land on dashboard
 
 #### Flow B: Event-Based List Generation
+
 1. Login → Dashboard
 2. See "My Upcoming Events"
 3. Select specific event
@@ -294,6 +331,7 @@ This document contains the complete frontend design specifications for the Datch
 5. Monitor signups with live updates
 
 #### Flow C: Review & Approve Guests
+
 1. Select event from dashboard
 2. View pending guests
 3. Review each guest
@@ -303,6 +341,7 @@ This document contains the complete frontend design specifications for the Datch
 ### Screen Inventory
 
 #### Screen 1: DJ Dashboard
+
 - Welcome "Hey [DJ Name]!"
 - **Upcoming Events** section:
   - Event cards showing:
@@ -320,6 +359,7 @@ This document contains the complete frontend design specifications for the Datch
   - Total guests brought lifetime
 
 #### Screen 2: Event Guest Management
+
 - Event header (name, date, capacity)
 - Capacity bar: "23/50 spots filled"
 - Tabs: "Pending (5)" | "Approved (18)" | "Attended"
@@ -330,6 +370,7 @@ This document contains the complete frontend design specifications for the Datch
   - Quick approve/deny buttons
 
 #### Screen 3: Share Event Link
+
 - Event name & date at top
 - Large link with copy button
 - Share options: SMS, WhatsApp, IG Story
@@ -337,6 +378,7 @@ This document contains the complete frontend design specifications for the Datch
 - "Active signups: 23"
 
 #### Screen 4: Past Guests / Batch Invite
+
 - Event selector dropdown
 - Filter buttons: "All" | "Attended" | "Did Not Attend"
 - Guest list with:
@@ -351,17 +393,19 @@ This document contains the complete frontend design specifications for the Datch
 - Bottom bar: "Invite Selected (12)" button
 
 #### Screen 5: Batch Invite Composer
+
 - Editable text field with default:
   "[DJ Name] is playing at Datcha on [Date] and invited you to the event. Click here to join the guest list: [link]"
 - Send via options:
   - ☑️ SMS
   - ☑️ Email
-  (Both can be selected)
+    (Both can be selected)
 - Character count for SMS
 - "Preview" button
 - "Send Invites" button
 
 #### Screen 6: DJ Analytics
+
 - Event-by-event breakdown:
   - Signups vs attendance
   - Total impact metrics
@@ -369,6 +413,7 @@ This document contains the complete frontend design specifications for the Datch
 - Shows no-shows for future invitation decisions
 
 ### Key Features
+
 - Default capacity: 75 guests per event
 - Event-specific links (expire after event)
 - Can access links 2 months in advance
@@ -382,6 +427,7 @@ This document contains the complete frontend design specifications for the Datch
 ## 5. PROMOTER FLOW
 
 ### Entry Points
+
 - Direct URL for promoters
 - Email invitation from manager
 - Mobile-first interface
@@ -389,6 +435,7 @@ This document contains the complete frontend design specifications for the Datch
 ### User Flows
 
 #### Flow A: Event-Based Promotion
+
 1. Login → Dashboard
 2. Select upcoming event
 3. Get event-specific link
@@ -399,6 +446,7 @@ This document contains the complete frontend design specifications for the Datch
 ### Screen Inventory
 
 #### Screen 1: Promoter Dashboard
+
 - Welcome "Hey [Promoter Name]!"
 - **Tonight's Event** (if applicable):
   - Event name with DJ lineup
@@ -413,6 +461,7 @@ This document contains the complete frontend design specifications for the Datch
   - All-time guests: 487
 
 #### Screen 2: Event Selection & Sharing
+
 - Event details (date, DJs)
 - "Guest List: 8/20 spots"
 - Two buttons:
@@ -421,6 +470,7 @@ This document contains the complete frontend design specifications for the Datch
 - Link expires after event
 
 #### Screen 3: Guest Review/Approval
+
 - Event header
 - Capacity bar: "8/20 spots used"
 - Tabs: "Pending (3)" | "Approved (5)" | "Attended"
@@ -431,12 +481,14 @@ This document contains the complete frontend design specifications for the Datch
   - Approve/deny buttons
 
 #### Screen 4: Capacity Request
+
 - Current limit: 20
 - Request more spots
 - Reason field
 - Send to manager
 
 #### Screen 5: Guest History & Batch Invite
+
 - "My All-Time Guests"
 - Filters: Attended/No-show
 - Select guests
@@ -444,6 +496,7 @@ This document contains the complete frontend design specifications for the Datch
 - Send batch invites
 
 ### Key Differences from Staff
+
 - Higher capacity (20 vs 5)
 - Guest history tools
 - Batch invite features
@@ -454,27 +507,32 @@ This document contains the complete frontend design specifications for the Datch
 ## 6. VIP FLOW
 
 ### VIP Creation (Manager Side)
+
 1. Manager adds VIP in dashboard
 2. System generates permanent QR code
 3. VIP receives welcome text with retrieval options
 
 ### VIP Guest Experience
+
 - Permanent QR code (never expires)
 - Bypasses DJ/promoter approval
 - Not counted against DJ capacity
 - Doorperson must enter +N count on scan
 
 ### QR Code Retrieval Methods (Phase 1)
+
 1. **SMS Link** - Save from welcome text
 2. **Email** - Star/flag welcome email
 3. **Simple Portal** - vip.datcha.com with phone + PIN
 4. **Screenshot** - Save QR to phone photos
 
 ### Phase 2
+
 - Apple Wallet integration
 - Google Wallet support
 
 ### VIP Status Removal
+
 - Text notification: "Your VIP status at Datcha has been updated. Thank you for your past visits!"
 - QR code deactivated immediately
 
@@ -483,6 +541,7 @@ This document contains the complete frontend design specifications for the Datch
 ## 7. MANAGER FLOW
 
 ### Entry Points
+
 - Single URL for all users (e.g., datcha.guestlistapp.com)
 - Desktop-first with mobile support
 - Individual accounts with role-based permissions
@@ -491,6 +550,7 @@ This document contains the complete frontend design specifications for the Datch
 ### Permission Levels
 
 #### Owner (Full Access)
+
 - ✓ All features below
 - ✓ Venue settings (exclusive access)
 - ✓ Create/manage all account types
@@ -498,6 +558,7 @@ This document contains the complete frontend design specifications for the Datch
 - ✓ All administrative functions
 
 #### Manager
+
 - ✓ Create/edit events
 - ✓ Invite DJs/staff/promoters
 - ✓ Set capacity limits
@@ -508,6 +569,7 @@ This document contains the complete frontend design specifications for the Datch
 - ✗ Venue settings
 
 #### Assistant Manager
+
 - ✓ View events (create if enabled per account)
 - ✓ View/approve/deny guest lists
 - ✓ Handle capacity requests
@@ -520,6 +582,7 @@ This document contains the complete frontend design specifications for the Datch
 ### User Flows
 
 #### Flow A: Event Creation (Primary)
+
 1. Login → Dashboard
 2. Click "Create Event"
 3. Select date and add DJs
@@ -528,6 +591,7 @@ This document contains the complete frontend design specifications for the Datch
 6. Monitor acceptance
 
 #### Flow B: Daily Oversight
+
 1. View dashboard alerts
 2. Check approval ratios
 3. Click event to view full guest list
@@ -535,6 +599,7 @@ This document contains the complete frontend design specifications for the Datch
 5. Monitor DJ responsiveness
 
 #### Flow C: User Management
+
 1. Navigate to Users section
 2. Select user type tab
 3. Invite new or review existing
@@ -542,6 +607,7 @@ This document contains the complete frontend design specifications for the Datch
 5. View performance metrics
 
 #### Flow D: Guest Database Management
+
 1. Access all-time guest database
 2. Search and filter guests
 3. View attendance history
@@ -551,13 +617,14 @@ This document contains the complete frontend design specifications for the Datch
 ### Screen Inventory
 
 #### Screen 1: Manager Dashboard
+
 - **Alert Section** (top):
   - "DJ Marcus hasn't accepted invite for Saturday"
   - "Tonight's list only 65% approved" (3pm warning)
   - "2 capacity increase requests pending"
   - Missing event warnings
-  
 - **Week at a Glance**:
+
   - Event cards for next 7 days:
     - Date & formatted DJ names (comma + ampersand)
     - Approval ratio pie chart
@@ -569,6 +636,7 @@ This document contains the complete frontend design specifications for the Datch
   - "Invite User" button
 
 #### Screen 2: Event Creation
+
 - Date picker (allows any date, highlights non-operating days)
 - **DJ Selection**:
   - Dropdown: "Select existing DJ" with search
@@ -582,29 +650,26 @@ This document contains the complete frontend design specifications for the Datch
     - Drag handles for reordering
     - Remove button (X)
     - Individual capacity field (if applicable)
-  
 - **Capacity Settings**:
   - Total event capacity (default 75)
   - Distribution options:
     - "Share capacity equally"
     - "Set individual limits"
-  
 - "Create Event" button
 
 #### Screen 3: Event Detail View
+
 - Event header (date, total capacity, status)
 - **Approval Overview**:
   - Large donut chart
   - Percentage approved
   - Alert if <65% after 3pm
-  
 - **Guest Lists by Source** (tabs):
   - DJ 1 (23/30)
-  - DJ 2 (18/25) 
+  - DJ 2 (18/25)
   - Staff (8/15)
   - Promoters (5/10)
   - Direct adds (3)
-  
 - **Within each tab**:
   - Search bar
   - Guest list with:
@@ -613,26 +678,24 @@ This document contains the complete frontend design specifications for the Datch
     - Status
     - Check-in status
   - "Approve All Pending" button
-  
 - **Actions**:
   - "Export Full List"
   - "Add Guest Directly"
 
 #### Screen 4: All-Time Guest Database
+
 - **Search Bar**: Name/Phone/Email/Instagram
 - **Advanced Filters**:
   - Attendance: Frequent/Recent/Inactive
   - Date range
   - Added by (DJ/Staff/Promoter)
   - Status (Active/Banned)
-  
 - **Guest Table**:
   - Name
   - Contact info
   - Last attended
   - Total visits
   - Added by
-  
 - **Guest Profile (on click)**:
   - Full contact details
   - Instagram handle
@@ -643,6 +706,7 @@ This document contains the complete frontend design specifications for the Datch
   - Actions dropdown (includes ban)
 
 #### Screen 5: User Management Hub
+
 - **Navigation Tabs**: DJs | Staff | Promoters | VIPs | Managers | Banned
 - "+ Invite New [User Type]" button
 - **User Cards** showing:
@@ -652,12 +716,12 @@ This document contains the complete frontend design specifications for the Datch
   - "View Details" button
 
 #### Screen 6: DJ Management
+
 - **Sort Options**:
   - Alphabetical
   - Date added to system
   - Conversion rate
   - Average list size
-  
 - **DJ List** with quick stats
 - **DJ Detail Modal** (on click):
   - Contact info
@@ -678,6 +742,7 @@ This document contains the complete frontend design specifications for the Datch
     - "Remove"
 
 #### Screen 7: Staff/Promoter Management
+
 - Similar layout to DJ management
 - **Detail Modal** shows:
   - All-time invites sent
@@ -689,6 +754,7 @@ This document contains the complete frontend design specifications for the Datch
   - Suspend/Remove options
 
 #### Screen 8: VIP Management
+
 - Search bar for VIPs
 - **VIP Cards** with photo/name
 - **VIP Detail Modal**:
@@ -705,6 +771,7 @@ This document contains the complete frontend design specifications for the Datch
   - "Revoke VIP Status" button
 
 #### Screen 9: Manager Account Management
+
 - List of all manager accounts
 - Role indicators (Owner/Manager/Assistant)
 - **For Assistant Managers**:
@@ -714,6 +781,7 @@ This document contains the complete frontend design specifications for the Datch
 - Deactivate/Remove options
 
 #### Screen 10: Ban Management
+
 - **Add Ban** section:
   - Input fields:
     - Instagram handle
@@ -728,7 +796,6 @@ This document contains the complete frontend design specifications for the Datch
     - Permanent
   - Reason/Notes field (required)
   - "Add to Ban List" button
-  
 - **Active Bans** list:
   - Search/filter options
   - Shows:
@@ -740,6 +807,7 @@ This document contains the complete frontend design specifications for the Datch
   - "Remove Ban" option
 
 #### Screen 11: Capacity Requests
+
 - Pending requests queue
 - Each request shows:
   - Requester name & role
@@ -752,6 +820,7 @@ This document contains the complete frontend design specifications for the Datch
 - Auto-notification on decision
 
 #### Screen 12: Venue Settings (Owner Only)
+
 - **Venue Information**:
   - Name
   - Address
@@ -759,12 +828,10 @@ This document contains the complete frontend design specifications for the Datch
   - Email
   - Website
   - Social media links
-  
 - **Operating Schedule**:
   - Days of operation checkboxes
   - Default hours per day
   - Special closure dates
-  
 - **Default Settings**:
   - Event capacity: 75
   - Staff list size: 5
@@ -773,44 +840,46 @@ This document contains the complete frontend design specifications for the Datch
   - Max plus ones: 4
   - Approval warning time: 3pm
   - Approval warning threshold: 65%
-  
 - "Save Settings" button
 
 #### Screen 13: Analytics Dashboard
+
 - Date range selector
 - **Overview Metrics**:
   - Total guests this period
   - Average conversion rate
   - Top performing DJs
   - Busiest nights
-  
 - **Detailed Charts**:
   - Conversion by day of week
   - DJ performance comparison
   - Staff/Promoter effectiveness
   - Guest retention trends
-  
 - Export options
 - (Phase 2: Lightspeed POS integration)
 
 ### Design Considerations
 
 **Responsive Design**:
+
 - Desktop-optimized for complex tasks
 - Mobile-friendly for on-the-go checks
 - Tablet support for event nights
 
 **Real-time Updates**:
+
 - Live approval ratios
 - Instant capacity request alerts
 - Auto-refresh on guest lists
 
 **Smart Defaults**:
+
 - Pre-populated operating days
 - Remember last capacity settings
 - Auto-format DJ name lists
 
 **Permission-Based UI**:
+
 - Hide features based on role
 - Venue settings only for owners
 - Adapt navigation to permissions
@@ -820,27 +889,31 @@ This document contains the complete frontend design specifications for the Datch
 ## Technical Implementation Notes
 
 ### Native Share Functionality
+
 ```javascript
 // Web Share API for mobile sharing
 navigator.share({
   title: 'Join me at Datcha',
   text: 'Custom invitation text',
-  url: 'https://invite-link'
-})
+  url: 'https://invite-link',
+});
 ```
 
 ### Progressive Web App Features
+
 - Camera access for QR scanning
 - Offline capability for doorperson app
 - Home screen installation
 - Push notifications (Phase 2)
 
 ### Real-time Updates
+
 - WebSocket connections for live guest counts
 - Instant approval notifications
 - Synchronized multi-device access
 
 ### Security Considerations
+
 - PIN-based auth for doorperson
 - Time-limited invite links
 - QR code validation
@@ -851,12 +924,14 @@ navigator.share({
 ## Phase 1 vs Phase 2 Features
 
 ### Phase 1 (Launch)
+
 - Core user flows
 - Web-based implementation
 - SMS/Email notifications
 - Basic analytics
 
 ### Phase 2 (Post-Launch)
+
 - Native iOS app for doorperson
 - Apple/Google Wallet for VIPs
 - Push notifications
@@ -869,9 +944,11 @@ navigator.share({
 ## DESIGN SYSTEM SPECIFICATIONS
 
 ### Core Design Principles
+
 The Nightlist app follows a minimal, clean design philosophy with strict black and white aesthetics for maximum clarity and professional appearance.
 
 ### Color Palette
+
 - **Primary Black**: `#000000` - Used for primary buttons, active states, text
 - **White**: `#FFFFFF` - Used for backgrounds, button text on dark backgrounds
 - **Gray Scale**:
@@ -885,8 +962,9 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **Success Green**: Reserved only for check-in confirmations and success states
 
 ### Typography
+
 - **Font Family**: System font stack (SF Pro on iOS, Roboto on Android, system defaults)
-- **Font Weights**: 
+- **Font Weights**:
   - Regular (400) - ALL text content (no bold/medium/semibold anywhere)
   - Light (300) - Large headlines only when specified
 - **Font Sizes** (Tailwind classes):
@@ -900,6 +978,7 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **No Bold Text Rule**: Never use `font-medium`, `font-semibold`, or `font-bold` classes
 
 ### Button Specifications
+
 - **Corner Radius**: `rounded-full` (fully pill-shaped) for ALL buttons
 - **Padding**: `py-3 px-6` for standard buttons, `py-2 px-4` for small buttons
 - **Primary Buttons**: Black background (`bg-black`), white text, hover to gray-900
@@ -910,8 +989,9 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **Disabled State**: `bg-gray-200 text-gray-400 cursor-not-allowed`
 
 ### Card & Container Specifications
+
 - **Corner Radius**: `rounded-xl` for cards and major containers (NOT rounded-full)
-- **Borders**: 
+- **Borders**:
   - Standard border width: `border` (1px) - never `border-2`
   - Border color: `border-gray-200`
   - **Exception**: No borders on gray background cards (e.g., past events)
@@ -920,13 +1000,15 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **Gray Cards**: Use `bg-gray-50` with NO borders, hover to `bg-gray-100`
 
 ### Layout & Spacing
+
 - **Container Max Width**: `max-w-4xl mx-auto` for main content areas
 - **Section Spacing**: `mb-6` between major sections, `mb-4` between related items
 - **Grid Gaps**: `gap-3` for lists, `gap-4` for form layouts
 - **Page Padding**: `p-6` for main content areas
 
 ### Form Elements
-- **Input Fields**: 
+
+- **Input Fields**:
   - Corner radius: `rounded-xl`
   - Padding: `px-4 py-2`
   - Border: `border border-gray-200`
@@ -936,6 +1018,7 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **Character Limits**: Display as gray text only, no red warnings
 
 ### Interactive Elements
+
 - **Hover States**: Subtle color shifts only (gray-100 to gray-200, black to gray-900)
 - **Focus States**: Black border, no outline rings
 - **Active States**: No special styling beyond hover
@@ -943,22 +1026,25 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **Transitions**: `transition-colors` for all interactive elements
 
 ### Capacity Meters & Progress Bars
+
 - **Height**: `h-4` (thin bars)
 - **Corner Radius**: `rounded-full`
 - **Background**: `bg-gray-200`
 - **Fill**: `bg-black`
-- **Numbers**: 
+- **Numbers**:
   - Size: `text-[10px]` (very small)
   - Position: Absolute positioned within bars
   - Colors: White on black fill, black on gray background
 
 ### Navigation & Headers
+
 - **No Black Backgrounds**: All headers use white/transparent backgrounds (including search pages)
 - **Back Buttons**: Gray text (`text-gray-600`) with hover to black
 - **Breadcrumbs**: Simple text links, no special styling
 - **Page Titles**: `text-2xl font-light` typically
 
 ### Filter Tabs & Controls
+
 - **Active State**: Dark gray background (`bg-gray-600`) with white text
 - **Inactive State**: Light gray background (`bg-gray-100`) with black text
 - **Corner Radius**: `rounded-lg` (not full for tabs)
@@ -966,6 +1052,7 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **Font Size**: `text-sm` (regular weight, no bold)
 
 ### Status Indicators
+
 - **Approved**: Black background, white text
 - **Pending**: Gray background (`bg-gray-200`), dark text
 - **Denied**: White background, black text, black border
@@ -973,30 +1060,35 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **All status badges**: `rounded-lg` corners
 
 ### Mobile Responsiveness
+
 - **Touch Targets**: Minimum 44x44pt for all interactive elements
 - **Text Scaling**: Maintain hierarchy across screen sizes
 - **Button Sizing**: Full width on mobile when appropriate
 - **Spacing**: Reduce padding on smaller screens but maintain proportions
 
 ### Animation & Transitions
+
 - **Duration**: `transition-colors` (fast color changes)
 - **Easing**: Default CSS transitions (no custom timing)
 - **Loading**: Simple spinners with `animate-spin`
 - **Auto-dismiss**: 3-second timeouts for success states
 
 ### Accessibility Compliance
+
 - **Contrast**: All text meets WCAG AA standards
 - **Focus Indicators**: Clear black borders on all focusable elements
 - **Touch Targets**: 44x44pt minimum
 - **Color Independence**: No information conveyed by color alone
 
 ### Brand Consistency
+
 - **Logo Usage**: Minimal, clean presentation
 - **Voice**: Professional, concise, friendly
 - **No Decoration**: Avoid gradients, shadows, or ornamental elements
 - **Consistent Spacing**: Use Tailwind's spacing scale consistently
 
 ### Quality Assurance Checklist
+
 - [ ] All buttons use `rounded-full`
 - [ ] All cards use `rounded-xl`
 - [ ] No `border-2` used anywhere (only `border`)
@@ -1015,7 +1107,9 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 ## USER EXPERIENCE PATTERNS & REFINEMENTS
 
 ### Guest Card Layout (DJ/Promoter Management Pages)
+
 **Compact Card Design:**
+
 - **Line 1**: Name and +N count on left, +/- adjustment buttons on right
   - Example: `Sarah Johnson +2` [−][+]
   - +/- buttons only show for pending guests that belong to the current user
@@ -1027,12 +1121,15 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **No extra vertical spacing** - cards should be compact and scannable
 
 **"Added By" Tag Rules:**
+
 - **Never show** when viewing "My List" (redundant - all guests belong to user)
 - **Never show** when Approve/Deny buttons are present (redundant - implies ownership)
 - **Only show** in "Complete Guestlist" view for guests NOT belonging to current user
 
 ### Button Text Sizing - Adaptive
+
 **Dynamic font sizing to prevent wrapping:**
+
 - Default button text: `text-sm`
 - If button text wraps to multiple lines: automatically use `text-xs` with `leading-tight`
 - Examples:
@@ -1041,7 +1138,9 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - Keep one-word buttons at `text-sm` ("Copy", "Share", "Approve", etc.)
 
 ### Link Sharing Interface
+
 **Copy vs Share distinction:**
+
 - **"Copy" button**: Only copies to clipboard (no Web Share API)
   - Button text: "Copy" (not "Link")
   - Action: Direct clipboard copy with fallback for mobile Safari
@@ -1053,6 +1152,7 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
   - Add `cursor-pointer hover:bg-gray-200` to indicate clickability
 
 **Copy feedback animation:**
+
 - When link is copied, link text should **completely disappear** (`opacity-0`)
 - "Copied!" message should appear **centered** in the input field
 - Use `transition-opacity` for smooth fade
@@ -1060,7 +1160,9 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - Position: `absolute inset-0 flex items-center justify-center`
 
 ### Capacity Meter Label Positioning
+
 **"Pending" label collision avoidance:**
+
 - Calculate pending section center position: `((spotsUsed + (pendingGuests / 2)) / capacity) * 100`
 - **Hide "Pending" label** if it would overlap with edge labels:
   - Too close to "Confirmed"/"Approved": `< 30%`
@@ -1069,7 +1171,9 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - Prevents visual clutter and overlapping text
 
 ### Capacity Request Page Simplifications
+
 **Minimal, focused interface:**
+
 - **Capacity meter**: Show only the meter with embedded numbers, no redundant text lines
   - Format: Black bar with white number, gray background with black number
   - Labels below: "Approved" on left, "Available" on right
@@ -1081,18 +1185,24 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 - **Remove**: "Request Preview" section entirely (unnecessary)
 
 ### Dashboard Copy & Messaging
+
 **Promoter Dashboard:**
+
 - Header subtitle: "Invite friends to an upcoming night" (not "Invite some friends to come to a night")
 - Keep messaging concise and action-oriented
 
 ### Form Input Field Styling
+
 **Pill-shaped inputs for inline controls:**
+
 - Number inputs in inline controls (like capacity requests): `rounded-full`
 - Standard form inputs: `rounded-xl`
 - Readonly/display inputs: `rounded-full` with `bg-gray-100`
 
 ### Modal Overlay Specifications
+
 **Consistent overlay design for all modals:**
+
 - **Background**: `bg-gray-600 bg-opacity-30` (30% opacity gray)
 - **Never use**: Black overlays (`bg-black`) or higher opacity backgrounds
 - **Applies to**: All modal dialogs, popups, detail cards, and edit forms
@@ -1105,6 +1215,7 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
   - Apply to modal content, not overlay
 
 **Examples:**
+
 - DJ detail modal: Gray overlay
 - Edit DJ details popup: Gray overlay (layered on top)
 - Guest attendance history: Gray overlay
@@ -1115,6 +1226,7 @@ The Nightlist app follows a minimal, clean design philosophy with strict black a
 ---
 
 ## Next Steps
+
 1. Complete Manager flow documentation
 2. Create wireframes in Magic Patterns
 3. Design component library

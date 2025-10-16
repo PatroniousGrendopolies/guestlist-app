@@ -41,37 +41,61 @@ export default function PromoterDashboardPage() {
     setTimeout(() => {
       const today = new Date();
       const mockEvents: Event[] = [];
-      
+
       for (let i = 0; i < 21; i++) {
         const eventDate = new Date(today);
         eventDate.setDate(today.getDate() + i);
-        
+
         // Only add events for certain days (not every day)
         if (i % 3 === 0 || i % 5 === 0) {
           const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          
+          const monthNames = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
+
           mockEvents.push({
             id: `event_${i}`,
-            name: i === 0 ? 'Saturday Night Sessions' :
-                  i === 3 ? 'Midweek Vibes' :
-                  i === 5 ? 'Summer Nights' :
-                  i === 6 ? 'Underground Sessions' :
-                  i === 9 ? 'Rooftop Party' :
-                  `Night ${i + 1}`,
+            name:
+              i === 0
+                ? 'Saturday Night Sessions'
+                : i === 3
+                  ? 'Midweek Vibes'
+                  : i === 5
+                    ? 'Summer Nights'
+                    : i === 6
+                      ? 'Underground Sessions'
+                      : i === 9
+                        ? 'Rooftop Party'
+                        : `Night ${i + 1}`,
             date: `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`,
             dayOfWeek: dayNames[eventDate.getDay()],
             venue: 'Datcha',
-            djs: i === 0 ? ['DJ Marcus', 'MC Groove'] :
-                 i === 3 ? ['DJ Luna'] :
-                 i === 5 ? ['DJ Shadow', 'MC Flow'] :
-                 i === 6 ? ['DJ Beats'] :
-                 ['DJ Electric'],
+            djs:
+              i === 0
+                ? ['DJ Marcus', 'MC Groove']
+                : i === 3
+                  ? ['DJ Luna']
+                  : i === 5
+                    ? ['DJ Shadow', 'MC Flow']
+                    : i === 6
+                      ? ['DJ Beats']
+                      : ['DJ Electric'],
             capacity: 50, // Manager-configurable capacity
             spotsUsed: i === 0 ? 0 : Math.floor(Math.random() * 35) + 5,
             pendingGuests: i === 0 ? 8 : Math.floor(Math.random() * 8),
             checkedIn: Math.floor(Math.random() * 20),
-            status: 'upcoming'
+            status: 'upcoming',
           });
         }
       }
@@ -110,7 +134,7 @@ export default function PromoterDashboardPage() {
     const shareData = {
       title: `Join me at ${event.name}`,
       text: `You're invited to ${event.name} on ${event.date}. Join the guest list!`,
-      url: shareUrl
+      url: shareUrl,
     };
 
     if (navigator.share) {
@@ -175,64 +199,63 @@ export default function PromoterDashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-white border border-gray-200 rounded-xl p-6"
-                >
+              {events.map(event => (
+                <div key={event.id} className="bg-white border border-gray-200 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="text-lg">{event.name}</h3>
                     <p className="text-xs text-gray-600">{event.date}</p>
                   </div>
 
                   {event.djs.length > 0 && (
-                    <p className="text-sm text-gray-500 mb-4">
-                      With {event.djs.join(', ')}
-                    </p>
+                    <p className="text-sm text-gray-500 mb-4">With {event.djs.join(', ')}</p>
                   )}
 
                   <div className="mb-4">
-                    
                     {/* Capacity Meter */}
                     <div className="w-full">
                       <div className="relative">
                         {/* Pending label above the meter bar when it would conflict */}
-                        {event.pendingGuests > 0 && (() => {
-                          const pendingCenterPosition = ((event.spotsUsed + (event.pendingGuests / 2)) / event.capacity) * 100;
-                          const wouldOverlapConfirmed = pendingCenterPosition < 25;
-                          const wouldOverlapSpots = pendingCenterPosition > 70;
-                          
-                          return (wouldOverlapConfirmed || wouldOverlapSpots) ? (
-                            <div 
-                              className="absolute -top-5 text-xs text-gray-500"
-                              style={{ 
-                                left: `${pendingCenterPosition}%`,
-                                transform: 'translateX(-50%)'
-                              }}
-                            >
-                              Pending
-                            </div>
-                          ) : null;
-                        })()}
-                        
+                        {event.pendingGuests > 0 &&
+                          (() => {
+                            const pendingCenterPosition =
+                              ((event.spotsUsed + event.pendingGuests / 2) / event.capacity) * 100;
+                            const wouldOverlapConfirmed = pendingCenterPosition < 25;
+                            const wouldOverlapSpots = pendingCenterPosition > 70;
+
+                            return wouldOverlapConfirmed || wouldOverlapSpots ? (
+                              <div
+                                className="absolute -top-5 text-xs text-gray-500"
+                                style={{
+                                  left: `${pendingCenterPosition}%`,
+                                  transform: 'translateX(-50%)',
+                                }}
+                              >
+                                Pending
+                              </div>
+                            ) : null;
+                          })()}
+
                         <div className="bg-gray-200 rounded-full h-4 relative overflow-hidden">
                           {/* Pending + Confirmed (light gray) bar - shows total */}
-                          <div 
+                          <div
                             className="bg-gray-400 h-4 rounded-full transition-all duration-300 absolute top-0 left-0"
-                            style={{ width: `${((event.spotsUsed + event.pendingGuests) / event.capacity) * 100}%` }}
+                            style={{
+                              width: `${((event.spotsUsed + event.pendingGuests) / event.capacity) * 100}%`,
+                            }}
                           >
                             {/* Pending count inside the gray bar - only show if bar is wide enough */}
-                            {event.pendingGuests > 0 && (event.pendingGuests / event.capacity) > 0.08 && (
-                              <span 
-                                className="absolute top-1/2 -translate-y-1/2 text-white text-[10px] z-20"
-                                style={{ right: '8px' }}
-                              >
-                                {event.pendingGuests}
-                              </span>
-                            )}
+                            {event.pendingGuests > 0 &&
+                              event.pendingGuests / event.capacity > 0.08 && (
+                                <span
+                                  className="absolute top-1/2 -translate-y-1/2 text-white text-[10px] z-20"
+                                  style={{ right: '8px' }}
+                                >
+                                  {event.pendingGuests}
+                                </span>
+                              )}
                           </div>
                           {/* Confirmed (black) bar - shows on top */}
-                          <div 
+                          <div
                             className="bg-black h-4 rounded-full transition-all duration-300 relative z-10"
                             style={{ width: `${(event.spotsUsed / event.capacity) * 100}%` }}
                           >
@@ -244,28 +267,31 @@ export default function PromoterDashboardPage() {
                             {event.capacity}
                           </span>
                         </div>
-                        
+
                         <div className="flex justify-between mt-2 relative">
                           <span className="text-xs text-gray-500">Confirmed</span>
 
                           {/* Pending label below the meter (normal position) - hide if too close to edges */}
-                          {event.pendingGuests > 0 && (() => {
-                            const pendingCenterPosition = ((event.spotsUsed + (event.pendingGuests / 2)) / event.capacity) * 100;
-                            const wouldOverlapConfirmed = pendingCenterPosition < 30;
-                            const wouldOverlapSpots = pendingCenterPosition > 65;
+                          {event.pendingGuests > 0 &&
+                            (() => {
+                              const pendingCenterPosition =
+                                ((event.spotsUsed + event.pendingGuests / 2) / event.capacity) *
+                                100;
+                              const wouldOverlapConfirmed = pendingCenterPosition < 30;
+                              const wouldOverlapSpots = pendingCenterPosition > 65;
 
-                            return (!wouldOverlapConfirmed && !wouldOverlapSpots) ? (
-                              <span
-                                className="absolute text-xs text-gray-500"
-                                style={{
-                                  left: `${pendingCenterPosition}%`,
-                                  transform: 'translateX(-50%)'
-                                }}
-                              >
-                                Pending
-                              </span>
-                            ) : null;
-                          })()}
+                              return !wouldOverlapConfirmed && !wouldOverlapSpots ? (
+                                <span
+                                  className="absolute text-xs text-gray-500"
+                                  style={{
+                                    left: `${pendingCenterPosition}%`,
+                                    transform: 'translateX(-50%)',
+                                  }}
+                                >
+                                  Pending
+                                </span>
+                              ) : null;
+                            })()}
 
                           <span className="text-xs text-gray-500">Spots available</span>
                         </div>
@@ -306,7 +332,7 @@ export default function PromoterDashboardPage() {
                           const shareData = {
                             title: `Join me at ${event.name}`,
                             text: `You're invited to ${event.name} on ${event.date}. Join the guest list!`,
-                            url: shareUrl
+                            url: shareUrl,
                           };
 
                           if (navigator.share) {
@@ -325,7 +351,7 @@ export default function PromoterDashboardPage() {
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Action Buttons */}
                   <div className="flex gap-3">
                     <button
@@ -343,9 +369,7 @@ export default function PromoterDashboardPage() {
                           : 'bg-gray-800 text-white hover:bg-gray-900'
                       }`}
                     >
-                      {event.pendingGuests > 0
-                        ? 'Review pending guests'
-                        : 'Review guestlist'}
+                      {event.pendingGuests > 0 ? 'Review pending guests' : 'Review guestlist'}
                     </button>
                   </div>
                 </div>

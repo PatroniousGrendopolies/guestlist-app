@@ -22,7 +22,7 @@ export interface AuthSession {
 export async function auth(): Promise<AuthSession | null> {
   try {
     const cookieStore = await cookies();
-    
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -41,8 +41,11 @@ export async function auth(): Promise<AuthSession | null> {
       }
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user) {
       return null;
     }
@@ -63,7 +66,7 @@ export async function auth(): Promise<AuthSession | null> {
     // Handle both snake_case and UPPERCASE formats
     let userRole: UserRole;
     const roleString = profile.role?.toString().toUpperCase();
-    
+
     switch (roleString) {
       case 'OWNER':
         userRole = UserRole.OWNER;

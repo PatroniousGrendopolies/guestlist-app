@@ -55,19 +55,29 @@ export default function DJDashboardPage() {
         const event = data.event;
 
         // Find the DJ's guest list (for now, use the first DJ list)
-        const djGuestList = event.guestLists?.find((gl: any) => gl.list_type === 'dj_list');
+        // Note: API returns guest_lists (snake_case), not guestLists
+        const djGuestList = event.guest_lists?.find((gl: any) => gl.list_type === 'dj_list');
 
         if (!djGuestList) {
           console.log('No DJ guest list found for this event');
+          console.log('Available guest lists:', event.guest_lists);
           setUpcomingEvents([]);
           setPastEvents([]);
           setIsLoading(false);
           return;
         }
 
+        // Fetch entries for this guest list
+        const entriesResponse = await fetch(`/api/guest-lists/${djGuestList.id}/entries`);
+        let entries: any[] = [];
+        if (entriesResponse.ok) {
+          const entriesData = await entriesResponse.json();
+          entries = entriesData.entries || [];
+        }
+
         // Count entries by status
-        const pendingCount = djGuestList.entries?.filter((e: any) => e.status === 'pending').length || 0;
-        const approvedEntries = djGuestList.entries?.filter((e: any) => e.status === 'approved') || [];
+        const pendingCount = entries.filter((e: any) => e.status === 'pending').length;
+        const approvedEntries = entries.filter((e: any) => e.status === 'approved');
 
         // Calculate spots used (approved entries + their plus ones)
         const spotsUsed = approvedEntries.reduce(
@@ -76,7 +86,7 @@ export default function DJDashboardPage() {
         );
 
         // Get other DJ names from other guest lists
-        const otherDJs = event.guestLists
+        const otherDJs = event.guest_lists
           ?.filter((gl: any) => gl.list_type === 'dj_list' && gl.id !== djGuestList.id)
           .map((gl: any) => gl.name) || [];
 
@@ -109,7 +119,7 @@ export default function DJDashboardPage() {
           setPastEvents([]);
         } else {
           // For past events, calculate conversion rate
-          const checkedInEntries = djGuestList.entries?.filter((e: any) => e.checked_in_at) || [];
+          const checkedInEntries = entries.filter((e: any) => e.checked_in_at);
           const totalAttendees = checkedInEntries.reduce(
             (total: number, entry: any) => total + 1 + (entry.plus_ones_requested || 0),
             0
