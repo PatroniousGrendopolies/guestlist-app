@@ -1,10 +1,10 @@
 // src/app/api/auth/guest/login/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import * as bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   try {
     const body = await request.json();
