@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SafeStorage } from '@/lib/utils/safeStorage';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface Event {
   id: string;
@@ -225,19 +226,20 @@ export default function ManagerDashboardPage() {
   );
   const router = useRouter();
 
+  // Use Supabase authentication with role verification
+  const { user, loading: authLoading, role } = useAuth({
+    redirectTo: '/auth/login?redirect=/manager/dashboard',
+    requiredRole: 'MANAGER',
+  });
+
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = SafeStorage.getItem('manager_authenticated');
-    if (!isAuthenticated) {
-      router.push('/manager/login');
+    // Wait for auth to complete
+    if (authLoading || !user) {
       return;
     }
-
-    // Get manager info
-    const name = SafeStorage.getItem('manager_name') || 'Manager';
-    const role = SafeStorage.getItem('manager_role') || 'manager';
-    setManagerName(name);
-    setManagerRole(role);
+    // Set manager info from user profile
+    setManagerName('Alex'); // TODO: Fetch from user profile
+    setManagerRole('Venue Manager'); // TODO: Fetch from user profile
 
     // Fetch real data from API
     const fetchData = async () => {
@@ -323,7 +325,7 @@ export default function ManagerDashboardPage() {
     };
 
     fetchData();
-  }, [router]);
+  }, [authLoading, user, router]);
 
   const handleLogout = () => {
     SafeStorage.removeItem('manager_authenticated');
@@ -639,7 +641,7 @@ export default function ManagerDashboardPage() {
     selectedManagerId,
   ]);
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">

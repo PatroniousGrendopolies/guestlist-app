@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DebugPanel from '@/components/debug/DebugPanel';
 import { SafeStorage } from '@/lib/utils/safeStorage';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface Event {
   id: string;
@@ -27,17 +28,20 @@ export default function DJDashboardPage() {
   const [shareEventId, setShareEventId] = useState<string | null>(null);
   const router = useRouter();
 
+  // Use Supabase authentication with role verification
+  const { user, loading: authLoading, role } = useAuth({
+    redirectTo: '/auth/login?redirect=/dj/dashboard',
+    requiredRole: 'DJ',
+  });
+
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = localStorage.getItem('dj_authenticated');
-    if (!isAuthenticated) {
-      router.push('/dj/login');
+    // Wait for auth to complete
+    if (authLoading || !user) {
       return;
     }
 
-    // Get DJ info
-    const email = localStorage.getItem('dj_email');
-    setDjName('DJ Shadow'); // This would come from API
+    // Set DJ name from user profile (would come from API in production)
+    setDjName('DJ Shadow'); // TODO: Fetch from user profile
 
     // Fetch real data from API
     const fetchData = async () => {
@@ -145,7 +149,7 @@ export default function DJDashboardPage() {
     };
 
     fetchData();
-  }, [router]);
+  }, [authLoading, user, router]);
 
   const handleEventAction = (eventId: string, action: 'share' | 'manage' | 'invite') => {
     switch (action) {
@@ -321,7 +325,7 @@ export default function DJDashboardPage() {
     alert('Simulated error: Network connection failed');
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">

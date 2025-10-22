@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface Event {
   id: string;
@@ -25,7 +26,18 @@ export default function StaffDashboardPage() {
   const [requestReason, setRequestReason] = useState('');
   const router = useRouter();
 
+  // Use Supabase authentication with role verification
+  const { user, loading: authLoading, role } = useAuth({
+    redirectTo: '/auth/login?redirect=/staff/dashboard',
+    requiredRole: 'STAFF',
+  });
+
   useEffect(() => {
+    // Wait for auth to complete
+    if (authLoading || !user) {
+      return;
+    }
+
     // Fetch real data from API
     const fetchData = async () => {
       try {
@@ -90,7 +102,7 @@ export default function StaffDashboardPage() {
     };
 
     fetchData();
-  }, []);
+  }, [authLoading, user]);
 
   const handleLogout = () => {
     // Handle logout logic
@@ -157,7 +169,7 @@ export default function StaffDashboardPage() {
     alert('Capacity request sent to manager!');
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>

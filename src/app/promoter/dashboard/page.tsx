@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SafeStorage } from '@/lib/utils/safeStorage';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface Event {
   id: string;
@@ -25,17 +26,20 @@ export default function PromoterDashboardPage() {
   const [shareEventId, setShareEventId] = useState<string | null>(null);
   const router = useRouter();
 
+  // Use Supabase authentication with role verification
+  const { user, loading: authLoading, role } = useAuth({
+    redirectTo: '/auth/login?redirect=/promoter/dashboard',
+    requiredRole: 'PROMOTER',
+  });
+
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = SafeStorage.getItem('promoter_authenticated');
-    if (!isAuthenticated) {
-      router.push('/promoter/login');
+    // Wait for auth to complete
+    if (authLoading || !user) {
       return;
     }
 
-    // Get promoter info
-    SafeStorage.getItem('promoter_email'); // Used for future API calls
-    setPromoterName('Alex'); // This would come from API
+    // Set promoter name from user profile
+    setPromoterName('Alex'); // TODO: Fetch from user profile
 
     // Fetch real data from API
     const fetchData = async () => {
@@ -96,7 +100,7 @@ export default function PromoterDashboardPage() {
     };
 
     fetchData();
-  }, [router]);
+  }, [authLoading, user, router]);
 
   const handleCopyLink = async (event: Event) => {
     const shareUrl = `https://nightlist.app/guest/signup?event=${event.id}&promoter=alex`;
@@ -151,7 +155,7 @@ export default function PromoterDashboardPage() {
     router.push('/promoter/login');
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
