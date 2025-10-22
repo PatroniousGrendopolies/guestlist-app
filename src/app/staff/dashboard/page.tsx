@@ -29,71 +29,59 @@ export default function StaffDashboardPage() {
     // Fetch real data from API
     const fetchData = async () => {
       try {
-        // For testing: fetch specific event that has guest lists
-        // TODO: When auth is enabled, fetch all events where staff has a guest list
-        const testEventId = 'a1416182-5a82-4219-8bf9-a514fa38d40c';
+        // TODO: When auth is enabled, this will use the authenticated user's ID
+        // For now, using a test staff user ID
+        const testStaffUserId = '550e8400-e29b-41d4-a716-446655440001'; // Replace with actual staff user ID from your test data
 
-        const response = await fetch(`/api/events/${testEventId}`);
+        const response = await fetch(`/api/staff/guest-lists?staff_user_id=${testStaffUserId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch event');
+          throw new Error('Failed to fetch staff guest lists');
         }
 
         const data = await response.json();
-        const event = data.event;
 
-        // Find the staff guest list (staff_list type)
-        const staffGuestList = event.guest_lists?.find((gl: any) => gl.list_type === 'staff_list');
+        // Format upcoming events for display
+        const upcomingEventsFormatted = data.upcomingEvents.map((event: any) => {
+          const eventDate = new Date(event.date);
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
 
-        if (!staffGuestList) {
-          console.log('No staff guest list found for this event');
-          setNext7DaysEvents([]);
-          setAdditionalEvents([]);
-          setIsLoading(false);
-          return;
-        }
+          return {
+            id: event.id,
+            name: event.name,
+            date: formattedDate,
+            djs: event.djs || [],
+            spotsUsed: event.spotsUsed,
+            totalSpots: event.listCapacity,
+            status: 'upcoming' as const,
+          };
+        });
 
-        // Fetch entries for this guest list
-        const entriesResponse = await fetch(`/api/guest-lists/${staffGuestList.id}/entries`);
-        let entries: any[] = [];
-        if (entriesResponse.ok) {
-          const entriesData = await entriesResponse.json();
-          entries = entriesData.entries || [];
-        }
+        // Format additional/past events
+        const additionalEventsFormatted = data.pastEvents.map((event: any) => {
+          const eventDate = new Date(event.date);
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
 
-        // Calculate spots used (approved entries + their plus ones)
-        const approvedEntries = entries.filter((e: any) => e.status === 'approved');
-        const spotsUsed = approvedEntries.reduce(
-          (total: number, entry: any) => total + 1 + (entry.plus_ones_requested || 0),
-          0
-        );
+          return {
+            id: event.id,
+            name: event.name,
+            date: formattedDate,
+            djs: event.djs || [],
+            spotsUsed: event.spotsUsed,
+            totalSpots: event.listCapacity,
+            status: 'past' as const,
+          };
+        });
 
-        // Get other DJ names from DJ guest lists
-        const djNames = event.guest_lists
-          ?.filter((gl: any) => gl.list_type === 'dj_list')
-          .map((gl: any) => gl.name) || [];
-
-        // Format date for display
-        const eventDate = new Date(event.date);
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
-
-        const eventData: Event = {
-          id: event.id,
-          name: event.name,
-          date: formattedDate,
-          djs: djNames,
-          spotsUsed,
-          totalSpots: staffGuestList.max_capacity,
-          status: 'upcoming',
-        };
-
-        setStaffName('Alex'); // This would come from auth
-        setNext7DaysEvents([eventData]);
-        setAdditionalEvents([]);
+        setStaffName('Alex'); // This would come from auth profile
+        setNext7DaysEvents(upcomingEventsFormatted);
+        setAdditionalEvents(additionalEventsFormatted);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching event data:', error);
+        console.error('Error fetching staff event data:', error);
         // On error, show empty state
         setNext7DaysEvents([]);
         setAdditionalEvents([]);

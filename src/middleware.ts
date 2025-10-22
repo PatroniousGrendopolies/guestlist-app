@@ -19,8 +19,11 @@ const publicPaths = [
   '/doorperson/checkin',
 ];
 
-// Temporarily disable middleware to debug database connection issues
-const DISABLE_MIDDLEWARE = true;
+// Disable middleware in development unless explicitly enabled
+// In production (Netlify), this will always be enabled for security
+const DISABLE_MIDDLEWARE =
+  process.env.NODE_ENV === 'development' &&
+  process.env.ENABLE_AUTH_IN_DEV !== 'true';
 
 // Define protected routes and the roles required to access them
 // Expand this configuration based on your application's needs.
@@ -34,9 +37,12 @@ const protectedRoutesConfig: Record<string, UserRole[]> = {
 };
 
 export async function middleware(request: NextRequest) {
-  // Temporarily disable middleware to test login issue
+  // Skip auth in development mode for faster UX testing (unless explicitly enabled)
   if (DISABLE_MIDDLEWARE) {
-    console.log('Middleware disabled, allowing all access to:', request.nextUrl.pathname);
+    console.log(
+      `[DEV MODE] Auth disabled - allowing access to: ${request.nextUrl.pathname}`,
+      `(Set ENABLE_AUTH_IN_DEV=true to test auth locally)`
+    );
     return NextResponse.next();
   }
 

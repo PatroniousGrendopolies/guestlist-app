@@ -3,7 +3,7 @@
 ## Current Status
 ✅ Manager and DJ pages fully connected to real backend
 ✅ All core API routes created and tested
-✅ Authentication temporarily disabled for testing
+✅ Environment-based authentication setup (disabled in dev, enabled in production)
 
 ## Next Steps
 
@@ -12,10 +12,15 @@
   - Similar to DJ pages: Dashboard, Event Manage, Guest Details
   - Use existing API endpoints where possible
 
-- [ ] Re-enable authentication and test role-based access
-  - Set `DISABLE_MIDDLEWARE = false` in `/src/middleware.ts`
-  - Re-enable Row Level Security (RLS) policies on Supabase
-  - Test each role (Manager, DJ, Staff, Promoter) can only access their data
+- [x] Environment-based authentication setup
+  - Auth disabled in local dev for fast UX iteration
+  - Auth automatically enabled in production (Netlify)
+  - Set `ENABLE_AUTH_IN_DEV=true` in `.env.local` to test auth locally
+
+- [ ] Re-enable Row Level Security (RLS) policies on Supabase
+  - Currently disabled for testing
+  - Must enable before production deployment
+  - Test each role can only access their data
   - Verify unauthorized access is blocked
 
 - [ ] Deploy to Netlify

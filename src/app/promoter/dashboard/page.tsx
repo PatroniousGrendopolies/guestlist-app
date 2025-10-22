@@ -40,89 +40,57 @@ export default function PromoterDashboardPage() {
     // Fetch real data from API
     const fetchData = async () => {
       try {
-        const testEventId = 'a1416182-5a82-4219-8bf9-a514fa38d40c';
-        const response = await fetch(`/api/events/${testEventId}`);
+        // TODO: When auth is enabled, this will use the authenticated user's ID
+        // For now, using a test promoter user ID
+        const testPromoterUserId = '660e8400-e29b-41d4-a716-446655440002';
+
+        const response = await fetch(`/api/promoter/guest-lists?promoter_user_id=${testPromoterUserId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch event');
+          throw new Error('Failed to fetch promoter guest lists');
         }
 
         const data = await response.json();
-        const event = data.event;
 
-        // Find promoter's guest list
-        const promoterGuestList = event.guest_lists?.find(
-          (gl: any) => gl.list_type === 'promoter_list'
-        );
+        // Format upcoming events for display
+        const upcomingEventsFormatted = data.upcomingEvents.map((event: any) => {
+          const eventDate = new Date(event.date);
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const monthNames = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
+          const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
 
-        if (!promoterGuestList) {
-          setEvents([]);
-          setIsLoading(false);
-          return;
-        }
-
-        // Fetch entries for promoter's guest list
-        const entriesResponse = await fetch(`/api/guest-lists/${promoterGuestList.id}/entries`);
-        if (!entriesResponse.ok) {
-          throw new Error('Failed to fetch entries');
-        }
-
-        const entriesData = await entriesResponse.json();
-        const entries = entriesData.entries || [];
-
-        // Calculate spots used and pending
-        const approvedEntries = entries.filter((entry: any) => entry.status === 'approved');
-        const pendingEntries = entries.filter((entry: any) => entry.status === 'pending');
-
-        const spotsUsed = approvedEntries.reduce(
-          (total: number, entry: any) => total + 1 + (entry.plus_ones_requested || 0),
-          0
-        );
-
-        const pendingGuests = pendingEntries.length;
-
-        // Format date
-        const eventDate = new Date(event.date);
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const monthNames = [
-          'Jan',
-          'Feb',
-          'Mar',
-          'Apr',
-          'May',
-          'Jun',
-          'Jul',
-          'Aug',
-          'Sep',
-          'Oct',
-          'Nov',
-          'Dec',
-        ];
-
-        const formattedDate = `${dayNames[eventDate.getDay()]} ${monthNames[eventDate.getMonth()]} ${eventDate.getDate()}`;
-
-        // Get checked in count
-        const checkedInCount = entries.filter((entry: any) => entry.checked_in_at).length;
-
-        // For now, show only the one test event
-        setEvents([
-          {
+          return {
             id: event.id,
             name: event.name,
             date: formattedDate,
-            dayOfWeek: dayNames[eventDate.getDay()],
-            venue: event.venue?.name || 'Datcha',
-            djs: [], // DJs would come from event.djs if available
-            capacity: promoterGuestList.max_entries || 50,
-            spotsUsed,
-            pendingGuests,
-            checkedIn: checkedInCount,
+            dayOfWeek: event.dayOfWeek,
+            venue: 'Datcha',
+            djs: event.djs || [],
+            capacity: event.listCapacity,
+            spotsUsed: event.spotsUsed,
+            pendingGuests: event.pendingCount,
+            checkedIn: event.totalAttendees,
             status: 'upcoming' as const,
-          },
-        ]);
+          };
+        });
 
+        setEvents(upcomingEventsFormatted);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching event data:', error);
+        console.error('Error fetching promoter event data:', error);
+        setEvents([]);
         setIsLoading(false);
       }
     };
