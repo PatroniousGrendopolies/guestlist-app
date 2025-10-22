@@ -29,7 +29,38 @@ export default function StaffLoginPage() {
       }
 
       if (data.user) {
-        router.push('/dashboard');
+        // Fetch user profile to get role
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          setError('Unable to fetch user profile');
+          return;
+        }
+
+        // Route based on role
+        switch (profile.role) {
+          case 'MANAGER':
+            router.push('/manager/dashboard');
+            break;
+          case 'DJ':
+            router.push('/dj/dashboard');
+            break;
+          case 'STAFF':
+            router.push('/staff/dashboard');
+            break;
+          case 'PROMOTER':
+            router.push('/promoter/dashboard');
+            break;
+          case 'DOORPERSON':
+            router.push('/doorperson/scanner');
+            break;
+          default:
+            router.push('/dashboard');
+        }
         router.refresh();
       }
     } catch (err) {
@@ -44,8 +75,8 @@ export default function StaffLoginPage() {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-4xl">
-          <h1 className="text-3xl font-light mb-lg">Staff Portal</h1>
-          <p className="text-lg text-gray-600">Sign in to access the management dashboard</p>
+          <h1 className="text-3xl font-light mb-lg">Nightlist</h1>
+          <p className="text-lg text-gray-600">Sign in to access your dashboard</p>
         </div>
 
         {/* Login Card */}
