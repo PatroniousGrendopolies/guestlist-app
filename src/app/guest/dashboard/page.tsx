@@ -82,10 +82,10 @@ function GuestDashboardContent() {
   const loadGuestData = async (guestId: string) => {
     try {
       // Using singleton supabase client
-      // Load guest's plus-one settings from database
+      // Load guest's invite allowance from database
       const { data: guestData, error: guestError } = await supabase
         .from('guests')
-        .select('id, plus_one_count')
+        .select('id, monthly_invite_allowance')
         .eq('id', guestId)
         .single();
 
@@ -93,7 +93,7 @@ function GuestDashboardContent() {
         console.error('Error loading guest data:', guestError);
         setPlusOneCount(0); // Default to 0 if error
       } else {
-        setPlusOneCount(guestData?.plus_one_count || 0);
+        setPlusOneCount(guestData?.monthly_invite_allowance || 0);
       }
     } catch (err) {
       console.error('Failed to load guest data:', err);
@@ -103,22 +103,13 @@ function GuestDashboardContent() {
 
   const loadFriendsList = async (guestId: string) => {
     try {
-      // Using singleton supabase client
-      const { data, error } = await supabase
-        .from('guests')
-        .select('id, first_name, last_name, email, phone, created_at')
-        .eq('invited_by_guest_id', guestId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading friends list:', error);
-        showToast('Failed to load friends list', 'error');
-      } else {
-        setFriendsList(data || []);
-      }
+      // Guest referral feature not yet implemented in database schema
+      // TODO: Add invited_by_guest_id column to guests table
+      // For now, return empty list to avoid errors
+      setFriendsList([]);
     } catch (err) {
       console.error('Failed to load friends list:', err);
-      showToast('Failed to load friends list', 'error');
+      setFriendsList([]);
     }
   };
 
@@ -140,11 +131,11 @@ function GuestDashboardContent() {
       // Using singleton supabase client
       const { error } = await supabase
         .from('guests')
-        .update({ plus_one_count: newCount })
+        .update({ monthly_invite_allowance: newCount })
         .eq('id', guest.guestId);
 
       if (error) {
-        console.error('Failed to update plus-one count:', error);
+        console.error('Failed to update invite allowance:', error);
         showToast('Failed to update plus-one count', 'error');
         // Revert on error
         setPlusOneCount(previousCount);
@@ -152,7 +143,7 @@ function GuestDashboardContent() {
         showToast(`Plus-one count updated to ${newCount}`, 'success');
       }
     } catch (error) {
-      console.error('Failed to update plus-one count:', error);
+      console.error('Failed to update invite allowance:', error);
       showToast('Failed to update plus-one count', 'error');
       // Revert on error
       setPlusOneCount(previousCount);
