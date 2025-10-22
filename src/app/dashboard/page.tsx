@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { UserRole } from '@/types/enums';
 import Link from 'next/link';
 
@@ -20,7 +20,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
+    // Using singleton supabase client
     await supabase.auth.signOut();
     router.push('/auth/login');
   };
@@ -28,7 +28,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const supabase = createClient();
+        // Using singleton supabase client
         const {
           data: { user: authUser },
           error: authError,

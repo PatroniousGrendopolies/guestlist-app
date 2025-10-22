@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { UserRole } from '@/types/enums';
 import Link from 'next/link';
 
@@ -39,7 +39,7 @@ export default function EventDetailsPage() {
   useEffect(() => {
     const fetchUserAndEvent = async () => {
       try {
-        const supabase = createClient();
+        // Using singleton supabase client
         // Check authentication and role
         const {
           data: { user: authUser },
@@ -120,7 +120,7 @@ export default function EventDetailsPage() {
   }, [router, eventId]);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
+    // Using singleton supabase client
     await supabase.auth.signOut();
     router.push('/auth/login');
   };

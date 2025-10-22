@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function Home() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function Home() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const supabase = createClient();
+      // Using singleton supabase client
       const {
         data: { session },
       } = await supabase.auth.getSession();

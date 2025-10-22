@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 interface InviterInfo {
   name: string;
@@ -31,7 +31,7 @@ export default function JoinGuestListPage() {
   useEffect(() => {
     const fetchInviterInfo = async () => {
       try {
-        const supabase = createClient();
+        // Using singleton supabase client
         // Get inviter information
         const { data: guest, error } = await supabase
           .from('guests')

@@ -2,7 +2,7 @@
 // Account confirmation landing page
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function ConfirmPage() {
   const router = useRouter();
@@ -10,7 +10,7 @@ export default function ConfirmPage() {
 
   useEffect(() => {
     async function run() {
-      const supabase = createClient();
+      // Using singleton supabase client
       await supabase.auth.getSession();
       setStatus('redirecting');
       const {

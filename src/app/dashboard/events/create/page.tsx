@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { UserRole } from '@/types/enums';
 import Link from 'next/link';
 
@@ -47,7 +47,7 @@ export default function CreateEventPage() {
   useEffect(() => {
     const fetchUserAndVenues = async () => {
       try {
-        const supabase = createClient();
+        // Using singleton supabase client
         // Check authentication and role
         const {
           data: { user: authUser },
@@ -244,7 +244,7 @@ export default function CreateEventPage() {
         return;
       }
 
-      const supabase = createClient();
+      // Using singleton supabase client
       const { data, error } = await supabase.from('events').insert([eventData]).select().single();
 
       if (error) {
@@ -279,7 +279,7 @@ export default function CreateEventPage() {
   };
 
   const handleSignOut = async () => {
-    const supabase = createClient();
+    // Using singleton supabase client
     await supabase.auth.signOut();
     router.push('/auth/login');
   };

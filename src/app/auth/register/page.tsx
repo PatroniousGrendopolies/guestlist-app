@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function RegisterPage() {
     setSuccessMessage(null);
 
     try {
-      const supabase = createClient();
+      // Using singleton supabase client
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

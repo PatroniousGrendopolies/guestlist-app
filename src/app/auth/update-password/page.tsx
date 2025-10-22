@@ -3,7 +3,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function UpdatePasswordPage() {
     }
 
     startTransition(async () => {
-      const supabase = createClient();
+      // Using singleton supabase client
       // Supabase client automatically handles the session from the recovery token in the URL.
       const { error } = await supabase.auth.updateUser({ password });
 

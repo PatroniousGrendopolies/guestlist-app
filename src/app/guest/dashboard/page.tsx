@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GuestAuthService, GuestSession } from '@/lib/auth/guest-auth';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useToast, ToastProvider } from '@/components/ui/ToastProvider';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { SafeStorage } from '@/lib/utils/safeStorage';
@@ -81,7 +81,7 @@ function GuestDashboardContent() {
 
   const loadGuestData = async (guestId: string) => {
     try {
-      const supabase = createClient();
+      // Using singleton supabase client
       // Load guest's plus-one settings from database
       const { data: guestData, error: guestError } = await supabase
         .from('guests')
@@ -103,7 +103,7 @@ function GuestDashboardContent() {
 
   const loadFriendsList = async (guestId: string) => {
     try {
-      const supabase = createClient();
+      // Using singleton supabase client
       const { data, error } = await supabase
         .from('guests')
         .select('id, first_name, last_name, email, phone, created_at')
@@ -137,7 +137,7 @@ function GuestDashboardContent() {
 
     // Update in database immediately (auto-save)
     try {
-      const supabase = createClient();
+      // Using singleton supabase client
       const { error } = await supabase
         .from('guests')
         .update({ plus_one_count: newCount })

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
     }
 
     startTransition(async () => {
-      const supabase = createClient();
+      // Using singleton supabase client
 
       // The redirect URL should point to your update password page
       const redirectTo = `${window.location.origin}/auth/update-password`;

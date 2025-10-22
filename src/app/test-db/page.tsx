@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export default function TestDBPage() {
   const [result, setResult] = useState('');
@@ -12,7 +12,7 @@ export default function TestDBPage() {
     setResult('Testing...');
 
     try {
-      const supabase = createClient();
+      // Using singleton supabase client
       // Test direct insert into guests table
       const { data, error } = await supabase
         .from('guests')
@@ -42,7 +42,7 @@ export default function TestDBPage() {
     setResult('Checking tables...');
 
     try {
-      const supabase = createClient();
+      // Using singleton supabase client
       // Test if guests table exists by selecting with count
       const { count, error } = await supabase
         .from('guests')

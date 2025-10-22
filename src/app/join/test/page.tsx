@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useToast, ToastProvider } from '@/components/ui/ToastProvider';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
@@ -30,7 +30,7 @@ function TestJoinContent() {
       const inviterId = searchParams.get('inviter');
       if (inviterId) {
         try {
-          const supabase = createClient();
+          // Using singleton supabase client
           const { data: inviter, error } = await supabase
             .from('guests')
             .select('first_name, last_name')
@@ -109,7 +109,7 @@ function TestJoinContent() {
     setIsSubmitting(true);
 
     try {
-      const supabase = createClient();
+      // Using singleton supabase client
       // Get inviter ID from URL params
       const inviterId = searchParams.get('inviter');
 

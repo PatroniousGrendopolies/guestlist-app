@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/client';
+import { supabase as supabaseClient } from '@/lib/supabase/client';
 import * as bcrypt from 'bcryptjs';
 
 export interface GuestAuthData {
@@ -16,7 +16,7 @@ export interface GuestSession {
 }
 
 export class GuestAuthService {
-  private supabase = createClient();
+  private supabase = supabaseClient;
 
   /**
    * Register a new guest with email and password
