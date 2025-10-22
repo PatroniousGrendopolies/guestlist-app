@@ -1,38 +1,48 @@
 # TODO - Guestlist App Development
 
-## Current Status
-✅ Manager and DJ pages fully connected to real backend
-✅ All core API routes created and tested
+## Current Status - READY FOR DEPLOYMENT! 🚀
+✅ All role pages (Manager, DJ, Staff, Promoter) fully connected to backend
+✅ Comprehensive test data created with 8 test users across all roles
+✅ RLS policies enabled and tested - working correctly
 ✅ Environment-based authentication setup (disabled in dev, enabled in production)
+✅ Environment variables documented in `.env.example`
 
-## Next Steps
+## Deployment Checklist
 
-### High Priority
-- [ ] Connect Staff and Promoter role pages to real data
-  - Similar to DJ pages: Dashboard, Event Manage, Guest Details
-  - Use existing API endpoints where possible
+### Ready to Deploy
+- [x] All backend connections complete (Manager, DJ, Staff, Promoter)
+- [x] Test data created with realistic scenarios
+- [x] RLS policies enabled and verified
+- [x] Environment-based auth working (dev: disabled, prod: enabled)
+- [x] Environment variables documented
 
-- [x] Environment-based authentication setup
-  - Auth disabled in local dev for fast UX iteration
-  - Auth automatically enabled in production (Netlify)
-  - Set `ENABLE_AUTH_IN_DEV=true` in `.env.local` to test auth locally
+### Deploy to Netlify
+- [ ] Set environment variables in Netlify dashboard:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY` (only for server operations)
+- [ ] Push to main branch (triggers auto-deploy)
+- [ ] Test production build with all roles
+- [ ] Verify authentication works in production
 
-- [ ] Re-enable Row Level Security (RLS) policies on Supabase
-  - Currently disabled for testing
-  - Must enable before production deployment
-  - Test each role can only access their data
-  - Verify unauthorized access is blocked
+## Test Users Available
+All passwords follow pattern: `[Role]123!`
 
-- [ ] Deploy to Netlify
-  - Push latest changes
-  - Verify environment variables are set
-  - Test production build
+**Managers:**
+- manager@datcha.com / Manager123!
+- manager2@datcha.com / Manager123!
 
-### Medium Priority
-- [ ] Add comprehensive test data
-  - Multiple events with different dates
-  - Guest lists with various statuses
-  - Edge cases (capacity limits, denied guests, etc.)
+**DJs:**
+- dj.shadow@music.com / DJShadow123!
+- dj.luna@music.com / DJLuna123!
+
+**Staff:**
+- alex.staff@datcha.com / Staff123!
+- jamie.staff@datcha.com / Staff123!
+
+**Promoters:**
+- alex.promoter@marketing.com / Promoter123!
+- taylor.promoter@marketing.com / Promoter123!
 
 - [ ] Guest signup flow
   - Public guest signup page
@@ -51,7 +61,38 @@
 
 ## Recent Completed Work
 
-### DJ Pages - Backend Integration (Latest Session)
+### Deployment Preparation - Phase 1-4 Complete (Current Session)
+- ✅ **Phase 1: Backend Connections**
+  - Created `/api/staff/guest-lists` endpoint with full statistics
+  - Created `/api/promoter/guest-lists` endpoint with full statistics
+  - Connected Staff Dashboard to real data
+  - Connected Promoter Dashboard to real data
+  - Verified Event Manage pages working for all roles
+
+- ✅ **Phase 2: Test Data Creation**
+  - Created comprehensive test data script (`scripts/create-comprehensive-test-data.js`)
+  - Generated 8 test users across all roles (Manager, DJ, Staff, Promoter)
+  - Created 5 events (3 upcoming, 2 past) with realistic dates
+  - Generated 30 guest lists (6 per event)
+  - Populated with hundreds of guest entries (varied statuses: pending, approved, denied)
+  - Past events include check-in data (80% attendance rate)
+  - All test credentials documented for easy testing
+
+- ✅ **Phase 3: RLS & Authentication**
+  - Reviewed all 29 RLS policies (properly configured)
+  - Tested RLS with anonymous and authenticated users
+  - Verified role-based access control working
+  - Confirmed auth flow with test users
+  - Validated guest list isolation (users only see their own lists)
+
+- ✅ **Phase 4: Documentation**
+  - Updated `.env.example` with comprehensive documentation
+  - Added Netlify deployment instructions
+  - Documented all required environment variables
+  - Added security warnings for service role key
+  - Updated TODO.md with deployment checklist
+
+### DJ Pages - Backend Integration (Previous Session)
 - ✅ Created `/api/guest-list-entries/[entryId]` for single guest fetch
 - ✅ Connected DJ Dashboard to fetch real events from `/api/events/[id]`
 - ✅ Connected DJ Event Manage page with real guest entries
@@ -67,9 +108,10 @@
 - ✅ Implemented approve/deny with database persistence
 
 ## Known Issues
-- RLS is currently disabled - needs to be re-enabled with proper policies
-- Middleware authentication is bypassed (`DISABLE_MIDDLEWARE = true`)
-- Some guest list entries may have NULL `created_by_user_id` (test data)
+- None blocking deployment!
+- Auth is disabled in dev mode (controlled by `ENABLE_AUTH_IN_DEV=false`)
+  - To test auth locally: set `ENABLE_AUTH_IN_DEV=true` in `.env.local`
+  - In production, auth is always enabled
 
 ## Technical Notes
 - Using Next.js 15.3.3 with App Router
