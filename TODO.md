@@ -44,9 +44,20 @@ All passwords follow pattern: `[Role]123!`
 - alex.promoter@marketing.com / Promoter123!
 - taylor.promoter@marketing.com / Promoter123!
 
-- [ ] Guest signup flow
-  - Public guest signup page
-  - QR code generation
+### Guest Flow & Authentication
+- [ ] **Google OAuth Configuration** 🎯 HIGH PRIORITY
+  - Google OAuth implementation complete (code deployed)
+  - Need to configure Google Cloud Console
+  - Set NEXT_PUBLIC_GOOGLE_CLIENT_ID environment variable
+  - See `GOOGLE_OAUTH_SETUP.md` for complete setup instructions
+  - **Impact**: Reduces signup friction from 7 fields to 1 click
+  - **Expected**: +12-16 more guests per event (80 invited → 68-72 signups)
+
+- [ ] Guest signup flow improvements
+  - Make Instagram Handle optional (currently required, blocks signups)
+  - Consider simpler password requirements
+  - Reduce form from 7 fields to essentials
+  - QR code generation after approval
   - Email notifications
 
 - [ ] Check-in functionality
@@ -61,7 +72,24 @@ All passwords follow pattern: `[Role]123!`
 
 ## Recent Completed Work
 
-### Deployment Preparation - Phase 1-4 Complete (Current Session)
+### Guest Authentication & OAuth Implementation (Current Session - Oct 22, 2025)
+- ✅ **Guest Authentication Flow**
+  - Fixed guest signup (was failing with 500 error)
+  - Created admin Supabase client with service role key
+  - Fixed dashboard database query errors
+  - Successfully tested complete signup and login flows
+  - Test account: sarah.johnson@nightlist.com / GuestPass123!
+
+- ✅ **Google OAuth Implementation** (Code Complete - Config Needed)
+  - Implemented Google Sign-In button using @react-oauth/google
+  - Created `/api/auth/guest/google` OAuth callback endpoint
+  - Server-side token verification with google-auth-library
+  - Automatic account creation for Google users
+  - Email pre-verified for Google accounts
+  - Comprehensive setup guide created (GOOGLE_OAUTH_SETUP.md)
+  - **Next**: Configure Google Cloud Console and set environment variable
+
+### Deployment Preparation - Phase 1-4 Complete (Previous Session)
 - ✅ **Phase 1: Backend Connections**
   - Created `/api/staff/guest-lists` endpoint with full statistics
   - Created `/api/promoter/guest-lists` endpoint with full statistics
