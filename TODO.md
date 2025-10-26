@@ -66,6 +66,13 @@ All passwords follow pattern: `[Role]123!`
   - Manual check-in
   - Real-time capacity updates
 
+### Infrastructure & Deployment
+- [ ] **Remove Vercel deployment configuration**
+  - App is still attempting to deploy to Vercel
+  - Should only deploy to Netlify
+  - Clean up any Vercel-specific config files or settings
+  - Ensure git push only triggers Netlify deployment
+
 ### Low Priority
 - [ ] Analytics dashboard
 - [ ] Export guest lists
