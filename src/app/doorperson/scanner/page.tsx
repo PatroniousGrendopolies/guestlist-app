@@ -114,18 +114,18 @@ export default function QRScannerPage() {
 
     try {
       // Parse the QR code data
-      const guestData = JSON.parse(qrData);
+      const scannedData = JSON.parse(qrData);
 
-      // Validate guest data structure
-      if (!guestData.id || !guestData.name) {
-        throw new Error('Invalid QR code format');
+      // Validate QR code structure - must have entryId
+      if (!scannedData.entryId) {
+        throw new Error('Invalid QR code format - missing entry ID');
       }
 
       // Update last check-in info
       setLastCheckIn({
-        name: guestData.name,
-        plusOnes: guestData.plus_ones || 0,
-        addedBy: guestData.addedBy || 'Scanner',
+        name: scannedData.name || 'Unknown Guest',
+        plusOnes: scannedData.plusOnes || 0,
+        addedBy: 'QR Scan',
         time: new Date().toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: '2-digit',
@@ -133,8 +133,8 @@ export default function QRScannerPage() {
         }),
       });
 
-      // Navigate to check-in confirmation
-      router.push(`/doorperson/checkin?guest=${encodeURIComponent(JSON.stringify(guestData))}`);
+      // Navigate to check-in confirmation with entryId
+      router.push(`/doorperson/checkin?entryId=${scannedData.entryId}`);
     } catch (error) {
       console.error('Error processing QR code:', error);
       setError('Invalid QR code. Please try again or use manual search.');
@@ -152,15 +152,16 @@ export default function QRScannerPage() {
     if (isLoading) return;
 
     // This is just for testing - in production, only QR detection should work
-    const mockGuest: Guest = {
-      id: '123',
+    const mockScanData = {
+      entryId: 'test-entry-123',
+      guestId: 'test-guest-123',
       name: 'Test Guest (Click)',
-      status: 'vip',
-      plus_ones: 2,
-      checked_in: false,
+      event: 'Test Event',
+      plusOnes: 2,
+      status: 'approved',
     };
 
-    handleQRCodeDetected(JSON.stringify(mockGuest));
+    handleQRCodeDetected(JSON.stringify(mockScanData));
   };
 
   return (

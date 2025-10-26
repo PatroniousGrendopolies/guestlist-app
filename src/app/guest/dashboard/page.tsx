@@ -10,6 +10,22 @@ import { SafeStorage } from '@/lib/utils/safeStorage';
 
 const guestAuth = new GuestAuthService();
 
+interface GuestListEntry {
+  id: string;
+  status: 'pending' | 'approved' | 'denied';
+  plus_ones_requested: number;
+  guest_list: {
+    id: string;
+    name: string;
+    event: {
+      id: string;
+      name: string;
+      date: string;
+      day_of_week: string;
+    };
+  };
+}
+
 function GuestDashboardContent() {
   const router = useRouter();
   const { showToast } = useToast();
@@ -21,6 +37,7 @@ function GuestDashboardContent() {
   const [friendsList, setFriendsList] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [guestListEntry, setGuestListEntry] = useState<GuestListEntry | null>(null);
 
   useEffect(() => {
     const initializeSession = async () => {
@@ -48,6 +65,9 @@ function GuestDashboardContent() {
 
         // Load guest's plus-one count from database
         await loadGuestData(currentGuest.guestId);
+
+        // Load guest list entries (for QR code generation)
+        await loadGuestListEntries(currentGuest.guestId);
 
         // Load friends list
         await loadFriendsList(currentGuest.guestId);
@@ -98,6 +118,50 @@ function GuestDashboardContent() {
     } catch (err) {
       console.error('Failed to load guest data:', err);
       setPlusOneCount(0);
+    }
+  };
+
+  const loadGuestListEntries = async (guestId: string) => {
+    try {
+      // Fetch approved guest list entries for upcoming events
+      const { data: entries, error: entriesError } = await supabase
+        .from('guest_list_entries')
+        .select(`
+          id,
+          status,
+          plus_ones_requested,
+          guest_list:guest_lists!inner (
+            id,
+            name,
+            event:events!inner (
+              id,
+              name,
+              date,
+              day_of_week
+            )
+          )
+        `)
+        .eq('guest_id', guestId)
+        .eq('status', 'approved')
+        .gte('guest_lists.events.date', new Date().toISOString())
+        .order('guest_lists.events.date', { ascending: true })
+        .limit(1);
+
+      if (entriesError) {
+        console.error('Error loading guest list entries:', entriesError);
+        setGuestListEntry(null);
+        return;
+      }
+
+      if (entries && entries.length > 0) {
+        // Set the first upcoming event entry
+        setGuestListEntry(entries[0] as unknown as GuestListEntry);
+      } else {
+        setGuestListEntry(null);
+      }
+    } catch (err) {
+      console.error('Failed to load guest list entries:', err);
+      setGuestListEntry(null);
     }
   };
 
@@ -231,34 +295,82 @@ function GuestDashboardContent() {
       {/* Main Content */}
       <main className="container-sm py-4xl">
         <div className="flex flex-col gap-3xl">
-          {/* Tonight's Event Card */}
+          {/* Upcoming Event Card */}
           <div className="card">
             <div className="card-header">
-              <h2 className="text-xl">Tonight's Event</h2>
-              <p className="text-sm text-gray-500 mt-xs">Saturday, June 24 • 10:00 PM</p>
+              <h2 className="text-xl">
+                {guestListEntry ? 'Your Upcoming Event' : 'No Upcoming Events'}
+              </h2>
+              {guestListEntry && (
+                <p className="text-sm text-gray-500 mt-xs">
+                  {new Date(guestListEntry.guest_list.event.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                  })}{' '}
+                  • 10:00 PM
+                </p>
+              )}
             </div>
             <div className="card-body">
-              <div className="flex flex-col gap-xl">
-                <div>
-                  <h3 className="mb-sm">Summer Vibes</h3>
-                  <p className="text-sm text-gray-600">
-                    Join us for an unforgettable night of music and dancing. Dress code: Smart
-                    casual.
+              {!guestListEntry ? (
+                <div className="text-center py-xl">
+                  <p className="text-gray-600 mb-lg">
+                    You're not currently on any guest lists for upcoming events.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Wait for a DJ or promoter to add you to their list.
                   </p>
                 </div>
-
-                {/* QR Code Section */}
-                <div className="text-center p-xl bg-gray-50 rounded-lg">
-                  <div className="w-32 h-32 mx-auto mb-lg rounded-lg overflow-hidden">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=GUEST-${guest?.guestId || 'DEMO'}-EVENT-SUMMER-VIBES-2025`}
-                      alt="QR Code for entry"
-                      className="w-full h-full object-cover"
-                    />
+              ) : (
+                <div className="flex flex-col gap-xl">
+                  <div>
+                    <h3 className="mb-sm">{guestListEntry.guest_list.event.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      Added by {guestListEntry.guest_list.name}
+                    </p>
+                    {guestListEntry.plus_ones_requested > 0 && (
+                      <p className="text-sm text-gray-600 mt-xs">
+                        Plus {guestListEntry.plus_ones_requested}
+                      </p>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600">Show this QR code at the door for entry</p>
+
+                  {/* QR Code Section - Only for approved entries */}
+                  {guestListEntry.status === 'approved' && (
+                    <div className="text-center p-xl bg-gray-50 rounded-lg">
+                      <div className="w-32 h-32 mx-auto mb-lg rounded-lg overflow-hidden">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(
+                            JSON.stringify({
+                              entryId: guestListEntry.id,
+                              guestId: guest.guestId,
+                              name: guest.name,
+                              event: guestListEntry.guest_list.event.name,
+                              plusOnes: guestListEntry.plus_ones_requested,
+                              status: guestListEntry.status,
+                            })
+                          )}`}
+                          alt="QR Code for entry"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Show this QR code at the door for entry
+                      </p>
+                    </div>
+                  )}
+
+                  {guestListEntry.status === 'pending' && (
+                    <div className="text-center p-xl bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-yellow-800 font-medium mb-xs">⏳ Pending Approval</p>
+                      <p className="text-sm text-gray-600">
+                        Your entry is waiting for approval. Check back soon!
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

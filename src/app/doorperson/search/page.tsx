@@ -4,104 +4,63 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Guest {
-  id: string;
+  entryId: string;
+  guestId: string;
   name: string;
-  status: 'regular' | 'vip' | 'banned';
-  plus_ones: number;
-  checked_in: boolean;
+  status: 'regular' | 'vip' | 'banned' | 'micro_promoter';
+  plusOnes: number;
+  checkedIn: boolean;
   email?: string;
   addedBy?: string;
+  event?: string;
 }
 
 export default function ManualSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [filterBy, setFilterBy] = useState<string>('all'); // 'all', 'DJ Shadow', 'Promoter Mike', etc.
+  const [filterBy, setFilterBy] = useState<string>('all');
   const [showCheckedIn, setShowCheckedIn] = useState(false);
+  const [allGuests, setAllGuests] = useState<Guest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [inviters, setInviters] = useState<string[]>([]);
   const router = useRouter();
   const recognitionRef = useRef<any>(null);
 
-  // Complete mock guest list
-  const allGuests: Guest[] = [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      status: 'vip',
-      plus_ones: 2,
-      checked_in: false,
-      email: 'sarah@example.com',
-      addedBy: 'DJ Shadow',
-    },
-    {
-      id: '2',
-      name: 'Sam Johnston',
-      status: 'regular',
-      plus_ones: 1,
-      checked_in: false,
-      email: 'sam@example.com',
-      addedBy: 'Promoter Mike',
-    },
-    {
-      id: '3',
-      name: 'Mike Problem',
-      status: 'banned',
-      plus_ones: 0,
-      checked_in: false,
-      email: 'mike@example.com',
-      addedBy: 'Staff',
-    },
-    {
-      id: '4',
-      name: 'Jennifer Smith',
-      status: 'vip',
-      plus_ones: 3,
-      checked_in: true,
-      email: 'jen@example.com',
-      addedBy: 'Manager',
-    },
-    {
-      id: '5',
-      name: 'Alex Chen',
-      status: 'regular',
-      plus_ones: 0,
-      checked_in: false,
-      email: 'alex@example.com',
-      addedBy: 'DJ Shadow',
-    },
-    {
-      id: '6',
-      name: 'Maria Garcia',
-      status: 'vip',
-      plus_ones: 1,
-      checked_in: false,
-      email: 'maria@example.com',
-      addedBy: 'DJ Tiesto',
-    },
-    {
-      id: '7',
-      name: 'David Lee',
-      status: 'regular',
-      plus_ones: 2,
-      checked_in: true,
-      email: 'david@example.com',
-      addedBy: 'Promoter Sarah',
-    },
-    {
-      id: '8',
-      name: 'Emily Wilson',
-      status: 'regular',
-      plus_ones: 0,
-      checked_in: false,
-      email: 'emily@example.com',
-      addedBy: 'Staff',
-    },
-  ];
+  // Fetch guests from API
+  const fetchGuests = async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams({
+        showCheckedIn: showCheckedIn.toString(),
+      });
 
-  // Get unique inviters for filter buttons
-  const inviters = Array.from(new Set(allGuests.map(g => g.addedBy).filter(Boolean)));
+      const response = await fetch(`/api/doorperson/guest-entries?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch guest entries');
+      }
 
-  // Filter and sort guests
+      const data = await response.json();
+      setAllGuests(data.entries || []);
+
+      // Extract unique inviters for filter buttons
+      const uniqueInviters = Array.from(
+        new Set(
+          (data.entries || [])
+            .map((g: Guest) => g.addedBy)
+            .filter(Boolean)
+        )
+      ) as string[];
+      setInviters(uniqueInviters);
+    } catch (error) {
+      console.error('Failed to fetch guests:', error);
+      setAllGuests([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Filter guests based on search and filters
   let filteredGuests = searchQuery
     ? allGuests.filter(
         guest =>
@@ -110,23 +69,17 @@ export default function ManualSearchPage() {
       )
     : allGuests;
 
-  // Apply filters
-  if (!showCheckedIn) {
-    filteredGuests = filteredGuests.filter(guest => !guest.checked_in);
-  }
-
+  // Apply "addedBy" filter
   if (filterBy !== 'all') {
     filteredGuests = filteredGuests.filter(guest => guest.addedBy === filterBy);
   }
-
-  // Sort alphabetically by name
-  filteredGuests.sort((a, b) => a.name.localeCompare(b.name));
 
   useEffect(() => {
     // Check authentication
     const isAuthenticated = localStorage.getItem('doorperson_authenticated');
     if (!isAuthenticated) {
       router.push('/doorperson/login');
+      return;
     }
 
     // Check for dark mode preference
@@ -134,6 +87,9 @@ export default function ManualSearchPage() {
     if (savedDarkMode === 'true') {
       setIsDarkMode(true);
     }
+
+    // Fetch guests on mount
+    fetchGuests();
 
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -160,6 +116,11 @@ export default function ManualSearchPage() {
     }
   }, [router]);
 
+  // Refetch when showCheckedIn changes
+  useEffect(() => {
+    fetchGuests();
+  }, [showCheckedIn]);
+
   const handleVoiceSearch = () => {
     if (recognitionRef.current && !isListening) {
       // Clear filters when starting voice search
@@ -174,8 +135,8 @@ export default function ManualSearchPage() {
   };
 
   const handleGuestSelect = (guest: Guest) => {
-    // Navigate to check-in screen with guest data
-    router.push(`/doorperson/checkin?guest=${encodeURIComponent(JSON.stringify(guest))}`);
+    // Navigate to check-in screen with entryId
+    router.push(`/doorperson/checkin?entryId=${guest.entryId}`);
   };
 
   const handleBack = () => {
@@ -308,7 +269,16 @@ export default function ManualSearchPage() {
 
         {/* Guest List */}
         <div className="space-y-3 pb-20">
-          {filteredGuests.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div
+                className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isDarkMode ? 'border-white' : 'border-black'} mx-auto mb-4`}
+              ></div>
+              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Loading guests...
+              </p>
+            </div>
+          ) : filteredGuests.length === 0 ? (
             <div className="text-center py-12">
               <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
                 No guests found
@@ -320,7 +290,7 @@ export default function ManualSearchPage() {
           ) : (
             filteredGuests.map(guest => (
               <button
-                key={guest.id}
+                key={guest.entryId}
                 onClick={() => handleGuestSelect(guest)}
                 className={`w-full ${isDarkMode ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'} border rounded-xl p-4 text-left transition-colors`}
               >
@@ -340,7 +310,7 @@ export default function ManualSearchPage() {
                           </span>
                         )}
                       </div>
-                      {guest.plus_ones > 0 && <span className="text-sm">+{guest.plus_ones}</span>}
+                      {guest.plusOnes > 0 && <span className="text-sm">+{guest.plusOnes}</span>}
                     </div>
                     {guest.addedBy && (
                       <p
@@ -350,7 +320,7 @@ export default function ManualSearchPage() {
                       </p>
                     )}
                   </div>
-                  {guest.checked_in && (
+                  {guest.checkedIn && (
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold ml-3">
                       CHECKED IN
                     </span>
