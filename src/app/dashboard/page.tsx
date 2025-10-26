@@ -327,9 +327,9 @@ export default function DashboardPage() {
         >
           You should not be seeing this page.
         </p>
-        <a href="/guest/auth" className="btn btn-primary">
+        <Link href="/guest/auth" className="btn btn-primary">
           Go to Guest Portal
-        </a>
+        </Link>
       </div>
     ),
   };

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 
 export default function StaffLoginPage() {
@@ -134,10 +135,10 @@ export default function StaffLoginPage() {
         {/* Bottom Links */}
         <div className="text-center mt-3xl space-y-md">
           <p className="text-sm text-gray-500">
-            Are you a guest?
-            <a href="/guest/auth" className="ml-1 text-black hover:underline">
+            Are you a guest?{' '}
+            <Link href="/guest/auth" className="text-black hover:underline">
               Join the guest list
-            </a>
+            </Link>
           </p>
           <p className="text-sm text-gray-400">Contact your manager if you need access</p>
         </div>
